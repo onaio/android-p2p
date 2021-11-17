@@ -9,4 +9,11 @@
 
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <string name="wifi_p2p_enabled_label">Enabled:</string>
+    <string name="wifi_p2p_enabled_value">Enabled</string>
+    <string name="wifi_p2p_disabled_value">Disabled</string>
+    <string name="wifi_p2p_unexpected_state">Unexpected state: %d</string>
+    <string name="wifi_p2p_value_pending">Pending</string>
+    <string name="wifi_p2p_device_label">Device:</string>
+    <string name="wifi_p2p_device_value">Address: %1$s n Name: %2$s n Primary Type: %3$s n Secondary Type: %4$s n Status: %5$d</string>
 </resources>

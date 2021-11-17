@@ -98,57 +98,87 @@ class MainActivity : AppCompatActivity() {
   }
 
   fun handleWifiP2pDisabled() {
-    TODO("Not yet implemented")
-    println("Wifi P2P: Disabled")
+    val message = "Wifi P2P: Disabled"
+    Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
+    findViewById<TextView>(R.id.wifi_p2p_enabled_value).apply {
+      text = getString(R.string.wifi_p2p_disabled_value)
+    }
+    println(message)
   }
 
   fun handleWifiP2pEnabled() {
-    TODO("Not yet implemented")
-    println("Wifi P2P: Enabled")
+    val message = "Wifi P2P: Enabled"
+    Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
+    findViewById<TextView>(R.id.wifi_p2p_enabled_value).apply {
+      text = getString(R.string.wifi_p2p_enabled_value)
+    }
+    println(message)
   }
 
   fun handleUnexpectedWifiP2pState(wifiState: Int) {
-    TODO("Not yet implemented")
-    println("Wifi P2P: Unexpected state: $wifiState")
+    val message = "Wifi P2P: Unexpected state: $wifiState"
+    Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
+    findViewById<TextView>(R.id.wifi_p2p_enabled_value).apply {
+      text = getString(R.string.wifi_p2p_unexpected_state, wifiState)
+    }
+    println(message)
   }
 
   fun handleWifiP2pDevice(device: WifiP2pDevice) {
-    TODO("Not yet implemented")
-    println("Wifi P2P: Device: $device")
+    val message = "Wifi P2P: Device: $device"
+    Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
+    findViewById<TextView>(R.id.wifi_p2p_device_value).apply {
+      text =
+        getString(
+          R.string.wifi_p2p_device_value,
+          device.deviceAddress,
+          device.deviceName,
+          device.primaryDeviceType,
+          device.secondaryDeviceType,
+          device.status
+        )
+    }
+    println(message)
   }
 
   fun handleNetworkChanged(network: NetworkInfo) {
-    TODO("Not yet implemented")
-    println("Wifi P2P: $network")
+    val message = "Wifi P2P: $network"
+    Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
+    println(message)
   }
 
   fun handleP2pDiscoveryStarted() {
-    TODO("Not yet implemented")
-    println("Wifi P2P: Discovery started")
+    val message = "Wifi P2P: Discovery started"
+    Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
+    println(message)
   }
 
   fun handleP2pDiscoveryStopped() {
-    TODO("Not yet implemented")
-    println("Wifi P2P: Discovery stopped")
+    val message = "Wifi P2P: Discovery stopped"
+    Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
+    println(message)
   }
 
   fun handleUnexpectedWifiP2pDiscoveryState(discoveryState: Int) {
-    TODO("Not yet implemented")
-    println("Wifi P2P: Unexpected discovery state: $discoveryState")
+    val message = "Wifi P2P: Unexpected discovery state: $discoveryState"
+    Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
+    println(message)
   }
 
   fun handleP2pPeersChanged(peerDeviceList: WifiP2pDeviceList) {
-    TODO("Not yet implemented")
-    println("Wifi P2P: Peers changes")
+    val message = "Wifi P2P: Peers: ${peerDeviceList.deviceList}"
+    Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
+    println(message)
   }
 
   fun handleAccessFineLocationNotGranted() {
-    TODO("Not yet implemented")
-    println("Wifi P2P: Access find location permission not granted")
+    val message = "Wifi P2P: Access find location permission not granted"
+    Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
+    println(message)
   }
 
   fun handleMinimumSDKVersionNotMet() {
-    TODO("Not yet implemented")
-    println("Wifi P2P: Minimum SDK Version not met: ${Build.VERSION_CODES.Q}")
+    val message = "Wifi P2P: Minimum SDK Version not met: ${Build.VERSION_CODES.Q}"
+    println(message)
   }
 }
