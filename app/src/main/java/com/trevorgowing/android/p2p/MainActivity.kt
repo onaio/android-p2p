@@ -1,14 +1,18 @@
 package com.trevorgowing.android.p2p
 
+import android.net.NetworkInfo
+import android.net.wifi.p2p.WifiP2pDevice
+import android.net.wifi.p2p.WifiP2pDeviceList
+import android.os.Build
 import android.os.Bundle
-import com.google.android.material.snackbar.Snackbar
+import android.view.Menu
+import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
-import android.view.Menu
-import android.view.MenuItem
+import com.google.android.material.snackbar.Snackbar
 import com.trevorgowing.android.p2p.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -52,7 +56,61 @@ class MainActivity : AppCompatActivity() {
 
   override fun onSupportNavigateUp(): Boolean {
     val navController = findNavController(R.id.nav_host_fragment_content_main)
-    return navController.navigateUp(appBarConfiguration)
-      || super.onSupportNavigateUp()
+    return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+  }
+
+  fun handleWifiP2pDisabled() {
+    TODO("Not yet implemented")
+    println("Wifi P2P: Disabled")
+  }
+
+  fun handleWifiP2pEnabled() {
+    TODO("Not yet implemented")
+    println("Wifi P2P: Enabled")
+  }
+
+  fun handleUnexpectedWifiP2pState(wifiState: Int) {
+    TODO("Not yet implemented")
+    println("Wifi P2P: Unexpected state: $wifiState")
+  }
+
+  fun handleWifiP2pDevice(device: WifiP2pDevice) {
+    TODO("Not yet implemented")
+    println("Wifi P2P: Device: $device")
+  }
+
+  fun handleNetworkChanged(network: NetworkInfo) {
+    TODO("Not yet implemented")
+    println("Wifi P2P: $network")
+  }
+
+  fun handleP2pDiscoveryStarted() {
+    TODO("Not yet implemented")
+    println("Wifi P2P: Discovery started")
+  }
+
+  fun handleP2pDiscoveryStopped() {
+    TODO("Not yet implemented")
+    println("Wifi P2P: Discovery stopped")
+  }
+
+  fun handleUnexpectedWifiP2pDiscoveryState(discoveryState: Int) {
+    TODO("Not yet implemented")
+    println("Wifi P2P: Unexpected discovery state: $discoveryState")
+  }
+
+  fun handleP2pPeersChanged(peerDeviceList: WifiP2pDeviceList) {
+    TODO("Not yet implemented")
+    println("Wifi P2P: Peers changes")
+  }
+
+  fun handleAccessFineLocationNotGranted() {
+    TODO("Not yet implemented")
+    println("Wifi P2P: Access find location permission not granted")
+  }
+
+  fun handleMinimumSDKVersionNotMet() {
+    TODO("Not yet implemented")
+    println("Wifi P2P: Minimum SDK Version not met: ${Build.VERSION_CODES.Q}")
   }
 }
