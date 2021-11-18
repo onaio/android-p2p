@@ -159,7 +159,7 @@ class MainActivity : AppCompatActivity() {
       //                                          int[] grantResults)
       // to handle the case where the user grants the permission. See the documentation
       // for ActivityCompat#requestPermissions for more details.
-      handleMinimumSDKVersionNotMet()
+      handleAccessFineLocationNotGranted()
       return
     }
     wifiP2pManager.discoverPeers(
@@ -216,7 +216,7 @@ class MainActivity : AppCompatActivity() {
   }
 
   fun handleAccessFineLocationNotGranted() {
-    val message = "Wifi P2P: Access find location permission not granted"
+    val message = "Wifi P2P: Access fine location permission not granted"
     Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
     Log.d("Wifi P2P: ${this::class.simpleName}", message)
   }
