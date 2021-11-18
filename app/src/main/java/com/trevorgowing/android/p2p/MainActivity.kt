@@ -1,18 +1,22 @@
 package com.trevorgowing.android.p2p
 
+import android.Manifest
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.net.NetworkInfo
 import android.net.wifi.p2p.WifiP2pDevice
 import android.net.wifi.p2p.WifiP2pDeviceList
 import android.net.wifi.p2p.WifiP2pManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
@@ -43,11 +47,7 @@ class MainActivity : AppCompatActivity() {
     appBarConfiguration = AppBarConfiguration(navController.graph)
     setupActionBarWithNavController(navController, appBarConfiguration)
 
-    binding.fab.setOnClickListener { view ->
-      Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-        .setAction("Action", null)
-        .show()
-    }
+    binding.fab.setOnClickListener { initiatePeerDiscovery() }
 
     // Wifi P2p
     wifiP2pChannel = wifiP2pManager.initialize(this, mainLooper, null)
@@ -145,6 +145,49 @@ class MainActivity : AppCompatActivity() {
     val message = "Wifi P2P: $network"
     Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
     println(message)
+  }
+
+  private fun initiatePeerDiscovery() {
+    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
+        PackageManager.PERMISSION_GRANTED
+    ) {
+      // TODO: Consider calling
+      //    ActivityCompat#requestPermissions
+      // here to request the missing permissions, and then overriding
+      //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+      //                                          int[] grantResults)
+      // to handle the case where the user grants the permission. See the documentation
+      // for ActivityCompat#requestPermissions for more details.
+      handleMinimumSDKVersionNotMet()
+      return
+    }
+    wifiP2pManager.discoverPeers(
+      wifiP2pChannel,
+      object : WifiP2pManager.ActionListener {
+        override fun onSuccess() {
+          handleP2pDiscoverySuccess()
+        }
+
+        override fun onFailure(reason: Int) {
+          handleP2pDiscoveryFailure(reason)
+        }
+      }
+    )
+    val message = "Peer discovery initiated"
+    Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
+    Log.d("Wifi P2P: ${this::class.simpleName}", message)
+  }
+
+  private fun handleP2pDiscoverySuccess() {
+    val message = "Wifi P2P: Peer discovery succeeded"
+    Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
+    Log.d("Wifi P2P: ${this::class.simpleName}", message)
+  }
+
+  private fun handleP2pDiscoveryFailure(reason: Int) {
+    val message = "Wifi P2P: Peer discovery failed: $reason"
+    Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
+    Log.d("Wifi P2P: ${this::class.simpleName}", message)
   }
 
   fun handleP2pDiscoveryStarted() {
