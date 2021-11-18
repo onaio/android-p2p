@@ -103,7 +103,7 @@ class MainActivity : AppCompatActivity() {
     findViewById<TextView>(R.id.wifi_p2p_enabled_value).apply {
       text = getString(R.string.wifi_p2p_disabled_value)
     }
-    println(message)
+    Log.d("Wifi P2P: ${this::class.simpleName}", message)
   }
 
   fun handleWifiP2pEnabled() {
@@ -112,7 +112,7 @@ class MainActivity : AppCompatActivity() {
     findViewById<TextView>(R.id.wifi_p2p_enabled_value).apply {
       text = getString(R.string.wifi_p2p_enabled_value)
     }
-    println(message)
+    Log.d("Wifi P2P: ${this::class.simpleName}", message)
   }
 
   fun handleUnexpectedWifiP2pState(wifiState: Int) {
@@ -121,7 +121,7 @@ class MainActivity : AppCompatActivity() {
     findViewById<TextView>(R.id.wifi_p2p_enabled_value).apply {
       text = getString(R.string.wifi_p2p_unexpected_state, wifiState)
     }
-    println(message)
+    Log.d("Wifi P2P: ${this::class.simpleName}", message)
   }
 
   fun handleWifiP2pDevice(device: WifiP2pDevice) {
@@ -144,7 +144,7 @@ class MainActivity : AppCompatActivity() {
   fun handleNetworkChanged(network: NetworkInfo) {
     val message = "Wifi P2P: $network"
     Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
-    println(message)
+    Log.d("Wifi P2P: ${this::class.simpleName}", message)
   }
 
   private fun initiatePeerDiscovery() {
@@ -193,35 +193,35 @@ class MainActivity : AppCompatActivity() {
   fun handleP2pDiscoveryStarted() {
     val message = "Wifi P2P: Discovery started"
     Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
-    println(message)
+    Log.d("Wifi P2P: ${this::class.simpleName}", message)
   }
 
   fun handleP2pDiscoveryStopped() {
     val message = "Wifi P2P: Discovery stopped"
     Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
-    println(message)
+    Log.d("Wifi P2P: ${this::class.simpleName}", message)
   }
 
   fun handleUnexpectedWifiP2pDiscoveryState(discoveryState: Int) {
     val message = "Wifi P2P: Unexpected discovery state: $discoveryState"
     Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
-    println(message)
+    Log.d("Wifi P2P: ${this::class.simpleName}", message)
   }
 
   fun handleP2pPeersChanged(peerDeviceList: WifiP2pDeviceList) {
     val message = "Wifi P2P: Peers: ${peerDeviceList.deviceList}"
     Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
-    println(message)
+    Log.d("Wifi P2P: ${this::class.simpleName}", message)
   }
 
   fun handleAccessFineLocationNotGranted() {
     val message = "Wifi P2P: Access find location permission not granted"
     Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
-    println(message)
+    Log.d("Wifi P2P: ${this::class.simpleName}", message)
   }
 
   fun handleMinimumSDKVersionNotMet() {
     val message = "Wifi P2P: Minimum SDK Version not met: ${Build.VERSION_CODES.Q}"
-    println(message)
+    Log.d("Wifi P2P: ${this::class.simpleName}", message)
   }
 }
