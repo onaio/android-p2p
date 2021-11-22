@@ -62,7 +62,6 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
     wifiP2pChannel = wifiP2pManager.initialize(this, mainLooper, null)
     wifiP2pChannel?.also { channel ->
       wifiP2pReceiver = WifiP2pBroadcastReceiver(wifiP2pManager, channel, this)
-      wifiP2pManager.requestConnectionInfo(channel, this)
     }
 
     initiateNetworkDiscovery()
@@ -77,12 +76,7 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
         val message = "Wifi P2P: Network available"
         Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
         Log.d("Wifi P2P: ${this@MainActivity::class.simpleName}", message)
-      }
-
-      override fun onUnavailable() {
-        val message = "Wifi P2P: Network unavailable"
-        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
-        Log.d("Wifi P2P: ${this@MainActivity::class.simpleName}", message)
+        wifiP2pManager.requestConnectionInfo(wifiP2pChannel, this@MainActivity)
       }
 
       override fun onLost(network: Network) {
