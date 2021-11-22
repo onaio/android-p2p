@@ -19,6 +19,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.navigation.findNavController
@@ -27,6 +28,7 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.google.android.material.snackbar.Snackbar
 import com.trevorgowing.android.p2p.databinding.ActivityMainBinding
+import java.util.Random
 
 class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener {
 
@@ -41,8 +43,9 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
       Context.CONNECTIVITY_SERVICE
     ) as ConnectivityManager
   }
-  var wifiP2pChannel: WifiP2pManager.Channel? = null
-  var wifiP2pReceiver: BroadcastReceiver? = null
+  private var wifiP2pChannel: WifiP2pManager.Channel? = null
+  private var wifiP2pReceiver: BroadcastReceiver? = null
+  private var accessFineLocationPermissionRequestInt: Int = 0
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -56,15 +59,34 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
     appBarConfiguration = AppBarConfiguration(navController.graph)
     setupActionBarWithNavController(navController, appBarConfiguration)
 
-    binding.fab.setOnClickListener { initiatePeerDiscovery() }
+    binding.fab.setOnClickListener {
+      if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
+        PackageManager.PERMISSION_GRANTED
+      ) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+          requestAccessFineLocationIfNotGranted()
+        } else {
+          handleMinimumSDKVersionNotMet(Build.VERSION_CODES.M)
+        }
+      } else {
+        initiatePeerDiscovery()
+      }
+    }
 
     // Wifi P2p
     wifiP2pChannel = wifiP2pManager.initialize(this, mainLooper, null)
     wifiP2pChannel?.also { channel ->
       wifiP2pReceiver = WifiP2pBroadcastReceiver(wifiP2pManager, channel, this)
     }
+    accessFineLocationPermissionRequestInt = Random().nextInt()
 
     initiateNetworkDiscovery()
+
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+      requestAccessFineLocationIfNotGranted()
+    } else {
+      handleMinimumSDKVersionNotMet(Build.VERSION_CODES.M)
+    }
   }
 
   private fun initiateNetworkDiscovery() {
@@ -127,6 +149,34 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
   override fun onSupportNavigateUp(): Boolean {
     val navController = findNavController(R.id.nav_host_fragment_content_main)
     return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+  }
+
+  @RequiresApi(Build.VERSION_CODES.M)
+  private fun requestAccessFineLocationIfNotGranted() {
+    when (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+      PackageManager.PERMISSION_GRANTED -> logDebug("Wifi P2P: Access fine location granted")
+      else -> {
+        logDebug("Wifi P2P: Requesting access fine location permission")
+        return requestPermissions(
+          arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+          accessFineLocationPermissionRequestInt
+        )
+      }
+    }
+  }
+
+  override fun onRequestPermissionsResult(
+    requestCode: Int,
+    permissions: Array<String>,
+    grantResults: IntArray
+  ) {
+    if (requestCode == accessFineLocationPermissionRequestInt) {
+      val accessFineLocationPermissionIndex =
+        permissions.indexOfFirst { it == Manifest.permission.ACCESS_FINE_LOCATION }
+      if (grantResults[accessFineLocationPermissionIndex] == PackageManager.PERMISSION_GRANTED) {
+        return logDebug("Wifi P2P: Access fine location granted")
+      }
+    }
   }
 
   fun handleWifiP2pDisabled() {
@@ -246,9 +296,8 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
     Log.d("Wifi P2P: ${this::class.simpleName}", message)
   }
 
-  fun handleMinimumSDKVersionNotMet() {
-    val message = "Wifi P2P: Minimum SDK Version not met: ${Build.VERSION_CODES.Q}"
-    Log.d("Wifi P2P: ${this::class.simpleName}", message)
+  fun handleMinimumSDKVersionNotMet(minimumSdkVersion: Int) {
+    logDebug("Wifi P2P: Minimum SDK Version not met: $minimumSdkVersion")
   }
 
   override fun onConnectionInfoAvailable(info: WifiP2pInfo) {
@@ -270,5 +319,10 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
         // TODO: Connect to server.
       }
     }
+  }
+
+  private fun logDebug(message: String) {
+    Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
+    Log.d("Wifi P2P: ${this::class.simpleName}", message)
   }
 }
