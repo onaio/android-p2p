@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.net.NetworkInfo
 import android.net.wifi.p2p.WifiP2pDevice
 import android.net.wifi.p2p.WifiP2pDeviceList
+import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
 import android.os.Build
 import android.os.Bundle
@@ -24,7 +25,7 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import com.google.android.material.snackbar.Snackbar
 import com.trevorgowing.android.p2p.databinding.ActivityMainBinding
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener {
 
   private lateinit var appBarConfiguration: AppBarConfiguration
   private lateinit var binding: ActivityMainBinding
@@ -53,6 +54,7 @@ class MainActivity : AppCompatActivity() {
     wifiP2pChannel = wifiP2pManager.initialize(this, mainLooper, null)
     wifiP2pChannel?.also { channel ->
       wifiP2pReceiver = WifiP2pBroadcastReceiver(wifiP2pManager, channel, this)
+      wifiP2pManager.requestConnectionInfo(channel, this)
     }
   }
 
@@ -224,5 +226,26 @@ class MainActivity : AppCompatActivity() {
   fun handleMinimumSDKVersionNotMet() {
     val message = "Wifi P2P: Minimum SDK Version not met: ${Build.VERSION_CODES.Q}"
     Log.d("Wifi P2P: ${this::class.simpleName}", message)
+  }
+
+  override fun onConnectionInfoAvailable(info: WifiP2pInfo) {
+    val message = "Connection info available: groupFormed = ${info.groupFormed}, isGroupOwner = ${info.isGroupOwner}"
+    Log.d("Wifi P2P: ${this::class.simpleName}", message)
+    findViewById<TextView>(R.id.wifi_p2p_group_formed_value).apply {
+      text = resources.getString(if (info.groupFormed) R.string.wifi_p2p_value_yes else R.string.wifi_p2p_value_no)
+    }
+    findViewById<TextView>(R.id.wifi_p2p_group_owner_value).apply {
+      text = resources.getString(if (info.isGroupOwner) R.string.wifi_p2p_value_yes else R.string.wifi_p2p_value_no)
+    }
+    findViewById<TextView>(R.id.wifi_p2p_group_owner_address_value).apply {
+      text = if (info.groupOwnerAddress == null) resources.getString(R.string.wifi_p2p_group_owner_value_na) else info.groupOwnerAddress.hostAddress
+    }
+    if (info.groupFormed) {
+      if (info.isGroupOwner) {
+        // TODO: Start server.
+      } else {
+        // TODO: Connect to server.
+      }
+    }
   }
 }

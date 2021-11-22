@@ -16,4 +16,10 @@
     <string name="wifi_p2p_value_pending">Pending</string>
     <string name="wifi_p2p_device_label">Device:</string>
     <string name="wifi_p2p_device_value">Address: %1$s n Name: %2$s n Primary Type: %3$s n Secondary Type: %4$s n Status: %5$d</string>
+    <string name="wifi_p2p_group_owner">Group owner?</string>
+    <string name="wifi_p2p_group_formed">Group formed?</string>
+    <string name="wifi_p2p_value_no">No</string>
+    <string name="wifi_p2p_value_yes">Yes</string>
+    <string name="wifi_p2p_group_owner_address">Group owner address:</string>
+    <string name="wifi_p2p_group_owner_value_na">N/A</string>
 </resources>
