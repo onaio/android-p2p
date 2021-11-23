@@ -22,4 +22,7 @@
     <string name="wifi_p2p_value_yes">Yes</string>
     <string name="wifi_p2p_group_owner_address">Group owner address:</string>
     <string name="wifi_p2p_group_owner_value_na">N/A</string>
+    <string name="wifi_p2p_peers_label">Peers</string>
+    <string name="wifi_p2p_device_name_label">Name</string>
+    <string name="wifi_p2p_device_address_label">Address</string>
 </resources>

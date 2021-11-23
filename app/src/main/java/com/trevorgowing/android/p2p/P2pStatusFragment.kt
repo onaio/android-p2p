@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
 import com.trevorgowing.android.p2p.databinding.FragmentP2pStatusBinding
 
 /**
@@ -28,6 +29,10 @@ class P2pStatusFragment : Fragment() {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
+
+    val peerDeviceRecyclerView: RecyclerView =
+      view.findViewById(R.id.wifi_p2p_peer_devices_recycler_view)
+    peerDeviceRecyclerView.adapter = WifiP2pDeviceAdapter(emptyList())
   }
 
   override fun onDestroyView() {

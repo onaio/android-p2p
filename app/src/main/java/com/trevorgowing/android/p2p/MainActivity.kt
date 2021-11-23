@@ -26,6 +26,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.trevorgowing.android.p2p.databinding.ActivityMainBinding
 import java.util.Random
@@ -285,9 +286,13 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
   }
 
   fun handleP2pPeersChanged(peerDeviceList: WifiP2pDeviceList) {
-    val message = "Wifi P2P: Peers: ${peerDeviceList.deviceList}"
-    Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
+    val message = "Wifi P2P: Peers x ${peerDeviceList.deviceList.size}"
+    Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
     Log.d("Wifi P2P: ${this::class.simpleName}", message)
+
+    val peerDeviceRecyclerView =
+      findViewById<RecyclerView>(R.id.wifi_p2p_peer_devices_recycler_view)
+    peerDeviceRecyclerView.adapter = WifiP2pDeviceAdapter(peerDeviceList.deviceList.toList())
   }
 
   fun handleAccessFineLocationNotGranted() {
