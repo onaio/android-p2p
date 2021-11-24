@@ -3,6 +3,7 @@ package com.trevorgowing.android.p2p
 import android.Manifest
 import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
@@ -83,11 +84,21 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
 
     initiateNetworkDiscovery()
 
+    val serviceIntent = Intent(this, SyncService::class.java)
+    startService(serviceIntent)
+
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       requestAccessFineLocationIfNotGranted()
     } else {
       handleMinimumSDKVersionNotMet(Build.VERSION_CODES.M)
     }
+  }
+
+  override fun onDestroy() {
+    super.onDestroy()
+
+    val serviceIntent = Intent(this, SyncService::class.java)
+    stopService(serviceIntent)
   }
 
   private fun initiateNetworkDiscovery() {
