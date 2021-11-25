@@ -219,18 +219,11 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
   }
 
   fun handleWifiP2pDevice(device: WifiP2pDevice) {
-    val message = "Wifi P2P: Device: $device"
-    Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
-    findViewById<TextView>(R.id.wifi_p2p_device_value).apply {
-      text =
-        getString(
-          R.string.wifi_p2p_device_value,
-          device.deviceAddress,
-          device.deviceName,
-          device.primaryDeviceType,
-          device.secondaryDeviceType,
-          device.status
-        )
+    findViewById<TextView>(R.id.wifi_p2p_my_device_name_value).apply {
+      text = device.deviceName
+    }
+    findViewById<TextView>(R.id.wifi_p2p_my_device_address_value).apply {
+      text = device.deviceAddress
     }
     Log.d("Wifi P2P: ${this::class.simpleName}", "Wifi P2P: Device: ${device.deviceAddress}")
   }
