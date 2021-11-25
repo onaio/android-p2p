@@ -10,6 +10,7 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
+import android.net.wifi.p2p.WifiP2pConfig
 import android.net.wifi.p2p.WifiP2pDevice
 import android.net.wifi.p2p.WifiP2pDeviceList
 import android.net.wifi.p2p.WifiP2pInfo
@@ -202,7 +203,6 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
 
   fun handleWifiP2pEnabled() {
     val message = "Wifi P2P: Enabled"
-    Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
     findViewById<TextView>(R.id.wifi_p2p_enabled_value).apply {
       text = getString(R.string.wifi_p2p_enabled_value)
     }
@@ -232,7 +232,7 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
           device.status
         )
     }
-    println(message)
+    Log.d("Wifi P2P: ${this::class.simpleName}", "Wifi P2P: Device: ${device.deviceAddress}")
   }
 
   private fun initiatePeerDiscovery() {
@@ -268,7 +268,6 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
 
   private fun handleP2pDiscoverySuccess() {
     val message = "Wifi P2P: Peer discovery succeeded"
-    Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
     Log.d("Wifi P2P: ${this::class.simpleName}", message)
   }
 
@@ -303,7 +302,52 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
 
     val peerDeviceRecyclerView =
       findViewById<RecyclerView>(R.id.wifi_p2p_peer_devices_recycler_view)
-    peerDeviceRecyclerView.adapter = WifiP2pDeviceAdapter(peerDeviceList.deviceList.toList())
+    peerDeviceRecyclerView.adapter = WifiP2pDeviceAdapter(peerDeviceList.deviceList.toList()) {
+      connectToDevice(it)
+    }
+  }
+
+  private fun connectToDevice(device: WifiP2pDevice) {
+    val wifiP2pConfig = WifiP2pConfig().apply { deviceAddress = device.deviceAddress }
+    wifiP2pChannel?.also { wifiP2pChannel ->
+      if (ActivityCompat.checkSelfPermission(
+          this,
+          Manifest.permission.ACCESS_FINE_LOCATION
+        ) != PackageManager.PERMISSION_GRANTED
+      ) {
+        // TODO: Consider calling
+        //    ActivityCompat#requestPermissions
+        // here to request the missing permissions, and then overriding
+        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+        //                                          int[] grantResults)
+        // to handle the case where the user grants the permission. See the documentation
+        // for ActivityCompat#requestPermissions for more details.
+        handleAccessFineLocationNotGranted()
+        return
+      }
+      wifiP2pManager.connect(wifiP2pChannel, wifiP2pConfig, object : WifiP2pManager.ActionListener {
+        override fun onSuccess() {
+          handleDeviceConnectionSuccess(device)
+        }
+
+        override fun onFailure(reason: Int) {
+          handleDeviceConnectionFailure(device, reason)
+        }
+      })
+    }
+  }
+
+  private fun handleDeviceConnectionSuccess(device: WifiP2pDevice) {
+    val message = "Wifi P2P: Successfully connected to device: ${device.deviceAddress}"
+    Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
+    Log.d("Wifi P2P: ${this::class.simpleName}", message)
+  }
+
+  private fun handleDeviceConnectionFailure(device: WifiP2pDevice, reasonInt: Int) {
+
+    val message = "Wifi P2P: Failed to connect to device: ${device.deviceAddress} due to: $reasonInt"
+    Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
+    Log.d("Wifi P2P: ${this::class.simpleName}", message)
   }
 
   fun handleAccessFineLocationNotGranted() {

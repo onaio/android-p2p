@@ -20,7 +20,8 @@ class P2pStatusFragment : Fragment() {
   private val binding get() = _binding!!
 
   override fun onCreateView(
-    inflater: LayoutInflater, container: ViewGroup?,
+    inflater: LayoutInflater,
+    container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View {
     _binding = FragmentP2pStatusBinding.inflate(inflater, container, false)
@@ -32,7 +33,7 @@ class P2pStatusFragment : Fragment() {
 
     val peerDeviceRecyclerView: RecyclerView =
       view.findViewById(R.id.wifi_p2p_peer_devices_recycler_view)
-    peerDeviceRecyclerView.adapter = WifiP2pDeviceAdapter(emptyList())
+    peerDeviceRecyclerView.adapter = WifiP2pDeviceAdapter(emptyList()) {}
   }
 
   override fun onDestroyView() {
