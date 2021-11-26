@@ -76,18 +76,7 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
 
   override fun onResume() {
     super.onResume()
-    wifiP2pReceiver?.also {
-      registerReceiver(
-        it,
-        IntentFilter().apply {
-          addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION )
-          addAction(WifiP2pManager.WIFI_P2P_DISCOVERY_CHANGED_ACTION)
-          addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION)
-          addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION)
-          addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION)
-        }
-      )
-    }
+    listenForWifiP2pIntents()
     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
       PackageManager.PERMISSION_GRANTED
     ) {
@@ -98,6 +87,21 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
       }
     } else {
       initiatePeerDiscovery()
+    }
+  }
+
+  private fun listenForWifiP2pIntents() {
+    wifiP2pReceiver?.also {
+      registerReceiver(
+        it,
+        IntentFilter().apply {
+          addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION)
+          addAction(WifiP2pManager.WIFI_P2P_DISCOVERY_CHANGED_ACTION)
+          addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION)
+          addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION)
+          addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION)
+        }
+      )
     }
   }
 
