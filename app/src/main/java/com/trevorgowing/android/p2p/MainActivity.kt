@@ -209,9 +209,7 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
         }
       }
     )
-    val message = "Peer discovery initiated"
-    Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
-    Log.d("Wifi P2P: ${this::class.simpleName}", message)
+    Log.d("Wifi P2P: ${this::class.simpleName}", "Peer discovery initiated")
   }
 
   private fun handleP2pDiscoverySuccess() {
@@ -219,13 +217,8 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
     Log.d("Wifi P2P: ${this::class.simpleName}", message)
   }
 
-  private fun handleP2pDiscoveryFailure(reasonCode: Int) {
-    val reason = when(reasonCode) {
-      0 -> "Error"
-      1 -> "Unsupported"
-      2 -> "Busy"
-      else -> "Unknown"
-    }
+  private fun handleP2pDiscoveryFailure(reasonInt: Int) {
+    val reason = getWifiP2pReason(reasonInt)
     val message = "Wifi P2P: Peer discovery failed: $reason"
     Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
     Log.d("Wifi P2P: ${this::class.simpleName}", message)
@@ -286,15 +279,18 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
   }
 
   private fun handleDeviceConnectionSuccess(device: WifiP2pDevice) {
-    val message = "Wifi P2P: Successfully connected to device: ${device.deviceAddress}"
-    Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
-    Log.d("Wifi P2P: ${this::class.simpleName}", message)
+    findViewById<TextView>(R.id.wifi_p2p_connection_value).apply {
+      text = device.deviceName
+    }
+    Log.d("Wifi P2P: ${this::class.simpleName}", "Wifi P2P: Successfully connected to device: ${device.deviceAddress}")
   }
 
   private fun handleDeviceConnectionFailure(device: WifiP2pDevice, reasonInt: Int) {
-    val message = "Wifi P2P: Failed to connect to device: ${device.deviceAddress} due to: $reasonInt"
-    Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
-    Log.d("Wifi P2P: ${this::class.simpleName}", message)
+    val reason = getWifiP2pReason(reasonInt)
+    findViewById<TextView>(R.id.wifi_p2p_connection_value).apply {
+      text = getString(R.string.wifi_p2p_connection_failed_value, reason)
+    }
+    Log.d("Wifi P2P: ${this::class.simpleName}", "Wifi P2P: Failed to connect to device: ${device.deviceAddress} due to: $reason")
   }
 
   fun handleAccessFineLocationNotGranted() {
@@ -327,6 +323,14 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
       }
     }
   }
+
+  private fun getWifiP2pReason(reasonInt: Int): String =
+    when (reasonInt) {
+      0 -> "Error"
+      1 -> "Unsupported"
+      2 -> "Busy"
+      else -> "Unknown"
+    }
 
   private fun logDebug(message: String) {
     Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()

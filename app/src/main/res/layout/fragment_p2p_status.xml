@@ -31,36 +31,13 @@
         android:layout_height="186dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
         android:scrollbars="vertical"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.458"
+        app:layout_constraintHorizontal_bias="0.882"
         app:layout_constraintStart_toEndOf="@+id/wifi_p2p_peers_label"
-        app:layout_constraintTop_toBottomOf="@+id/wifi_p2p_my_device_address_value" />
-
-    <TextView
-        android:id="@+id/wifi_p2p_group_owner_value"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:text="@string/wifi_p2p_value_no"
-        app:layout_constraintBaseline_toBaselineOf="@+id/wifi_p2p_group_owner_label"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toEndOf="@+id/wifi_p2p_group_owner_label" />
-
-    <TextView
-        android:id="@+id/wifi_p2p_group_owner_address_value"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:text="@string/wifi_p2p_group_owner_value_na"
-        app:layout_constraintBaseline_toBaselineOf="@+id/wifi_p2p_group_owner_address_label"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toEndOf="@+id/wifi_p2p_group_owner_address_label" />
+        app:layout_constraintTop_toBottomOf="@+id/wifi_p2p_discovery_value" />
 
     <TextView
         android:id="@+id/wifi_p2p_peers_label"
@@ -70,26 +47,51 @@
         android:layout_marginTop="16dp"
         android:text="@string/wifi_p2p_peers_label"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/wifi_p2p_my_device_address_value" />
+        app:layout_constraintTop_toBottomOf="@+id/wifi_p2p_discovery_label" />
+
+    <TextView
+        android:id="@+id/wifi_p2p_my_device_name_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/wifi_p2p_my_device_name_label"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/wifi_p2p_peer_devices_recycler_view" />
+
+    <TextView
+        android:id="@+id/wifi_p2p_my_device_name_value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:text="@string/wifi_p2p_value_pending"
+        app:layout_constraintBaseline_toBaselineOf="@+id/wifi_p2p_my_device_name_label"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.99"
+        app:layout_constraintStart_toEndOf="@+id/wifi_p2p_my_device_name_label" />
 
     <TextView
         android:id="@+id/wifi_p2p_my_device_address_value"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:text="@string/wifi_p2p_value_pending"
         app:layout_constraintBaseline_toBaselineOf="@+id/wifi_p2p_my_device_address_label"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.989"
+        app:layout_constraintStart_toEndOf="@+id/wifi_p2p_my_device_address_label" />
 
     <TextView
-        android:id="@+id/wifi_p2p_group_owner_label"
+        android:id="@+id/wifi_p2p_my_device_address_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
-        android:text="@string/wifi_p2p_group_owner"
+        android:text="@string/wifi_p2p_my_device_address_label"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/wifi_p2p_group_formed_label" />
+        app:layout_constraintTop_toBottomOf="@+id/wifi_p2p_my_device_name_label" />
 
     <TextView
         android:id="@+id/wifi_p2p_group_owner_address_label"
@@ -102,45 +104,14 @@
         app:layout_constraintTop_toBottomOf="@+id/wifi_p2p_group_owner_label" />
 
     <TextView
-        android:id="@+id/wifi_p2p_group_formed_value"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:text="@string/wifi_p2p_value_no"
-        app:layout_constraintBaseline_toBaselineOf="@+id/wifi_p2p_group_formed_label"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toEndOf="@+id/wifi_p2p_group_formed_label" />
-
-    <TextView
-        android:id="@+id/wifi_p2p_my_device_name_value"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:text="@string/wifi_p2p_value_pending"
-        app:layout_constraintBaseline_toBaselineOf="@+id/wifi_p2p_my_device_name_label"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <TextView
-        android:id="@+id/wifi_p2p_my_device_name_label"
+        android:id="@+id/wifi_p2p_group_owner_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
-        android:text="@string/wifi_p2p_my_device_name_label"
+        android:text="@string/wifi_p2p_group_owner"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/wifi_p2p_discovery_label" />
-
-    <TextView
-        android:id="@+id/wifi_p2p_my_device_address_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:text="@string/wifi_p2p_my_device_address_label"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/wifi_p2p_my_device_name_value" />
+        app:layout_constraintTop_toBottomOf="@+id/wifi_p2p_group_formed_label" />
 
     <TextView
         android:id="@+id/wifi_p2p_group_formed_label"
@@ -150,7 +121,65 @@
         android:layout_marginTop="16dp"
         android:text="@string/wifi_p2p_group_formed"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/wifi_p2p_peer_devices_recycler_view" />
+        app:layout_constraintTop_toBottomOf="@+id/wifi_p2p_connection_label" />
+
+    <TextView
+        android:id="@+id/wifi_p2p_group_owner_value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:text="@string/wifi_p2p_value_pending"
+        app:layout_constraintBaseline_toBaselineOf="@+id/wifi_p2p_group_owner_label"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/wifi_p2p_group_owner_label" />
+
+    <TextView
+        android:id="@+id/wifi_p2p_group_formed_value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:text="@string/wifi_p2p_value_pending"
+        app:layout_constraintBaseline_toBaselineOf="@+id/wifi_p2p_group_formed_label"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/wifi_p2p_group_formed_label" />
+
+    <TextView
+        android:id="@+id/wifi_p2p_connection_value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:text="@string/wifi_p2p_value_pending"
+        app:layout_constraintBaseline_toBaselineOf="@+id/wifi_p2p_connection_label"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/wifi_p2p_connection_label" />
+
+    <TextView
+        android:id="@+id/wifi_p2p_connection_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/wifi_p2p_connection_label"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/wifi_p2p_my_device_address_label" />
+
+    <TextView
+        android:id="@+id/wifi_p2p_group_owner_address_value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:text="@string/wifi_p2p_group_owner_value_na"
+        app:layout_constraintBaseline_toBaselineOf="@+id/wifi_p2p_group_owner_address_label"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/wifi_p2p_group_owner_address_label" />
 
     <TextView
         android:id="@+id/wifi_p2p_discovery_label"
@@ -166,10 +195,11 @@
         android:id="@+id/wifi_p2p_discovery_value"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
         android:text="@string/wifi_p2p_value_pending"
         app:layout_constraintBaseline_toBaselineOf="@+id/wifi_p2p_discovery_label"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.942"
+        app:layout_constraintHorizontal_bias="0.992"
         app:layout_constraintStart_toEndOf="@+id/wifi_p2p_discovery_label" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

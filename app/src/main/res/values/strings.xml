@@ -9,7 +9,7 @@
 
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
-    <string name="wifi_p2p_value_pending">Pending</string>
+    <string name="wifi_p2p_value_pending">Pending…</string>
     <string name="wifi_p2p_wifi_direct_label">Wifi Direct:</string>
     <string name="wifi_p2p_enabled_value">Enabled</string>
     <string name="wifi_p2p_disabled_value">Disabled</string>
@@ -28,4 +28,6 @@
     <string name="wifi_p2p_value_yes">Yes</string>
     <string name="wifi_p2p_group_owner_address">Group Owner Address:</string>
     <string name="wifi_p2p_group_owner_value_na">N/A</string>
+    <string name="wifi_p2p_connection_label">Connected to:</string>
+    <string name="wifi_p2p_connection_failed_value">Failed: %s</string>
 </resources>
