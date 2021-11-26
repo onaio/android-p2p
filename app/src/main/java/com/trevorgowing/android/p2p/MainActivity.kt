@@ -29,6 +29,9 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.recyclerview.widget.RecyclerView
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.google.android.material.snackbar.Snackbar
 import com.trevorgowing.android.p2p.databinding.ActivityMainBinding
 import java.util.Random
@@ -85,21 +88,14 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
 
     initiateNetworkDiscovery()
 
-    val serviceIntent = Intent(this, SyncService::class.java)
-    startService(serviceIntent)
+    val syncWorkRequest = OneTimeWorkRequestBuilder<SyncWorker>().build()
+    WorkManager.getInstance(this).enqueueUniqueWork("sync", ExistingWorkPolicy.KEEP, syncWorkRequest)
 
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       requestAccessFineLocationIfNotGranted()
     } else {
       handleMinimumSDKVersionNotMet(Build.VERSION_CODES.M)
     }
-  }
-
-  override fun onDestroy() {
-    super.onDestroy()
-
-    val serviceIntent = Intent(this, SyncService::class.java)
-    stopService(serviceIntent)
   }
 
   private fun initiateNetworkDiscovery() {
