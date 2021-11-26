@@ -91,7 +91,9 @@ class WifiP2pBroadcastReceiver(
           activity.handleWifiP2pDevice(it)
         }
       }
+    } else {
+      activity.handleMinimumSDKVersionNotMet(
+          Build.VERSION_CODES.Q,)
     }
-    activity.handleMinimumSDKVersionNotMet(Build.VERSION_CODES.Q)
   }
 }
