@@ -34,7 +34,6 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.android.material.snackbar.Snackbar
 import com.trevorgowing.android.p2p.databinding.ActivityMainBinding
-import java.util.Random
 
 class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener {
 
@@ -51,7 +50,7 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
   }
   private var wifiP2pChannel: WifiP2pManager.Channel? = null
   private var wifiP2pReceiver: BroadcastReceiver? = null
-  private var accessFineLocationPermissionRequestInt: Int = 0
+  private val accessFineLocationPermissionRequestInt: Int = 12345
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -84,7 +83,6 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
     wifiP2pChannel?.also { channel ->
       wifiP2pReceiver = WifiP2pBroadcastReceiver(wifiP2pManager, channel, this)
     }
-    accessFineLocationPermissionRequestInt = Random().nextInt()
 
     initiateNetworkDiscovery()
 
