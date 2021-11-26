@@ -299,6 +299,7 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
   }
 
   private fun connectToDevice(device: WifiP2pDevice) {
+    Log.d("Wifi P2P: ${this::class.simpleName}", "Wifi P2P: Initiating connection to device: ${device.deviceName}")
     val wifiP2pConfig = WifiP2pConfig().apply { deviceAddress = device.deviceAddress }
     wifiP2pChannel?.also { wifiP2pChannel ->
       if (ActivityCompat.checkSelfPermission(
