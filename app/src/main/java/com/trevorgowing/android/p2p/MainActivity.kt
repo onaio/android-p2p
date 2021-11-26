@@ -77,17 +77,7 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
   override fun onResume() {
     super.onResume()
     listenForWifiP2pIntents()
-    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
-      PackageManager.PERMISSION_GRANTED
-    ) {
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        requestAccessFineLocationIfNotGranted()
-      } else {
-        handleMinimumSDKVersionNotMet(Build.VERSION_CODES.M)
-      }
-    } else {
-      initiatePeerDiscovery()
-    }
+    initiatePeerDiscoveryOnceAccessFineLocationGranted()
   }
 
   private fun listenForWifiP2pIntents() {
@@ -102,6 +92,20 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
           addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION)
         }
       )
+    }
+  }
+
+  private fun initiatePeerDiscoveryOnceAccessFineLocationGranted() {
+    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
+      PackageManager.PERMISSION_GRANTED
+    ) {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        requestAccessFineLocationIfNotGranted()
+      } else {
+        handleMinimumSDKVersionNotMet(Build.VERSION_CODES.M)
+      }
+    } else {
+      initiatePeerDiscovery()
     }
   }
 
