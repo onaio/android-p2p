@@ -64,20 +64,6 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
     appBarConfiguration = AppBarConfiguration(navController.graph)
     setupActionBarWithNavController(navController, appBarConfiguration)
 
-    binding.fab.setOnClickListener {
-      if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
-        PackageManager.PERMISSION_GRANTED
-      ) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-          requestAccessFineLocationIfNotGranted()
-        } else {
-          handleMinimumSDKVersionNotMet(Build.VERSION_CODES.M)
-        }
-      } else {
-        initiatePeerDiscovery()
-      }
-    }
-
     // Wifi P2p
     wifiP2pChannel = wifiP2pManager.initialize(this, mainLooper, null)
     wifiP2pChannel?.also { channel ->
@@ -132,6 +118,17 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
           addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION)
         }
       )
+    }
+    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
+      PackageManager.PERMISSION_GRANTED
+    ) {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        requestAccessFineLocationIfNotGranted()
+      } else {
+        handleMinimumSDKVersionNotMet(Build.VERSION_CODES.M)
+      }
+    } else {
+      initiatePeerDiscovery()
     }
   }
 
@@ -261,7 +258,13 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
     Log.d("Wifi P2P: ${this::class.simpleName}", message)
   }
 
-  private fun handleP2pDiscoveryFailure(reason: Int) {
+  private fun handleP2pDiscoveryFailure(reasonCode: Int) {
+    val reason = when(reasonCode) {
+      0 -> "Error"
+      1 -> "Unsupported"
+      2 -> "Busy"
+      else -> "Unknown"
+    }
     val message = "Wifi P2P: Peer discovery failed: $reason"
     Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
     Log.d("Wifi P2P: ${this::class.simpleName}", message)
@@ -286,9 +289,7 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
   }
 
   fun handleP2pPeersChanged(peerDeviceList: WifiP2pDeviceList) {
-    val message = "Wifi P2P: Peers x ${peerDeviceList.deviceList.size}"
-    Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
-    Log.d("Wifi P2P: ${this::class.simpleName}", message)
+    Log.d("Wifi P2P: ${this::class.simpleName}", "Wifi P2P: Peers x ${peerDeviceList.deviceList.size}")
 
     val peerDeviceRecyclerView =
       findViewById<RecyclerView>(R.id.wifi_p2p_peer_devices_recycler_view)
@@ -334,7 +335,6 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
   }
 
   private fun handleDeviceConnectionFailure(device: WifiP2pDevice, reasonInt: Int) {
-
     val message = "Wifi P2P: Failed to connect to device: ${device.deviceAddress} due to: $reasonInt"
     Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
     Log.d("Wifi P2P: ${this::class.simpleName}", message)
