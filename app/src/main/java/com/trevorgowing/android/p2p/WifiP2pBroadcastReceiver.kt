@@ -17,6 +17,7 @@ class WifiP2pBroadcastReceiver(
 
   override fun onReceive(context: Context, intent: Intent) {
     when (intent.action) {
+      WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION -> handleConnectionChanged()
       WifiP2pManager.WIFI_P2P_DISCOVERY_CHANGED_ACTION ->
         handleDiscoveryChanged(intent.getIntExtra(WifiP2pManager.EXTRA_DISCOVERY_STATE, -1))
       WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION -> handlePeersChanged()
@@ -24,6 +25,13 @@ class WifiP2pBroadcastReceiver(
         handleStateChanged(intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1))
       WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION -> handleDeviceChanged()
     }
+  }
+
+  /**
+   * https://developer.android.com/reference/android/net/wifi/p2p/WifiP2pManager#WIFI_P2P_CONNECTION_CHANGED_ACTION
+   */
+  private fun handleConnectionChanged() {
+    manager.requestConnectionInfo(channel, activity)
   }
 
   /**

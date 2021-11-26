@@ -5,10 +5,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.IntentFilter
 import android.content.pm.PackageManager
-import android.net.ConnectivityManager
-import android.net.Network
-import android.net.NetworkCapabilities
-import android.net.NetworkRequest
 import android.net.wifi.p2p.WifiP2pConfig
 import android.net.wifi.p2p.WifiP2pDevice
 import android.net.wifi.p2p.WifiP2pDeviceList
@@ -43,11 +39,6 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
   // Wifi P2p
   private val wifiP2pManager: WifiP2pManager by
     lazy(LazyThreadSafetyMode.NONE) { getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager }
-  private val connectivityManager: ConnectivityManager by lazy(LazyThreadSafetyMode.NONE) {
-    getSystemService(
-      Context.CONNECTIVITY_SERVICE
-    ) as ConnectivityManager
-  }
   private var wifiP2pChannel: WifiP2pManager.Channel? = null
   private var wifiP2pReceiver: BroadcastReceiver? = null
   private val accessFineLocationPermissionRequestInt: Int = 12345
@@ -70,8 +61,6 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
       wifiP2pReceiver = WifiP2pBroadcastReceiver(wifiP2pManager, channel, this)
     }
 
-    initiateNetworkDiscovery()
-
     val syncWorkRequest = OneTimeWorkRequestBuilder<SyncWorker>().setInputData(
       // TODO: Populate actual group owner address.
       Data.Builder().putString(SyncWorker.GROUP_OWNER_ADDRESS_KEY, "0.0.0.0").build()
@@ -85,33 +74,13 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
     }
   }
 
-  private fun initiateNetworkDiscovery() {
-    val networkRequest =
-      NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-        .addCapability(NetworkCapabilities.NET_CAPABILITY_WIFI_P2P).build()
-    val networkCallback = object : ConnectivityManager.NetworkCallback() {
-      override fun onAvailable(network: Network) {
-        val message = "Wifi P2P: Network available"
-        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
-        Log.d("Wifi P2P: ${this@MainActivity::class.simpleName}", message)
-        wifiP2pManager.requestConnectionInfo(wifiP2pChannel, this@MainActivity)
-      }
-
-      override fun onLost(network: Network) {
-        val message = "Wifi P2P: Network lost"
-        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
-        Log.d("Wifi P2P: ${this@MainActivity::class.simpleName}", message)
-      }
-    }
-    connectivityManager.registerNetworkCallback(networkRequest, networkCallback)
-  }
-
   override fun onResume() {
     super.onResume()
     wifiP2pReceiver?.also {
       registerReceiver(
         it,
         IntentFilter().apply {
+          addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION )
           addAction(WifiP2pManager.WIFI_P2P_DISCOVERY_CHANGED_ACTION)
           addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION)
           addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION)
