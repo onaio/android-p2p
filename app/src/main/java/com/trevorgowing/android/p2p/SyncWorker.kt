@@ -3,6 +3,7 @@ package com.trevorgowing.android.p2p
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
@@ -14,7 +15,12 @@ class SyncWorker(context: Context, parameters: WorkerParameters) :
   CoroutineWorker(context, parameters) {
 
   override suspend fun doWork(): Result {
+    val groupOwner = inputData.getBoolean(GROUP_OWNER_KEY, false)
+    Log.d("Wifi P2P: ${this::class.simpleName}", "Group Owner: $groupOwner")
     val groupOwnerAddress = inputData.getString(GROUP_OWNER_ADDRESS_KEY) ?: return Result.failure()
+    Log.d("Wifi P2P: ${this::class.simpleName}", "Group Owner Address: $groupOwnerAddress")
+    val sender = inputData.getBoolean(SENDER_KEY, false)
+    Log.d("Wifi P2P: ${this::class.simpleName}", "Sender: $sender")
     setForeground(createForegroundInfo(groupOwnerAddress))
     // TODO: Do work.
     delay(30000)
@@ -51,6 +57,8 @@ class SyncWorker(context: Context, parameters: WorkerParameters) :
   }
 
   companion object {
+    const val GROUP_OWNER_KEY = "GROUP_OWNER"
     const val GROUP_OWNER_ADDRESS_KEY = "GROUP_OWNER_ADDRESS"
+    const val SENDER_KEY = "SENDER"
   }
 }

@@ -42,6 +42,7 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
   private var wifiP2pChannel: WifiP2pManager.Channel? = null
   private var wifiP2pReceiver: BroadcastReceiver? = null
   private val accessFineLocationPermissionRequestInt: Int = 12345
+  private var sender = false
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -60,12 +61,6 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
     wifiP2pChannel?.also { channel ->
       wifiP2pReceiver = WifiP2pBroadcastReceiver(wifiP2pManager, channel, this)
     }
-
-    val syncWorkRequest = OneTimeWorkRequestBuilder<SyncWorker>().setInputData(
-      // TODO: Populate actual group owner address.
-      Data.Builder().putString(SyncWorker.GROUP_OWNER_ADDRESS_KEY, "0.0.0.0").build()
-    ).build()
-    WorkManager.getInstance(this).enqueueUniqueWork("sync", ExistingWorkPolicy.KEEP, syncWorkRequest)
 
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       requestAccessFineLocationIfNotGranted()
@@ -295,6 +290,7 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
 
   private fun connectToDevice(device: WifiP2pDevice) {
     Log.d("Wifi P2P: ${this::class.simpleName}", "Wifi P2P: Initiating connection to device: ${device.deviceName}")
+    sender = true
     val wifiP2pConfig = WifiP2pConfig().apply { deviceAddress = device.deviceAddress }
     wifiP2pChannel?.also { wifiP2pChannel ->
       if (ActivityCompat.checkSelfPermission(
@@ -353,13 +349,19 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
     findViewById<TextView>(R.id.wifi_p2p_group_owner_address_value).apply {
       text = if (info.groupOwnerAddress == null) resources.getString(R.string.wifi_p2p_group_owner_value_na) else info.groupOwnerAddress.hostAddress
     }
-    if (info.groupFormed) {
-      if (info.isGroupOwner) {
-        // TODO: Start server.
-      } else {
-        // TODO: Connect to server.
-      }
-    }
+    scheduleSync(info)
+  }
+
+  private fun scheduleSync(info: WifiP2pInfo) {
+    val syncWorkRequest = OneTimeWorkRequestBuilder<SyncWorker>()
+      .setInputData(
+        Data.Builder()
+          .putBoolean(SyncWorker.GROUP_OWNER_KEY, info.isGroupOwner)
+          .putString(SyncWorker.GROUP_OWNER_ADDRESS_KEY, info.groupOwnerAddress.toString())
+          .putBoolean(SyncWorker.SENDER_KEY, sender)
+          .build()
+    ).build()
+    WorkManager.getInstance(this).enqueueUniqueWork("sync", ExistingWorkPolicy.KEEP, syncWorkRequest)
   }
 
   private fun getWifiP2pReason(reasonInt: Int): String =
