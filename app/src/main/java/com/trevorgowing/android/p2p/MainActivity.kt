@@ -349,7 +349,9 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
     findViewById<TextView>(R.id.wifi_p2p_group_owner_address_value).apply {
       text = if (info.groupOwnerAddress == null) resources.getString(R.string.wifi_p2p_group_owner_value_na) else info.groupOwnerAddress.hostAddress
     }
-    scheduleSync(info)
+    if (info.groupFormed) {
+      scheduleSync(info)
+    }
   }
 
   private fun scheduleSync(info: WifiP2pInfo) {
