@@ -176,7 +176,7 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
     val message = "Wifi P2P: Unexpected state: $wifiState"
     Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
     findViewById<TextView>(R.id.wifi_p2p_enabled_value).apply {
-      text = getString(R.string.wifi_p2p_unexpected_state, wifiState)
+      text = getString(R.string.wifi_p2p_unexpected_state_value, wifiState)
     }
     Log.d("Wifi P2P: ${this::class.simpleName}", message)
   }
@@ -195,15 +195,7 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
         PackageManager.PERMISSION_GRANTED
     ) {
-      // TODO: Consider calling
-      //    ActivityCompat#requestPermissions
-      // here to request the missing permissions, and then overriding
-      //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-      //                                          int[] grantResults)
-      // to handle the case where the user grants the permission. See the documentation
-      // for ActivityCompat#requestPermissions for more details.
-      handleAccessFineLocationNotGranted()
-      return
+      return handleAccessFineLocationNotGranted()
     }
     wifiP2pManager.discoverPeers(
       wifiP2pChannel,
@@ -240,21 +232,24 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
   }
 
   fun handleP2pDiscoveryStarted() {
-    val message = "Wifi P2P: Discovery started"
-    Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
-    Log.d("Wifi P2P: ${this::class.simpleName}", message)
+    findViewById<TextView>(R.id.wifi_p2p_discovery_value).apply {
+      text = getString(R.string.wifi_p2p_discovery_started_value)
+    }
+    Log.d("Wifi P2P: ${this::class.simpleName}", "Wifi P2P: Peer discovery started")
   }
 
   fun handleP2pDiscoveryStopped() {
-    val message = "Wifi P2P: Discovery stopped"
-    Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
-    Log.d("Wifi P2P: ${this::class.simpleName}", message)
+    findViewById<TextView>(R.id.wifi_p2p_discovery_value).apply {
+      text = getString(R.string.wifi_p2p_discovery_started_value)
+    }
+    Log.d("Wifi P2P: ${this::class.simpleName}", "Wifi P2P: Peer discovery stopped")
   }
 
   fun handleUnexpectedWifiP2pDiscoveryState(discoveryState: Int) {
-    val message = "Wifi P2P: Unexpected discovery state: $discoveryState"
-    Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
-    Log.d("Wifi P2P: ${this::class.simpleName}", message)
+    findViewById<TextView>(R.id.wifi_p2p_discovery_value).apply {
+      text = getString(R.string.wifi_p2p_unexpected_state_value, discoveryState)
+    }
+    Log.d("Wifi P2P: ${this::class.simpleName}", "Wifi P2P: Unexpected discovery state: $discoveryState")
   }
 
   fun handleP2pPeersChanged(peerDeviceList: WifiP2pDeviceList) {
@@ -276,15 +271,7 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
           Manifest.permission.ACCESS_FINE_LOCATION
         ) != PackageManager.PERMISSION_GRANTED
       ) {
-        // TODO: Consider calling
-        //    ActivityCompat#requestPermissions
-        // here to request the missing permissions, and then overriding
-        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-        //                                          int[] grantResults)
-        // to handle the case where the user grants the permission. See the documentation
-        // for ActivityCompat#requestPermissions for more details.
-        handleAccessFineLocationNotGranted()
-        return
+        return handleAccessFineLocationNotGranted()
       }
       wifiP2pManager.connect(wifiP2pChannel, wifiP2pConfig, object : WifiP2pManager.ActionListener {
         override fun onSuccess() {

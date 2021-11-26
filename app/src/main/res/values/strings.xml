@@ -9,22 +9,23 @@
 
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
-    <string name="wifi_p2p_enabled_label">Enabled:</string>
+    <string name="wifi_p2p_value_pending">Pending</string>
+    <string name="wifi_p2p_wifi_direct_label">Wifi Direct:</string>
     <string name="wifi_p2p_enabled_value">Enabled</string>
     <string name="wifi_p2p_disabled_value">Disabled</string>
-    <string name="wifi_p2p_unexpected_state">Unexpected state: %d</string>
-    <string name="wifi_p2p_value_pending">Pending</string>
-    <string name="wifi_p2p_device_label">Device:</string>
-    <string name="wifi_p2p_device_value">Address: %1$s n Name: %2$s n Primary Type: %3$s n Secondary Type: %4$s n Status: %5$d</string>
-    <string name="wifi_p2p_group_owner">Group owner?</string>
-    <string name="wifi_p2p_group_formed">Group formed?</string>
+    <string name="wifi_p2p_unexpected_state_value">Unexpected state: %d</string>
+    <string name="wifi_p2p_discovery_label">Discovery:</string>
+    <string name="wifi_p2p_discovery_started_value">Started</string>
+    <string name="wifi_p2p_discovery_stopped_value">Stopped</string>
+    <string name="wifi_p2p_my_device_name_label">My Device Name:</string>
+    <string name="wifi_p2p_my_device_address_label">My Device Address:</string>
+    <string name="wifi_p2p_peers_label">Peers:</string>
+    <string name="wifi_p2p_device_name_label">Name:</string>
+    <string name="wifi_p2p_device_address_label">Address:</string>
+    <string name="wifi_p2p_group_owner">Group Owner:</string>
+    <string name="wifi_p2p_group_formed">Group Formed:</string>
     <string name="wifi_p2p_value_no">No</string>
     <string name="wifi_p2p_value_yes">Yes</string>
-    <string name="wifi_p2p_group_owner_address">Group owner address:</string>
+    <string name="wifi_p2p_group_owner_address">Group Owner Address:</string>
     <string name="wifi_p2p_group_owner_value_na">N/A</string>
-    <string name="wifi_p2p_peers_label">Peers</string>
-    <string name="wifi_p2p_device_name_label">Name</string>
-    <string name="wifi_p2p_device_address_label">Address</string>
-    <string name="wifi_p2p_my_device_name_label">My Device Name</string>
-    <string name="wifi_p2p_my_device_address_label">My Device Address</string>
 </resources>
