@@ -78,6 +78,11 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
     super.onResume()
     listenForWifiP2pIntents()
     initiatePeerDiscoveryOnceAccessFineLocationGranted()
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+      requestDeviceInfo()
+    } else {
+      handleMinimumSDKVersionNotMet(Build.VERSION_CODES.Q)
+    }
   }
 
   private fun listenForWifiP2pIntents() {
@@ -106,6 +111,24 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
       }
     } else {
       initiatePeerDiscovery()
+    }
+  }
+
+  @RequiresApi(Build.VERSION_CODES.Q)
+  private fun requestDeviceInfo() {
+    wifiP2pChannel?.also { wifiP2pChannel ->
+      if (ActivityCompat.checkSelfPermission(
+          this,
+          Manifest.permission.ACCESS_FINE_LOCATION
+        ) != PackageManager.PERMISSION_GRANTED
+      ) {
+        return handleAccessFineLocationNotGranted()
+      }
+      wifiP2pManager.requestDeviceInfo(wifiP2pChannel) {
+        if (it != null) {
+          handleWifiP2pDevice(it)
+        }
+      }
     }
   }
 
