@@ -83,6 +83,7 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
     } else {
       handleMinimumSDKVersionNotMet(Build.VERSION_CODES.Q)
     }
+    requestConnectionInfo()
   }
 
   private fun listenForWifiP2pIntents() {
@@ -129,6 +130,12 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
           handleWifiP2pDevice(it)
         }
       }
+    }
+  }
+
+  private fun requestConnectionInfo() {
+    wifiP2pManager.requestConnectionInfo(wifiP2pChannel) {
+      onConnectionInfoAvailable(it)
     }
   }
 
