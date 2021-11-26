@@ -14,14 +14,14 @@ class SyncWorker(context: Context, parameters: WorkerParameters) :
   CoroutineWorker(context, parameters) {
 
   override suspend fun doWork(): Result {
-    setForeground(createForegroundInfo())
-    // TODO: Get host info from inputData.
+    val groupOwnerAddress = inputData.getString(GROUP_OWNER_ADDRESS_KEY) ?: return Result.failure()
+    setForeground(createForegroundInfo(groupOwnerAddress))
     // TODO: Do work.
     delay(30000)
     return Result.success()
   }
 
-  private fun createForegroundInfo(): ForegroundInfo {
+  private fun createForegroundInfo(groupOwnerAddress: String): ForegroundInfo {
     val cancelIntent = WorkManager.getInstance(applicationContext).createCancelPendingIntent(id)
 
     val notificationIntent = Intent(applicationContext, MainActivity::class.java)
@@ -35,7 +35,7 @@ class SyncWorker(context: Context, parameters: WorkerParameters) :
     val notification =
       NotificationCompat.Builder(applicationContext, App.SYNC_NOTIFICATION_CHANNEL_ID)
         .setContentTitle("P2P Sync")
-        .setContentText("Syncing resources...")
+        .setContentText("""Syncing resources... $groupOwnerAddress""")
         .setContentIntent(pendingIntent)
         .setSmallIcon(R.drawable.ic_android)
         .setOngoing(true)
@@ -48,5 +48,9 @@ class SyncWorker(context: Context, parameters: WorkerParameters) :
       1,
       notification
     )
+  }
+
+  companion object {
+    const val GROUP_OWNER_ADDRESS_KEY = "GROUP_OWNER_ADDRESS"
   }
 }

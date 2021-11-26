@@ -3,7 +3,6 @@ package com.trevorgowing.android.p2p
 import android.Manifest
 import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
@@ -29,6 +28,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.recyclerview.widget.RecyclerView
+import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -88,7 +88,10 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
 
     initiateNetworkDiscovery()
 
-    val syncWorkRequest = OneTimeWorkRequestBuilder<SyncWorker>().build()
+    val syncWorkRequest = OneTimeWorkRequestBuilder<SyncWorker>().setInputData(
+      // TODO: Populate actual group owner address.
+      Data.Builder().putString(SyncWorker.GROUP_OWNER_ADDRESS_KEY, "0.0.0.0").build()
+    ).build()
     WorkManager.getInstance(this).enqueueUniqueWork("sync", ExistingWorkPolicy.KEEP, syncWorkRequest)
 
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
