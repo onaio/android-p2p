@@ -30,26 +30,52 @@ class SyncWorker(context: Context, parameters: WorkerParameters) :
     Log.d("Wifi P2P: ${this::class.simpleName}", "Sender: $sender")
     setForeground(createForegroundInfo(groupOwnerAddress))
     withContext(Dispatchers.IO) {
-      val socket = if (groupOwner) {
+      if (groupOwner) {
         // Start a server to accept connections.
-        val server = ServerSocket(PORT)
-        server.accept()
+        acceptedConnectionsToServerSocket(sender)
       } else {
         // Connect to the server running on the group owner device.
-        val socket = Socket()
-        socket.bind(null)
-        socket.connect(InetSocketAddress(groupOwnerAddress, PORT), SOCKET_TIMEOUT)
-        socket
-      }
-      if (sender) {
-        val session: SenderSession = SocketSenderSession(socket)
-        session.send()
-      } else {
-        val session: ReceiverSession = SocketReceiverSession(socket)
-        session.receive()
+        connectToServerSocket(groupOwnerAddress, sender)
       }
     }
     return Result.success()
+  }
+
+  private fun acceptedConnectionsToServerSocket(sender: Boolean): Result = try {
+    ServerSocket(PORT).use { server ->
+      server.accept().use { socket ->
+        transmit(sender, socket)
+      }
+    }
+    Result.success()
+  } catch (e: Exception) {
+    Log.e("Wifi P2P: ${this::class.simpleName}", e.message, e)
+    Result.failure()
+  }
+
+  private fun connectToServerSocket(
+    groupOwnerAddress: String,
+    sender: Boolean
+  ): Result = try {
+    Socket().use { socket ->
+      socket.bind(null)
+      socket.connect(InetSocketAddress(groupOwnerAddress, PORT), SOCKET_TIMEOUT)
+      transmit(sender, socket)
+    }
+    Result.success()
+  } catch (e: Exception) {
+    Log.e("Wifi P2P: ${this::class.simpleName}", e.message, e)
+    Result.failure()
+  }
+
+  private fun transmit(sender: Boolean, socket: Socket) {
+    if (sender) {
+      val session: SenderSession = SocketSenderSession(socket)
+      session.send()
+    } else {
+      val session: ReceiverSession = SocketReceiverSession(socket)
+      session.receive()
+    }
   }
 
   private fun createForegroundInfo(groupOwnerAddress: String): ForegroundInfo {
