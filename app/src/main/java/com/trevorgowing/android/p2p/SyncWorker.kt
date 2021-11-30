@@ -9,7 +9,14 @@ import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.net.InetSocketAddress
+import java.net.ServerSocket
+import java.net.Socket
+
+const val PORT = 8988
+const val SOCKET_TIMEOUT = 5_000
 
 class SyncWorker(context: Context, parameters: WorkerParameters) :
   CoroutineWorker(context, parameters) {
@@ -22,8 +29,26 @@ class SyncWorker(context: Context, parameters: WorkerParameters) :
     val sender = inputData.getBoolean(SENDER_KEY, false)
     Log.d("Wifi P2P: ${this::class.simpleName}", "Sender: $sender")
     setForeground(createForegroundInfo(groupOwnerAddress))
-    // TODO: Do work.
-    delay(30000)
+    withContext(Dispatchers.IO) {
+      val socket = if (groupOwner) {
+        // Start a server to accept connections.
+        val server = ServerSocket(PORT)
+        server.accept()
+      } else {
+        // Connect to the server running on the group owner device.
+        val socket = Socket()
+        socket.bind(null)
+        socket.connect(InetSocketAddress(groupOwnerAddress, PORT), SOCKET_TIMEOUT)
+        socket
+      }
+      if (sender) {
+        val session: SenderSession = SocketSenderSession(socket)
+        session.send()
+      } else {
+        val session: ReceiverSession = SocketReceiverSession(socket)
+        session.receive()
+      }
+    }
     return Result.success()
   }
 
