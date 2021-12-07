@@ -29,16 +29,21 @@ class SyncWorker(context: Context, parameters: WorkerParameters) :
     val sender = inputData.getBoolean(SENDER_KEY, false)
     Log.d("Wifi P2P: ${this::class.simpleName}", "Sender: $sender")
     setForeground(createForegroundInfo(groupOwnerAddress))
-    withContext(Dispatchers.IO) {
-      if (groupOwner) {
-        // Start a server to accept connections.
-        acceptedConnectionsToServerSocket(sender)
-      } else {
-        // Connect to the server running on the group owner device.
-        connectToServerSocket(groupOwnerAddress, sender)
+    return try {
+      withContext(Dispatchers.IO) {
+        if (groupOwner) {
+          // Start a server to accept connections.
+          acceptedConnectionsToServerSocket(sender)
+        } else {
+          // Connect to the server running on the group owner device.
+          connectToServerSocket(groupOwnerAddress, sender)
+        }
       }
+      Result.success()
+    } catch (e: Exception) {
+      Log.e("Wifi P2P: ${this::class.simpleName}", e.message, e)
+      Result.failure()
     }
-    return Result.success()
   }
 
   private fun acceptedConnectionsToServerSocket(sender: Boolean): Result = try {
