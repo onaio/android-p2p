@@ -4,6 +4,19 @@ This repository contains a prototype of the [P2P Sync Transport](https://github.
 The intention of this work is to demonstrate the use of the [Android Wifi Direct APIs](https://developer.android.com/guide/topics/connectivity/wifip2p) to exchange data between two devices.
 Please note that this is a prototype and NOT READY FOR PRODUCTION use.
 
+The process involves a few steps:
+
+1. Confirming if the device supports wifi direct.
+1. Confirming if wifi direct is enabled.
+1. Granting the `ACCESS_FINE_LOCATION` permission required by the WifiP2pManager.
+1. Discovering peer devices.
+1. Connecting to a discovered peer.
+1. Requesting the group information, including the ip address of the group owner to establish a socket.
+1. Establishing a socket connection between the two devices.
+1. Exchanging data between the two devices.
+
+These tasks are achieved through the use of APIs of the [WifiP2pManager](https://developer.android.com/reference/android/net/wifi/p2p/WifiP2pManager) and the receiving of relevant intents via the [WifiP2pBroadcastReceiver](app/src/main/java/com/trevorgowing/android/p2p/WifiP2pBroadcastReceiver.kt).
+
 ## WifiP2pManager
 
 The key class from the Android SDK is the [WifiP2pManager](https://developer.android.com/reference/android/net/wifi/p2p/WifiP2pManager). 
