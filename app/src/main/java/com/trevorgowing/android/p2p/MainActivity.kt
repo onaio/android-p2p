@@ -363,7 +363,7 @@ class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener 
           .putBoolean(SyncWorker.SENDER_KEY, sender)
           .build()
     ).build()
-    WorkManager.getInstance(this).enqueueUniqueWork("sync", ExistingWorkPolicy.KEEP, syncWorkRequest)
+    WorkManager.getInstance(this).enqueueUniqueWork("sync", ExistingWorkPolicy.REPLACE, syncWorkRequest)
   }
 
   private fun getWifiP2pReason(reasonInt: Int): String =
