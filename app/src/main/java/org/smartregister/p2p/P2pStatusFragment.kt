@@ -1,4 +1,4 @@
-package com.trevorgowing.android.p2p
+package org.smartregister.p2p
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -6,7 +6,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.trevorgowing.android.p2p.databinding.FragmentP2pStatusBinding
+import org.smartregister.p2p.R
+import org.smartregister.p2p.WifiP2pDeviceAdapter
+import org.smartregister.p2p.databinding.FragmentP2pStatusBinding
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.

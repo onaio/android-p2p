@@ -1,4 +1,4 @@
-package com.trevorgowing.android.p2p
+package org.smartregister.p2p
 
 import android.app.Application
 import android.app.NotificationChannel
