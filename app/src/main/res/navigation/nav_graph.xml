@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/FirstFragment"
-        android:name="com.trevorgowing.android.p2p.P2pStatusFragment"
+        android:name="org.smartregister.p2p.P2pStatusFragment"
         android:label="@string/first_fragment_label"
         tools:layout="@layout/fragment_p2p_status">
     </fragment>

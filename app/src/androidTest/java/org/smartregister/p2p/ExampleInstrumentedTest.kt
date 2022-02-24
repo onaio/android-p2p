@@ -1,4 +1,4 @@
-package com.trevorgowing.android.p2p
+package org.smartregister.p2p
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -19,6 +19,6 @@ class ExampleInstrumentedTest {
   fun useAppContext() {
     // Context of the app under test.
     val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-    assertEquals("com.trevorgowing.android.p2p", appContext.packageName)
+    assertEquals("org.smartregister.p2p", appContext.packageName)
   }
 }

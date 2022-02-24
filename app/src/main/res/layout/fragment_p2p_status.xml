@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".P2pStatusFragment">
+    tools:context="org.smartregister.p2p.P2pStatusFragment">
 
     <TextView
         android:id="@+id/wifi_p2p_enabled_label"

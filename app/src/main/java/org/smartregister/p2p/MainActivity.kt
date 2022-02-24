@@ -1,4 +1,4 @@
-package com.trevorgowing.android.p2p
+package org.smartregister.p2p
 
 import android.Manifest
 import android.content.BroadcastReceiver
@@ -29,7 +29,7 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.android.material.snackbar.Snackbar
-import com.trevorgowing.android.p2p.databinding.ActivityMainBinding
+import org.smartregister.p2p.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity(), WifiP2pManager.ConnectionInfoListener {
 

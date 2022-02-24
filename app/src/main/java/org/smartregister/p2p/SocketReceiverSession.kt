@@ -1,4 +1,4 @@
-package com.trevorgowing.android.p2p
+package org.smartregister.p2p
 
 import android.util.Log
 import kotlinx.serialization.json.Json
