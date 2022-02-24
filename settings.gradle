@@ -8,3 +8,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "P2P"
 include ':app'
+include ':sample'
