@@ -99,6 +99,10 @@ tasks.withType(Test) {
     jacoco.excludes = ['jdk.internal.*']
 }
 
+tasks.coveralls {
+    dependsOn 'jacocoTestReport'
+}
+
 coveralls {
     jacocoReportPath = "${buildDir}/reports/jacoco/jacocoRootReport/merged.xml"
 }
