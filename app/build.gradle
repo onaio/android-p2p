@@ -3,7 +3,11 @@ plugins {
     id 'kotlin-android'
     id 'kotlinx-serialization'
     id 'jacoco'
+    id 'com.github.kt3k.coveralls'
+}
 
+jacoco {
+    toolVersion = '0.8.7'
 }
 
 android {
@@ -87,4 +91,9 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'crea
     executionData.from(fileTree(dir: project.buildDir, includes: [
             'jacoco/testDebugUnitTest.exec', 'outputs/code-coverage/connected/*coverage.ec'
     ]))
+}
+
+tasks.withType(Test) {
+    jacoco.includeNoLocationClasses = true
+    jacoco.excludes = ['jdk.internal.*']
 }
