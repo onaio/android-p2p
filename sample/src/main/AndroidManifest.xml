@@ -10,7 +10,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.P2P">
         <activity
-            android:name=".MainActivity"
+            android:name=".SampleMainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
