@@ -1,3 +1,5 @@
+[![Coverage Status](https://coveralls.io/repos/github/opensrp/p2p/badge.svg?branch=main)](https://coveralls.io/github/opensrp/p2p?branch=main)
+
 # A Prototype Implementation of the P2P Sync Transport using Wifi Direct
 
 This repository contains a prototype of the [P2P Sync Transport](https://github.com/opensrp/fhircore/discussions/691) using Wifi Direct.
