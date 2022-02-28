@@ -105,4 +105,5 @@ tasks.coveralls {
 
 coveralls {
     jacocoReportPath = "${buildDir}/reports/jacoco/jacocoRootReport/merged.xml"
+    sourceDirs = ["$project.projectDir/src/main/java"]
 }
