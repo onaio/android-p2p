@@ -89,11 +89,16 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest'/*, 'cr
     sourceDirectories.from(files([mainSrc]))
     classDirectories.from(files([debugTree]))
     executionData.from(fileTree(dir: project.buildDir, includes: [
-            'jacoco/testDebugUnitTest.exec', 'outputs/code-coverage/connected/*coverage.ec'
+            'jacoco/testDebugUnitTest.exec', 'outputs/code-coverage/connected/*coverage.ec',
+            'outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec'
     ]))
 }
 
 tasks.withType(Test) {
     jacoco.includeNoLocationClasses = true
     jacoco.excludes = ['jdk.internal.*']
+}
+
+coveralls {
+    jacocoReportPath = "${buildDir}/reports/jacoco/jacocoRootReport/merged.xml"
 }
