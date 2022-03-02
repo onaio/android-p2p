@@ -83,11 +83,15 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest'/*, 'cr
     getReports().getHtml().setDestination(file("${buildDir}/reports/jacoco/jacocoRootReport/html"))
 
     def fileFilter = ['**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/Manifest*.*', '**/*Test*.*', 'android*/**/*.*', '**/*$ViewBinder*.*']
-    def debugTree = fileTree(dir: "$project.buildDir/intermediates/javac/debug/classes", excludes: fileFilter)
-    def mainSrc = "$project.projectDir/src/main/java"
 
-    sourceDirectories.from(files([mainSrc]))
-    classDirectories.from(files([debugTree]))
+    def javaDebugTree = fileTree(dir: "$project.buildDir/intermediates/javac/debug/classes/", excludes: fileFilter)
+    def kotlinDebugTree = fileTree(dir: "${project.buildDir}/tmp/kotlin-classes/debug", excludes: fileFilter)
+    def mainSrc = "$project.projectDir/src/main/java"
+    def kotlinSrc = "$project.projectDir/src/main/kotlin"
+
+    sourceDirectories.setFrom(files([mainSrc, kotlinSrc]))
+    classDirectories.setFrom(files([javaDebugTree, kotlinDebugTree]))
+
     executionData.from(fileTree(dir: project.buildDir, includes: [
             'jacoco/testDebugUnitTest.exec', 'outputs/code-coverage/connected/*coverage.ec',
             'outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec'
