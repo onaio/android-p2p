@@ -1,7 +1,10 @@
 package org.smartregister.p2p.search.ui
 
 import android.Manifest
+import android.R.attr.label
 import android.content.BroadcastReceiver
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -91,7 +94,13 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
 
     fun renameWifiDirectName() {
         val deviceName = getDeviceName(this)
-        Toast.makeText(this,  "Go to Wifi-Direct and change the device-name to $deviceName", Toast.LENGTH_LONG)
+
+        // Copy the text to the Clipboard
+        val clipboard: ClipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText("Wifi-direct name", deviceName)
+        clipboard.setPrimaryClip(clip)
+
+        Toast.makeText(this,  "Go to Wifi-Direct settings > Rename device and paste into the text box", Toast.LENGTH_LONG)
             .show()
 
         if (Build.VERSION.SDK_INT > 24) {
