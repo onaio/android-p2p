@@ -7,4 +7,5 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "P2P"
-include ':app'
+include ':p2p-lib'
+include ':sample'
