@@ -20,8 +20,8 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
       - name: Run unit tests with Gradle
-        run: ./gradlew app:clean app:jacocoTestReport --stacktrace
+        run: ./gradlew p2p-lib:clean p2p-lib:jacocoTestReport --stacktrace
       - name: Upload coverage to Coveralls with Gradle
-        run: ./gradlew app:coveralls --stacktrace
+        run: ./gradlew p2p-lib:coveralls --stacktrace
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
