@@ -3,6 +3,7 @@ package org.smartregister.p2p.search.ui
 import android.Manifest
 import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.wifi.p2p.WifiP2pConfig
@@ -12,27 +13,23 @@ import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
+import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.work.Data
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
 import org.smartregister.p2p.R
-import org.smartregister.p2p.SyncWorker
 import org.smartregister.p2p.WifiP2pBroadcastReceiver
 import org.smartregister.p2p.search.adapter.DeviceListAdapter
 import org.smartregister.p2p.search.contract.P2PManagerListener
@@ -74,12 +71,12 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
 
     fun startScanning() {
         // Wifi P2p
-        renameWifiDirectName();
-
         wifiP2pChannel = wifiP2pManager.initialize(this, mainLooper, null)
         wifiP2pChannel?.also { channel ->
             wifiP2pReceiver = WifiP2pBroadcastReceiver(wifiP2pManager, channel, this, this)
         }
+
+        renameWifiDirectName();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             requestAccessFineLocationIfNotGranted()
@@ -93,7 +90,35 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
     }
 
     fun renameWifiDirectName() {
+        val deviceName = getDeviceName(this)
+        Toast.makeText(this,  "Go to Wifi-Direct and change the device-name to $deviceName", Toast.LENGTH_LONG)
+            .show()
 
+        if (Build.VERSION.SDK_INT > 24) {
+            val turnWifiOn = Intent(Settings.ACTION_WIFI_SETTINGS)
+            startActivity(turnWifiOn)
+        } else {
+            val m = wifiP2pManager.javaClass.getMethod(
+                "setDeviceName", *arrayOf(
+                    wifiP2pChannel!!.javaClass,
+                    String::class.java,
+                    WifiP2pManager.ActionListener::class.java
+                )
+            )
+            m.invoke(
+                wifiP2pManager,
+                wifiP2pChannel,
+                deviceName,
+                object : WifiP2pManager.ActionListener {
+                    override fun onSuccess() {
+                        Timber.e("Change device name worked")
+                    }
+
+                    override fun onFailure(reason: Int) {
+                        Timber.e("Change device name did not work")
+                    }
+                })
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
