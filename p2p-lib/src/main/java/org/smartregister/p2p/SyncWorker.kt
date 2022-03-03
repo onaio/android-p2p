@@ -14,6 +14,7 @@ import kotlinx.coroutines.withContext
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
+import org.smartregister.p2p.search.ui.P2PDeviceSearchActivity
 
 const val PORT = 8988
 const val SOCKET_TIMEOUT = 5_000
@@ -86,7 +87,7 @@ class SyncWorker(context: Context, parameters: WorkerParameters) :
   private fun createForegroundInfo(groupOwnerAddress: String): ForegroundInfo {
     val cancelIntent = WorkManager.getInstance(applicationContext).createCancelPendingIntent(id)
 
-    val notificationIntent = Intent(applicationContext, MainActivity::class.java)
+    val notificationIntent = Intent(applicationContext, P2PDeviceSearchActivity::class.java)
     val pendingIntent = PendingIntent.getActivity(
       applicationContext,
       0,
