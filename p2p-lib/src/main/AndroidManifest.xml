@@ -15,15 +15,6 @@
         <activity
             android:name=".search.ui.P2PDeviceSearchActivity"
             android:exported="false" />
-        <activity
-            android:name=".MainActivity"
-            android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.P2P.NoActionBar">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-            </intent-filter>
-        </activity>
     </application>
 
 </manifest>

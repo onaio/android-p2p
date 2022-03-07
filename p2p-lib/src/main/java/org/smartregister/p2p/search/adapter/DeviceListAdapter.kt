@@ -31,8 +31,8 @@ class DeviceListAdapter(private val peerDeviceList: List<WifiP2pDevice>, private
     override fun onBindViewHolder(holder: DeviceListAdapter.ViewHolder, position: Int) {
         val peerDevice = peerDeviceList[position]
 
-        holder.deviceName.setText(peerDevice.deviceName)
-        holder.deviceAddress.setText(peerDevice.deviceAddress)
+        holder.deviceName.text = peerDevice.deviceName
+        holder.deviceAddress.text = peerDevice.deviceAddress
         holder.currentDevice = peerDevice
     }
 
@@ -55,7 +55,7 @@ class DeviceListAdapter(private val peerDeviceList: List<WifiP2pDevice>, private
                 onDeviceClick(it)
             }
             }
-            itemView.setOnTouchListener { v, event ->
+            itemView.setOnTouchListener { _, event ->
                 if (event.action == MotionEvent.ACTION_DOWN) {
                     itemView.setBackgroundColor(
                         ContextCompat.getColor(
