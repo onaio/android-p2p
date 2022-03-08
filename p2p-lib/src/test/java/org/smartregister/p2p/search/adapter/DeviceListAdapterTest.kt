@@ -10,9 +10,6 @@ import org.junit.Before
 import org.junit.Test
 import org.smartregister.p2p.robolectric.RobolectricTest
 
-/**
- * Created by Ephraim Kigamba - nek.eam@gmail.com on 04-03-2022.
- */
 internal class DeviceListAdapterTest : RobolectricTest() {
 
     private lateinit var deviceListAdapter : DeviceListAdapter
@@ -20,10 +17,6 @@ internal class DeviceListAdapterTest : RobolectricTest() {
     @Before
     fun setUp() {
         deviceListAdapter = DeviceListAdapter(listOf(), {})
-    }
-
-    @After
-    fun tearDown() {
     }
 
     @Test
@@ -53,6 +46,16 @@ internal class DeviceListAdapterTest : RobolectricTest() {
     }
 
     @Test
-    fun getItemCount() {
+    fun getItemCountShouldReturnActualCountDevices() {
+        Assert.assertEquals(0, deviceListAdapter.itemCount)
+
+        val device = WifiP2pDevice().apply {
+            deviceName = "Google Pixel"
+            deviceAddress = "00:00:5e:00:53:af"
+        }
+        val peerDevices = listOf(device, device, device)
+        deviceListAdapter = DeviceListAdapter(peerDevices, {})
+
+        Assert.assertEquals(3, deviceListAdapter.itemCount)
     }
 }

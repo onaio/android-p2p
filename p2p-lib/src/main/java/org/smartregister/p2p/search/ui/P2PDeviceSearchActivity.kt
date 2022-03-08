@@ -1,7 +1,6 @@
 package org.smartregister.p2p.search.ui
 
 import android.Manifest
-import android.R.attr.label
 import android.content.BroadcastReceiver
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -37,9 +36,14 @@ import org.smartregister.p2p.WifiP2pBroadcastReceiver
 import org.smartregister.p2p.search.adapter.DeviceListAdapter
 import org.smartregister.p2p.search.contract.P2PManagerListener
 import org.smartregister.p2p.utils.getDeviceName
+import org.smartregister.p2p.utils.startP2PScreen
 import timber.log.Timber
 
 
+/**
+ * This is the exposed activity that provides access to all P2P operations and steps. It can be
+ * called from other apps via [startP2PScreen] function.
+ */
 class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
 
     private val wifiP2pManager: WifiP2pManager by
@@ -107,14 +111,13 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
             val turnWifiOn = Intent(Settings.ACTION_WIFI_SETTINGS)
             startActivity(turnWifiOn)
         } else {
-            val m = wifiP2pManager.javaClass.getMethod(
-                "setDeviceName", *arrayOf(
+            val setDeviceNameMethod = wifiP2pManager.javaClass.getMethod(
+                "setDeviceName",
                     wifiP2pChannel!!.javaClass,
                     String::class.java,
                     WifiP2pManager.ActionListener::class.java
-                )
             )
-            m.invoke(
+            setDeviceNameMethod.invoke(
                 wifiP2pManager,
                 wifiP2pChannel,
                 deviceName,
@@ -196,7 +199,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
                     }
                 }
             } else {
-
+                // TODO: Handle fetching device details
             }
         }
     }
