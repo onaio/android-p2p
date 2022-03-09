@@ -34,6 +34,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
 import org.smartregister.p2p.R
 import org.smartregister.p2p.WifiP2pBroadcastReceiver
+import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.search.adapter.DeviceListAdapter
 import org.smartregister.p2p.search.contract.P2PManagerListener
 import org.smartregister.p2p.utils.getDeviceName
@@ -446,6 +447,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
             text = device.deviceName
         }*/
         Timber.d("Wifi P2P: Successfully connected to device: ${device.deviceAddress}")
+        showP2PSelectPage(DeviceRole.SENDER, device.deviceName)
     }
 
     private fun handleDeviceConnectionFailure(device: WifiP2pDevice, reasonInt: Int) {
@@ -464,6 +466,13 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
 
     override fun handleMinimumSDKVersionNotMet(minimumSdkVersion: Int) {
         logDebug("Wifi P2P: Minimum SDK Version not met: $minimumSdkVersion")
+    }
+
+    override fun showP2PSelectPage(deviceRole: DeviceRole, deviceName: String) {
+        when(deviceRole) {
+            DeviceRole.RECEIVER -> showReceiverDialog()
+            DeviceRole.SENDER -> showSenderDialog(deviceName)
+        }
     }
 
     override fun onConnectionInfoAvailable(info: WifiP2pInfo) {
