@@ -1,7 +1,6 @@
 package org.smartregister.p2p.utils
 
 import android.app.Activity
-import android.app.Application
 import android.content.Intent
 import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
@@ -17,6 +16,9 @@ import org.junit.Test
 import org.smartregister.p2p.robolectric.RobolectricTest
 import org.smartregister.p2p.search.ui.P2PDeviceSearchActivity
 
+/**
+ * Test for class [P2PUtils]
+ */
 class P2PUtilsTest : RobolectricTest() {
 
     @Test

@@ -83,7 +83,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
             wifiP2pReceiver = WifiP2pBroadcastReceiver(wifiP2pManager, channel, this, this)
         }
 
-        renameWifiDirectName();
+        //renameWifiDirectName();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             requestAccessFineLocationIfNotGranted()
@@ -99,15 +99,15 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
     fun renameWifiDirectName() {
         val deviceName = getDeviceName(this)
 
-        // Copy the text to the Clipboard
-        val clipboard: ClipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
-        val clip = ClipData.newPlainText("Wifi-direct name", deviceName)
-        clipboard.setPrimaryClip(clip)
-
-        Toast.makeText(this,  "Go to Wifi-Direct settings > Rename device and paste into the text box", Toast.LENGTH_LONG)
-            .show()
-
         if (Build.VERSION.SDK_INT > 24) {
+            // Copy the text to the Clipboard
+            val clipboard: ClipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+            val clip = ClipData.newPlainText(getString(R.string.wifi_direct_name), deviceName)
+            clipboard.setPrimaryClip(clip)
+
+            Toast.makeText(this,  getString(R.string.wifi_direct_name_setup_instructions), Toast.LENGTH_LONG)
+                .show()
+
             val turnWifiOn = Intent(Settings.ACTION_WIFI_SETTINGS)
             startActivity(turnWifiOn)
         } else {
@@ -252,32 +252,22 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
     override fun handleWifiP2pDisabled() {
         val message = "Wifi P2P: Disabled"
         Snackbar.make(rootView, message, Snackbar.LENGTH_LONG).show()
-        /*findViewById<TextView>(R.id.wifi_p2p_enabled_value).apply {
-            text = getString(R.string.wifi_p2p_disabled_value)
-        }*/
         Timber.d(message)
     }
 
     override fun handleWifiP2pEnabled() {
         val message = "Wifi P2P: Enabled"
-        /*findViewById<TextView>(R.id.wifi_p2p_enabled_value).apply {
-            text = getString(R.string.wifi_p2p_enabled_value)
-        }*/
         Timber.d(message)
     }
 
     override fun handleUnexpectedWifiP2pState(wifiState: Int) {
         val message = "Wifi P2P: Unexpected state: $wifiState"
-        Snackbar.make(rootView, message, Snackbar.LENGTH_LONG).show()
-        /*findViewById<TextView>(R.id.wifi_p2p_enabled_value).apply {
-            text = getString(R.string.wifi_p2p_unexpected_state_value, wifiState)
-        }*/
         Timber.d(message)
     }
 
     override fun handleWifiP2pDevice(device: WifiP2pDevice) {
         if (device.deviceName != getDeviceName(this)) {
-            renameWifiDirectName()
+            //renameWifiDirectName()
         }
 
         Timber.d("Wifi P2P: Device: ${device.deviceAddress}")
@@ -318,32 +308,21 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
     }
 
     override fun handleP2pDiscoveryStarted() {
-        /*findViewById<TextView>(R.id.wifi_p2p_discovery_value).apply {
-            text = getString(R.string.wifi_p2p_discovery_started_value)
-        }*/
         Timber.d("Wifi P2P: Peer discovery started")
     }
 
     override fun handleP2pDiscoveryStopped() {
-        /*findViewById<TextView>(R.id.wifi_p2p_discovery_value).apply {
-            text = getString(R.string.wifi_p2p_discovery_started_value)
-        }*/
         Timber.d("Wifi P2P: Peer discovery stopped")
     }
 
     override fun handleUnexpectedWifiP2pDiscoveryState(discoveryState: Int) {
-        /*findViewById<TextView>(R.id.wifi_p2p_discovery_value).apply {
-            text = getString(R.string.wifi_p2p_unexpected_state_value, discoveryState)
-        }*/
         Timber.d("Wifi P2P: Unexpected discovery state: $discoveryState")
     }
 
     override fun handleP2pPeersChanged(peerDeviceList: WifiP2pDeviceList) {
         Timber.d("Wifi P2P: Peers x ${peerDeviceList.deviceList.size}")
-
         showDevicesList(peerDeviceList)
     }
-
 
     fun showScanningDialog() {
         interactiveDialog = BottomSheetDialog(this)
@@ -364,7 +343,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
     }
 
     fun showDevicesList(peerDeviceList: WifiP2pDeviceList) {
-
         interactiveDialog.findViewById<ConstraintLayout>(R.id.loading_devices_layout)?.visibility = View.GONE
         interactiveDialog.findViewById<ConstraintLayout>(R.id.devices_list_layout)?.visibility = View.VISIBLE
         val devicesListRecyclerView = interactiveDialog.findViewById<RecyclerView>(R.id.devices_list_recycler_view)
@@ -399,17 +377,11 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
     }
 
     private fun handleDeviceConnectionSuccess(device: WifiP2pDevice) {
-        /*findViewById<TextView>(R.id.wifi_p2p_connection_value).apply {
-            text = device.deviceName
-        }*/
         Timber.d("Wifi P2P: Successfully connected to device: ${device.deviceAddress}")
     }
 
     private fun handleDeviceConnectionFailure(device: WifiP2pDevice, reasonInt: Int) {
         val reason = getWifiP2pReason(reasonInt)
-        /*findViewById<TextView>(R.id.wifi_p2p_connection_value).apply {
-            text = getString(R.string.wifi_p2p_connection_failed_value, reason)
-        }*/
         Timber.d("Wifi P2P: Failed to connect to device: ${device.deviceAddress} due to: $reason")
     }
 
@@ -426,15 +398,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
     override fun onConnectionInfoAvailable(info: WifiP2pInfo) {
         val message = "Connection info available: groupFormed = ${info.groupFormed}, isGroupOwner = ${info.isGroupOwner}"
         Timber.d(message)
-        /*findViewById<TextView>(R.id.wifi_p2p_group_formed_value).apply {
-            text = resources.getString(if (info.groupFormed) R.string.wifi_p2p_value_yes else R.string.wifi_p2p_value_no)
-        }
-        findViewById<TextView>(R.id.wifi_p2p_group_owner_value).apply {
-            text = resources.getString(if (info.isGroupOwner) R.string.wifi_p2p_value_yes else R.string.wifi_p2p_value_no)
-        }
-        findViewById<TextView>(R.id.wifi_p2p_group_owner_address_value).apply {
-            text = if (info.groupOwnerAddress == null) resources.getString(R.string.wifi_p2p_group_owner_value_na) else info.groupOwnerAddress.hostAddress
-        }*/
         if (info.groupFormed) {
             // Start syncing given the ip addresses
         }

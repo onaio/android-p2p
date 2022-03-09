@@ -37,4 +37,6 @@
     <string name="looking_for_nearby_devices_as">Looking for nearby devices as <strong>%1$s</strong></string>
     <string name="select_device_to_sync_with">Select device to sync with</string>
     <string name="pairing">Pairing</string>
+    <string name="wifi_direct_name">Wifi-direct name</string>
+    <string name="wifi_direct_name_setup_instructions"><![CDATA[Go to Wifi-Direct settings > Rename device and paste into the text box]]></string>
 </resources>
