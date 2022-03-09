@@ -21,6 +21,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -374,10 +375,12 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
         }
     }
 
-    fun showTransferDialog(practitionerName: String) {
+    fun showSenderDialog(practitionerName: String) {
         interactiveDialog = BottomSheetDialog(this)
         interactiveDialog.setContentView(R.layout.data_transfer_bottom_sheet)
-        interactiveDialog.setTitle(getString(R.string.start_sending_data))
+
+        interactiveDialog.findViewById<TextView>(R.id.data_transfer_title)
+            ?.setText(getString(R.string.start_sending_data))
 
         interactiveDialog.findViewById<TextView>(R.id.data_transfer_description)
             ?.setText(String.format(getString(R.string.start_sending_data_to), practitionerName))
@@ -386,6 +389,29 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
             ?.setOnClickListener {
                 interactiveDialog.cancel()
             }
+
+        interactiveDialog.setCancelable(false)
+        interactiveDialog.show()
+    }
+
+    fun showReceiverDialog() {
+        interactiveDialog = BottomSheetDialog(this)
+        interactiveDialog.setContentView(R.layout.data_transfer_bottom_sheet)
+
+        interactiveDialog.findViewById<TextView>(R.id.data_transfer_title)
+            ?.setText(getString(R.string.start_receiving_data))
+
+        interactiveDialog.findViewById<TextView>(R.id.data_transfer_description)
+            ?.setText(getString(R.string.waiting_for_transfer_to_start))
+
+        interactiveDialog.findViewById<ImageButton>(R.id.data_transfer_dialog_close)
+            ?.setOnClickListener {
+                interactiveDialog.cancel()
+            }
+
+        interactiveDialog.findViewById<ImageView>(R.id.data_transfer_icon)?.visibility = View.GONE
+
+        interactiveDialog.findViewById<Button>(R.id.dataTransferBtn)?.visibility = View.GONE
 
         interactiveDialog.setCancelable(false)
         interactiveDialog.show()

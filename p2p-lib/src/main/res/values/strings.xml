@@ -40,4 +40,6 @@
     <string name="send_data">Send Data</string>
     <string name="start_sending_data">Start sending data</string>
     <string name="start_sending_data_to">Start sending data to %s</string>
+    <string name="start_receiving_data">Start receiving data</string>
+    <string name="waiting_for_transfer_to_start">Waiting for data transfer to start</string>
 </resources>
