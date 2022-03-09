@@ -374,6 +374,23 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
         }
     }
 
+    fun showTransferDialog(practitionerName: String) {
+        interactiveDialog = BottomSheetDialog(this)
+        interactiveDialog.setContentView(R.layout.data_transfer_bottom_sheet)
+        interactiveDialog.setTitle(getString(R.string.start_sending_data))
+
+        interactiveDialog.findViewById<TextView>(R.id.data_transfer_description)
+            ?.setText(String.format(getString(R.string.start_sending_data_to), practitionerName))
+
+        interactiveDialog.findViewById<ImageButton>(R.id.data_transfer_dialog_close)
+            ?.setOnClickListener {
+                interactiveDialog.cancel()
+            }
+
+        interactiveDialog.setCancelable(false)
+        interactiveDialog.show()
+    }
+
     private fun connectToDevice(device: WifiP2pDevice) {
         Timber.d("Wifi P2P: Initiating connection to device: ${device.deviceName}")
         sender = true
