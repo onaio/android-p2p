@@ -1,6 +1,7 @@
 package org.smartregister.p2p
 
 import android.Manifest
+import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -8,11 +9,13 @@ import android.content.pm.PackageManager
 import android.net.wifi.p2p.WifiP2pManager
 import android.os.Build
 import androidx.core.app.ActivityCompat
+import org.smartregister.p2p.search.contract.P2PManagerListener
 
 class WifiP2pBroadcastReceiver(
   private val manager: WifiP2pManager,
   private val channel: WifiP2pManager.Channel,
-  private val activity: MainActivity
+  private val listener: P2PManagerListener,
+  private val context: Activity
 ) : BroadcastReceiver() {
 
   override fun onReceive(context: Context, intent: Intent) {
@@ -31,7 +34,7 @@ class WifiP2pBroadcastReceiver(
    * https://developer.android.com/reference/android/net/wifi/p2p/WifiP2pManager#WIFI_P2P_CONNECTION_CHANGED_ACTION
    */
   private fun handleConnectionChanged() {
-    manager.requestConnectionInfo(channel, activity)
+    manager.requestConnectionInfo(channel, listener)
   }
 
   /**
@@ -39,16 +42,16 @@ class WifiP2pBroadcastReceiver(
    */
   private fun handleDiscoveryChanged(discoveryState: Int) =
     when (discoveryState) {
-      WifiP2pManager.WIFI_P2P_DISCOVERY_STARTED -> activity.handleP2pDiscoveryStarted()
-      WifiP2pManager.WIFI_P2P_DISCOVERY_STOPPED -> activity.handleP2pDiscoveryStopped()
-      else -> activity.handleUnexpectedWifiP2pDiscoveryState(discoveryState)
+      WifiP2pManager.WIFI_P2P_DISCOVERY_STARTED -> listener.handleP2pDiscoveryStarted()
+      WifiP2pManager.WIFI_P2P_DISCOVERY_STOPPED -> listener.handleP2pDiscoveryStopped()
+      else -> listener.handleUnexpectedWifiP2pDiscoveryState(discoveryState)
     }
 
   /**
    * https://developer.android.com/reference/android/net/wifi/p2p/WifiP2pManager#WIFI_P2P_PEERS_CHANGED_ACTION
    */
   private fun handlePeersChanged() {
-    if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) !=
+    if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) !=
         PackageManager.PERMISSION_GRANTED
     ) {
       // TODO: Consider calling
@@ -58,10 +61,10 @@ class WifiP2pBroadcastReceiver(
       //                                          int[] grantResults)
       // to handle the case where the user grants the permission. See the documentation
       // for ActivityCompat#requestPermissions for more details.
-      activity.handleAccessFineLocationNotGranted()
+      listener.handleAccessFineLocationNotGranted()
       return
     }
-    manager.requestPeers(channel) { activity.handleP2pPeersChanged(it) }
+    manager.requestPeers(channel) { listener.handleP2pPeersChanged(it) }
   }
 
   /**
@@ -69,9 +72,9 @@ class WifiP2pBroadcastReceiver(
    */
   private fun handleStateChanged(wifiState: Int) =
     when (wifiState) {
-      WifiP2pManager.WIFI_P2P_STATE_DISABLED -> activity.handleWifiP2pDisabled()
-      WifiP2pManager.WIFI_P2P_STATE_ENABLED -> activity.handleWifiP2pEnabled()
-      else -> activity.handleUnexpectedWifiP2pState(wifiState)
+      WifiP2pManager.WIFI_P2P_STATE_DISABLED -> listener.handleWifiP2pDisabled()
+      WifiP2pManager.WIFI_P2P_STATE_ENABLED -> listener.handleWifiP2pEnabled()
+      else -> listener.handleUnexpectedWifiP2pState(wifiState)
     }
 
   /**
@@ -79,7 +82,7 @@ class WifiP2pBroadcastReceiver(
    */
   private fun handleDeviceChanged() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-      if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) !=
+      if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) !=
           PackageManager.PERMISSION_GRANTED
       ) {
         // TODO: Consider calling
@@ -89,18 +92,18 @@ class WifiP2pBroadcastReceiver(
         //                                          int[] grantResults)
         // to handle the case where the user grants the permission. See the documentation
         // for ActivityCompat#requestPermissions for more details.
-        activity.handleAccessFineLocationNotGranted()
+        listener.handleAccessFineLocationNotGranted()
         return
       }
       manager.requestDeviceInfo(channel) {
         if (it == null) {
-          activity.handleWifiP2pDisabled()
+          listener.handleWifiP2pDisabled()
         } else {
-          activity.handleWifiP2pDevice(it)
+          listener.handleWifiP2pDevice(it)
         }
       }
     } else {
-      activity.handleMinimumSDKVersionNotMet(
+      listener.handleMinimumSDKVersionNotMet(
           Build.VERSION_CODES.Q,)
     }
   }

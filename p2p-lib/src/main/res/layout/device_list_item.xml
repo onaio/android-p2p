@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_marginTop="20dp"
+    android:layout_marginBottom="20dp"
+    android:layout_marginStart="20dp"
+    android:layout_marginLeft="20dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <ProgressBar
+        android:id="@+id/device_item_pairing_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:visibility="gone"
+        android:indeterminateTint="@color/theme_blue"/>
+
+    <ImageView
+        android:id="@+id/device_item_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:rotation="-90"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:src="@android:drawable/ic_menu_call" />
+
+    <TextView
+        android:id="@+id/device_item_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="19sp"
+        android:textColor="@color/black"
+        android:layout_marginLeft="20dp"
+        android:layout_marginStart="20dp"
+        app:layout_constraintLeft_toRightOf="@id/device_item_icon"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="James Phone(demo)"/>
+
+    <TextView
+        android:id="@+id/device_item_subtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="5E:20:2X:AB:BB:93"
+        android:layout_marginLeft="20dp"
+        android:layout_marginStart="20dp"
+        app:layout_constraintTop_toBottomOf="@id/device_item_title"
+        app:layout_constraintLeft_toRightOf="@id/device_item_icon"/>
+</androidx.constraintlayout.widget.ConstraintLayout>
