@@ -31,4 +31,6 @@ interface P2PManagerListener : WifiP2pManager.ConnectionInfoListener {
     fun handleMinimumSDKVersionNotMet(minimumSdkVersion: Int)
 
     fun showP2PSelectPage(deviceRole: DeviceRole, deviceName: String)
+
+    fun getDeviceRole(): DeviceRole
 }

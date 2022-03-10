@@ -53,7 +53,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
     private var wifiP2pChannel: WifiP2pManager.Channel? = null
     private var wifiP2pReceiver: BroadcastReceiver? = null
     private val accessFineLocationPermissionRequestInt: Int = 12345
-    private var sender = false
+    private var isSender = false
     private var scanning = false
     private lateinit var interactiveDialog: BottomSheetDialog
 
@@ -396,7 +396,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
 
     private fun connectToDevice(device: WifiP2pDevice) {
         Timber.d("Wifi P2P: Initiating connection to device: ${device.deviceName}")
-        sender = true
+        isSender = true
         val wifiP2pConfig = WifiP2pConfig().apply { deviceAddress = device.deviceAddress }
         wifiP2pChannel?.also { wifiP2pChannel ->
             if (ActivityCompat.checkSelfPermission(
@@ -420,7 +420,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
 
     private fun handleDeviceConnectionSuccess(device: WifiP2pDevice) {
         Timber.d("Wifi P2P: Successfully connected to device: ${device.deviceAddress}")
-        showP2PSelectPage(DeviceRole.SENDER, device.deviceName)
+        showP2PSelectPage(getDeviceRole(), device.deviceName)
     }
 
     private fun handleDeviceConnectionFailure(device: WifiP2pDevice, reasonInt: Int) {
@@ -450,11 +450,16 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
         }
     }
 
+    override fun getDeviceRole(): DeviceRole {
+       return if (isSender)  DeviceRole.SENDER else DeviceRole.RECEIVER
+    }
+
     override fun onConnectionInfoAvailable(info: WifiP2pInfo) {
         val message = "Connection info available: groupFormed = ${info.groupFormed}, isGroupOwner = ${info.isGroupOwner}"
         Timber.d(message)
-        if (info.groupFormed) {
+        if (info.groupFormed && !isSender) {
             // Start syncing given the ip addresses
+            showReceiverDialog()
         }
     }
 
