@@ -377,7 +377,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
     }
 
     fun showSenderDialog(practitionerName: String) {
-        interactiveDialog = BottomSheetDialog(this)
         interactiveDialog.setContentView(R.layout.data_transfer_bottom_sheet)
 
         interactiveDialog.findViewById<TextView>(R.id.data_transfer_title)
@@ -396,7 +395,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
     }
 
     fun showReceiverDialog() {
-        interactiveDialog = BottomSheetDialog(this)
         interactiveDialog.setContentView(R.layout.data_transfer_bottom_sheet)
 
         interactiveDialog.findViewById<TextView>(R.id.data_transfer_title)
@@ -469,6 +467,11 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
     }
 
     override fun showP2PSelectPage(deviceRole: DeviceRole, deviceName: String) {
+        rootView.findViewById<TextView>(R.id.description)
+            ?.setText(getString(R.string.connect_to_other_device_to_start_transfer))
+        rootView.findViewById<Button>(R.id.scanDevicesBtn)
+            ?.visibility = View.GONE
+
         when(deviceRole) {
             DeviceRole.RECEIVER -> showReceiverDialog()
             DeviceRole.SENDER -> showSenderDialog(deviceName)
