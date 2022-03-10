@@ -15,7 +15,7 @@ import timber.log.Timber
 
 
 /**
- * Created by Ephraim Kigamba - nek.eam@gmail.com on 27-02-2022.
+ * Recycler view adapter used to list discovered devices on the device list bottom sheet
  */
 class DeviceListAdapter(private val peerDeviceList: List<WifiP2pDevice>, private val onDeviceClick: (deviceAddress: WifiP2pDevice) -> Unit) : RecyclerView.Adapter<DeviceListAdapter.ViewHolder>() {
 
@@ -39,6 +39,9 @@ class DeviceListAdapter(private val peerDeviceList: List<WifiP2pDevice>, private
     override fun getItemCount(): Int = peerDeviceList.size
 
 
+    /**
+     * View holder used by [DeviceListAdapter]
+     */
     inner class ViewHolder(itemView: View, onDeviceClick: (deviceAddress: WifiP2pDevice) -> Unit) : RecyclerView.ViewHolder(itemView) {
 
         val deviceName = itemView.findViewById<TextView>(R.id.device_item_title)

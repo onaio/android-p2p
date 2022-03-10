@@ -27,6 +27,9 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
+/**
+ * Base test class for any test using Robolectric to run tests
+ */
 @RunWith(RobolectricTestRunner::class)
 @Config(
   sdk = [Build.VERSION_CODES.O_MR1]
