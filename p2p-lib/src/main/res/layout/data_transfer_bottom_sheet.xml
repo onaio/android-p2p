@@ -92,14 +92,15 @@
             android:layout_gravity="center_horizontal"
             android:background="@drawable/btn_color"
             android:text="@string/send_data"
-            android:textColor="@color/white"
             android:textAllCaps="true"
+            android:textColor="@color/white"
             app:backgroundTint="@color/theme_blue"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintHorizontal_bias="0.498"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.834" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
