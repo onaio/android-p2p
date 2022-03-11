@@ -94,7 +94,8 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
         listenForWifiP2pIntents()
         initiatePeerDiscovery()
 
-        showScanningDialog()
+        //showScanningDialog()
+        showSenderDialog("demo")
 
     }
 
@@ -355,6 +356,9 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
     }
 
     fun showSenderDialog(practitionerName: String) {
+        if (!this::interactiveDialog.isInitialized) {
+            interactiveDialog = BottomSheetDialog(this)
+        }
         interactiveDialog.setContentView(R.layout.data_transfer_bottom_sheet)
 
         interactiveDialog.findViewById<TextView>(R.id.data_transfer_title)
@@ -459,7 +463,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
         Timber.d(message)
         if (info.groupFormed && !isSender) {
             // Start syncing given the ip addresses
-            showReceiverDialog()
+            //showReceiverDialog()
         }
     }
 

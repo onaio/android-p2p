@@ -15,8 +15,6 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
     private lateinit var p2PDeviceSearchActivity: P2PDeviceSearchActivity
     private lateinit var p2PDeviceSearchActivityController :
             ActivityController<P2PDeviceSearchActivity>
-/*    @get:Rule
-    val executorRule = InstantTaskExecutorRule()*/
 
     @Before
     fun setUp() {
