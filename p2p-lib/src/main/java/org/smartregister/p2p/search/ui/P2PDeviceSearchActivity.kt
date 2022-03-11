@@ -94,8 +94,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
         listenForWifiP2pIntents()
         initiatePeerDiscovery()
 
-        //showScanningDialog()
-        showSenderDialog("demo")
+        showScanningDialog()
 
     }
 
@@ -346,6 +345,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
     }
 
     fun showDevicesList(peerDeviceList: WifiP2pDeviceList) {
+        initInteractiveDialog()
         interactiveDialog.findViewById<ConstraintLayout>(R.id.loading_devices_layout)?.visibility = View.GONE
         interactiveDialog.findViewById<ConstraintLayout>(R.id.devices_list_layout)?.visibility = View.VISIBLE
         val devicesListRecyclerView = interactiveDialog.findViewById<RecyclerView>(R.id.devices_list_recycler_view)
@@ -356,9 +356,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
     }
 
     fun showSenderDialog(practitionerName: String) {
-        if (!this::interactiveDialog.isInitialized) {
-            interactiveDialog = BottomSheetDialog(this)
-        }
+        initInteractiveDialog()
         interactiveDialog.setContentView(R.layout.data_transfer_bottom_sheet)
 
         interactiveDialog.findViewById<TextView>(R.id.data_transfer_title)
@@ -377,6 +375,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
     }
 
     fun showReceiverDialog() {
+        initInteractiveDialog()
         interactiveDialog.setContentView(R.layout.data_transfer_bottom_sheet)
 
         interactiveDialog.findViewById<TextView>(R.id.data_transfer_title)
@@ -396,6 +395,12 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
 
         interactiveDialog.setCancelable(false)
         interactiveDialog.show()
+    }
+
+    private fun initInteractiveDialog() {
+        if (!this::interactiveDialog.isInitialized) {
+            interactiveDialog = BottomSheetDialog(this)
+        }
     }
 
     private fun connectToDevice(device: WifiP2pDevice) {
@@ -463,7 +468,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
         Timber.d(message)
         if (info.groupFormed && !isSender) {
             // Start syncing given the ip addresses
-            //showReceiverDialog()
+            showReceiverDialog()
         }
     }
 
