@@ -37,7 +37,7 @@ import org.smartregister.p2p.WifiP2pBroadcastReceiver
 import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.search.adapter.DeviceListAdapter
 import org.smartregister.p2p.search.contract.P2PManagerListener
-import org.smartregister.p2p.search.contract.P2pDataTransferUi
+import org.smartregister.p2p.search.contract.P2pModeSelectContract
 import org.smartregister.p2p.utils.getDeviceName
 import org.smartregister.p2p.utils.startP2PScreen
 import timber.log.Timber
@@ -47,7 +47,7 @@ import timber.log.Timber
  * This is the exposed activity that provides access to all P2P operations and steps. It can be
  * called from other apps via [startP2PScreen] function.
  */
-class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pDataTransferUi {
+class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pModeSelectContract {
 
     private val wifiP2pManager: WifiP2pManager by
     lazy(LazyThreadSafetyMode.NONE) { getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager }
