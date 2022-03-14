@@ -13,6 +13,7 @@ versions.junit5_plugin = '1.7.1.1'
 versions.mockk = '1.11.0'
 versions.robolectric = '4.4'
 versions.timber = '4.7.1'
+versions.room = '2.3.0'
 ext.versions = versions
 
 def deps = [:]
@@ -41,6 +42,16 @@ deps.junit5_engine = "org.junit.jupiter:junit-jupiter-engine:$versions.junit5_ap
 deps.junit5_engine_vintage = "org.junit.vintage:junit-vintage-engine:$versions.junit5_api"
 deps.mockk = "io.mockk:mockk:$versions.mockk"
 deps.robolectric = "org.robolectric:robolectric:$versions.robolectric"
+
+// Room dependencies
+def room = [:]
+room.compiler = "androidx.room:room-compiler:$versions.room"
+room.ktx = "androidx.room:room-ktx:$versions.room"
+room.runtime = "androidx.room:room-runtime:$versions.room"
+room.testing = "androidx.room:room-testing:$versions.room"
+deps.room = room
+
+// End of Room dependencies
 
 def androidx = [:]
 androidx.core_test = "androidx.arch.core:core-testing:$versions.androidx_test"
