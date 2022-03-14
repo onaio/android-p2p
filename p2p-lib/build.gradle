@@ -4,6 +4,7 @@ plugins {
     id 'kotlinx-serialization'
     id 'jacoco'
     id 'com.github.kt3k.coveralls'
+    id 'com.diffplug.spotless'
 }
 
 jacoco {
@@ -157,4 +158,13 @@ tasks.coveralls {
 coveralls {
     jacocoReportPath = "${buildDir}/reports/jacoco/jacocoRootReport/merged.xml"
     sourceDirs = ["$project.projectDir/src/main/java"]
+}
+
+spotless {
+    kotlin {
+        target '**/*.kt'
+        ktlint(versions.ktlint).userData(['indent_size': '2', 'continuation_indent_size': '2'])
+        ktfmt().googleStyle()
+        licenseHeaderFile "${project.rootProject.projectDir}/license-header.txt"
+    }
 }

@@ -2,7 +2,7 @@ package org.smartregister.p2p.sample
 
 import org.junit.Test
 
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
 
 /**
  * Example local unit test, which will execute on the development machine (host).
