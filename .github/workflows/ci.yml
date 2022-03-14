@@ -19,6 +19,8 @@ jobs:
           java-version: 11
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+      - name: Spotless check p2p-lib module
+        run: ./gradlew p2p-lib:spotlessCheck
       - name: Run unit tests with Gradle
         run: ./gradlew p2p-lib:clean p2p-lib:jacocoTestReport --stacktrace
       - name: Upload coverage to Coveralls with Gradle
