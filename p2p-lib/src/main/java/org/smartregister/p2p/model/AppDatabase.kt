@@ -24,6 +24,10 @@ import androidx.room.RoomDatabase
 import com.commonsware.cwac.saferoom.SafeHelperFactory
 import org.smartregister.p2p.dao.P2pReceivedHistoryDao
 
+/**
+ * Provides [AppDatabase.getInstance] to access database instance. The instance gives access to the
+ * [P2pReceivedHistoryDao]
+ */
 @Database(entities = [P2PReceivedHistory::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
   abstract fun p2pReceivedHistoryDao(): P2pReceivedHistoryDao?

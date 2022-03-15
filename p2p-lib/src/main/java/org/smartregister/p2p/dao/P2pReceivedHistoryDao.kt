@@ -23,8 +23,9 @@ import androidx.room.Query
 import androidx.room.Update
 import org.smartregister.p2p.model.P2PReceivedHistory
 
+/** Dao for manipulating [P2PReceivedHistory] records */
 @Dao
-open interface P2pReceivedHistoryDao {
+interface P2pReceivedHistoryDao {
 
   @Insert fun addReceivedHistory(@NonNull receivedP2PReceivedHistory: P2PReceivedHistory?)
 

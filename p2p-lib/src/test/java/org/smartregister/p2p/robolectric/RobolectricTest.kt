@@ -28,7 +28,7 @@ import org.robolectric.annotation.Config
 
 /** Base test class for any test using Robolectric to run tests */
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [Build.VERSION_CODES.O_MR1])
+@Config(sdk = [Build.VERSION_CODES.O_MR1], application = TestApplication::class)
 abstract class RobolectricTest {
   /** Get the liveData value by observing but wait for 3 seconds if not ready then stop observing */
   @Throws(InterruptedException::class)

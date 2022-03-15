@@ -17,4 +17,5 @@ package org.smartregister.p2p
 
 import kotlinx.serialization.Serializable
 
+/** Simple class containing message to sync using p2p */
 @Serializable data class SyncPayload(val message: String)

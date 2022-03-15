@@ -107,6 +107,7 @@ class P2PLibrary private constructor() {
     return options.batchSize
   }
 
+  /** [P2PLibrary] configurability options an */
   class Options(
     val context: Context,
     val dbPassphrase: String,

@@ -18,6 +18,7 @@ package org.smartregister.p2p.utils
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 14-03-2022. */
 interface Constants {
 
+  /** SharedPreference keys */
   interface Prefs {
     companion object {
       const val NAME = "android-p2p-sync"
