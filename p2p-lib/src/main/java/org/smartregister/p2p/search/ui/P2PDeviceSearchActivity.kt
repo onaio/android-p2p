@@ -36,6 +36,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -48,8 +49,10 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
 import org.smartregister.p2p.R
 import org.smartregister.p2p.WifiP2pBroadcastReceiver
+import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.search.adapter.DeviceListAdapter
 import org.smartregister.p2p.search.contract.P2PManagerListener
+import org.smartregister.p2p.search.contract.P2pModeSelectContract
 import org.smartregister.p2p.utils.getDeviceName
 import org.smartregister.p2p.utils.startP2PScreen
 import timber.log.Timber
@@ -58,7 +61,7 @@ import timber.log.Timber
  * This is the exposed activity that provides access to all P2P operations and steps. It can be
  * called from other apps via [startP2PScreen] function.
  */
-class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
+class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pModeSelectContract {
 
   private val wifiP2pManager: WifiP2pManager by lazy(LazyThreadSafetyMode.NONE) {
     getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager
@@ -66,7 +69,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
   private var wifiP2pChannel: WifiP2pManager.Channel? = null
   private var wifiP2pReceiver: BroadcastReceiver? = null
   private val accessFineLocationPermissionRequestInt: Int = 12345
-  private var sender = false
+  private var isSender = false
   private var scanning = false
   private lateinit var interactiveDialog: BottomSheetDialog
 
@@ -359,6 +362,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
   }
 
   fun showDevicesList(peerDeviceList: WifiP2pDeviceList) {
+    initInteractiveDialog()
     interactiveDialog.findViewById<ConstraintLayout>(R.id.loading_devices_layout)?.visibility =
       View.GONE
     interactiveDialog.findViewById<ConstraintLayout>(R.id.devices_list_layout)?.visibility =
@@ -372,9 +376,57 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
     }
   }
 
+  fun showSenderDialog(practitionerName: String) {
+    initInteractiveDialog()
+    interactiveDialog.setContentView(R.layout.data_transfer_bottom_sheet)
+
+    interactiveDialog
+      .findViewById<TextView>(R.id.data_transfer_title)
+      ?.setText(getString(R.string.start_sending_data))
+
+    interactiveDialog
+      .findViewById<TextView>(R.id.data_transfer_description)
+      ?.setText(String.format(getString(R.string.start_sending_data_to), practitionerName))
+
+    interactiveDialog.findViewById<ImageButton>(R.id.data_transfer_dialog_close)
+      ?.setOnClickListener { interactiveDialog.cancel() }
+
+    interactiveDialog.setCancelable(false)
+    interactiveDialog.show()
+  }
+
+  fun showReceiverDialog() {
+    initInteractiveDialog()
+    interactiveDialog.setContentView(R.layout.data_transfer_bottom_sheet)
+
+    interactiveDialog
+      .findViewById<TextView>(R.id.data_transfer_title)
+      ?.setText(getString(R.string.start_receiving_data))
+
+    interactiveDialog
+      .findViewById<TextView>(R.id.data_transfer_description)
+      ?.setText(getString(R.string.waiting_for_transfer_to_start))
+
+    interactiveDialog.findViewById<ImageButton>(R.id.data_transfer_dialog_close)
+      ?.setOnClickListener { interactiveDialog.cancel() }
+
+    interactiveDialog.findViewById<ImageView>(R.id.data_transfer_icon)?.visibility = View.GONE
+
+    interactiveDialog.findViewById<Button>(R.id.dataTransferBtn)?.visibility = View.GONE
+
+    interactiveDialog.setCancelable(false)
+    interactiveDialog.show()
+  }
+
+  private fun initInteractiveDialog() {
+    if (!this::interactiveDialog.isInitialized) {
+      interactiveDialog = BottomSheetDialog(this)
+    }
+  }
+
   private fun connectToDevice(device: WifiP2pDevice) {
     Timber.d("Wifi P2P: Initiating connection to device: ${device.deviceName}")
-    sender = true
+    isSender = true
     val wifiP2pConfig = WifiP2pConfig().apply { deviceAddress = device.deviceAddress }
     wifiP2pChannel?.also { wifiP2pChannel ->
       if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
@@ -400,6 +452,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
 
   private fun handleDeviceConnectionSuccess(device: WifiP2pDevice) {
     Timber.d("Wifi P2P: Successfully connected to device: ${device.deviceAddress}")
+    showP2PSelectPage(getDeviceRole(), device.deviceName)
   }
 
   private fun handleDeviceConnectionFailure(device: WifiP2pDevice, reasonInt: Int) {
@@ -417,12 +470,29 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener {
     logDebug("Wifi P2P: Minimum SDK Version not met: $minimumSdkVersion")
   }
 
+  override fun showP2PSelectPage(deviceRole: DeviceRole, deviceName: String) {
+    rootView
+      .findViewById<TextView>(R.id.description)
+      ?.setText(getString(R.string.connect_to_other_device_to_start_transfer))
+    rootView.findViewById<Button>(R.id.scanDevicesBtn)?.visibility = View.GONE
+
+    when (deviceRole) {
+      DeviceRole.RECEIVER -> showReceiverDialog()
+      DeviceRole.SENDER -> showSenderDialog(deviceName)
+    }
+  }
+
+  override fun getDeviceRole(): DeviceRole {
+    return if (isSender) DeviceRole.SENDER else DeviceRole.RECEIVER
+  }
+
   override fun onConnectionInfoAvailable(info: WifiP2pInfo) {
     val message =
       "Connection info available: groupFormed = ${info.groupFormed}, isGroupOwner = ${info.isGroupOwner}"
     Timber.d(message)
-    if (info.groupFormed) {
+    if (info.groupFormed && !isSender) {
       // Start syncing given the ip addresses
+      showReceiverDialog()
     }
   }
 
