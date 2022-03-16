@@ -13,17 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartregister.p2p
+package org.smartregister.p2p.utils
 
-import org.junit.Assert
-import org.junit.Test
+/** Created by Ephraim Kigamba - nek.eam@gmail.com on 14-03-2022. */
+interface Constants {
 
-/** Unit tests for SyncPayload class */
-class SyncPayloadTest {
+  /** SharedPreference keys */
+  interface Prefs {
+    companion object {
+      const val NAME = "android-p2p-sync"
+      const val KEY_HASH = "hash-key"
+    }
+  }
 
-  @Test
-  fun syncPayloadIsSetCorrectly() {
-    val payload = SyncPayload("test")
-    Assert.assertEquals("test", payload.message)
+  companion object {
+    const val DEFAULT_SHARE_BATCH_SIZE = 20
+    const val DEFAULT_MIN_DEVICE_CONNECTION_RETRY_DURATION = 2 * 60 * 60
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Ona Systems, Inc
+ * Copyright 2022 Ona Systems, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,29 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.smartregister.p2p.robolectric
 
 import android.os.Build
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import io.mockk.clearAllMocks
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import org.junit.AfterClass
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 
-
-/**
- * Base test class for any test using Robolectric to run tests
- */
+/** Base test class for any test using Robolectric to run tests */
 @RunWith(RobolectricTestRunner::class)
-@Config(
-  sdk = [Build.VERSION_CODES.O_MR1],
-  application =  TestApplication ::class
-)
+@Config(sdk = [Build.VERSION_CODES.O_MR1], application = TestApplication::class)
 abstract class RobolectricTest {
   /** Get the liveData value by observing but wait for 3 seconds if not ready then stop observing */
   @Throws(InterruptedException::class)

@@ -15,15 +15,23 @@
  */
 package org.smartregister.p2p
 
-import org.junit.Assert
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.ExpectedException
 
-/** Unit tests for SyncPayload class */
-class SyncPayloadTest {
+/** Created by Ephraim Kigamba - nek.eam@gmail.com on 14-03-2022. */
+internal class P2PLibraryTest {
+
+  @get:Rule var thrown = ExpectedException.none()
 
   @Test
-  fun syncPayloadIsSetCorrectly() {
-    val payload = SyncPayload("test")
-    Assert.assertEquals("test", payload.message)
+  fun getInstanceShouldThrowExceptionWhenInstanceIsNull() {
+    thrown.expect(IllegalStateException::class.java)
+    thrown.expectMessage(
+      "Instance does not exist!!! Call P2PLibrary.init method" +
+        "in the onCreate method of " +
+        "your Application class "
+    )
+    P2PLibrary.getInstance()
   }
 }

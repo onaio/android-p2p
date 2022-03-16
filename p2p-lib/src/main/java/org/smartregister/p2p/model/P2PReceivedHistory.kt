@@ -13,17 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartregister.p2p
+package org.smartregister.p2p.model
 
-import org.junit.Assert
-import org.junit.Test
+import androidx.annotation.NonNull
+import androidx.room.ColumnInfo
+import androidx.room.Entity
 
-/** Unit tests for SyncPayload class */
-class SyncPayloadTest {
+/**
+ * Model holding the a device-specific entity sync date. The [appLifetimeKey] holds the device
+ * identifier.
+ */
+@Entity(tableName = "p2p_received_history", primaryKeys = ["entity_type", "app_lifetime_key"])
+class P2PReceivedHistory {
+  @NonNull @ColumnInfo(name = "app_lifetime_key") var appLifetimeKey: String? = null
 
-  @Test
-  fun syncPayloadIsSetCorrectly() {
-    val payload = SyncPayload("test")
-    Assert.assertEquals("test", payload.message)
-  }
+  @NonNull @ColumnInfo(name = "entity_type") var entityType: String? = null
+
+  @ColumnInfo(name = "last_updated_at") var lastUpdatedAt: Long = 0
 }
