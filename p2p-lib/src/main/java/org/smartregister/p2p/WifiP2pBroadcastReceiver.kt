@@ -16,7 +16,6 @@
 package org.smartregister.p2p
 
 import android.Manifest
-import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -30,7 +29,7 @@ class WifiP2pBroadcastReceiver(
   private val manager: WifiP2pManager,
   private val channel: WifiP2pManager.Channel,
   private val listener: P2PManagerListener,
-  private val context: Activity
+  private val context: Context
 ) : BroadcastReceiver() {
 
   override fun onReceive(context: Context, intent: Intent) {
