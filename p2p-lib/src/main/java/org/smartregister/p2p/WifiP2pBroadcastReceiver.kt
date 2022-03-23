@@ -30,7 +30,7 @@ class WifiP2pBroadcastReceiver(
   private val manager: WifiP2pManager,
   private val channel: WifiP2pManager.Channel,
   private val listener: P2PManagerListener,
-  private val context: Activity
+  private val context: Context
 ) : BroadcastReceiver() {
 
   override fun onReceive(context: Context, intent: Intent) {
