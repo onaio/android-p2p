@@ -47,12 +47,19 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
+import org.json.JSONObject
+import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.R
+import org.smartregister.p2p.SyncPayload
 import org.smartregister.p2p.WifiP2pBroadcastReceiver
 import org.smartregister.p2p.authentication.model.DeviceRole
+import org.smartregister.p2p.data_sharing.DataSharingStrategy
+import org.smartregister.p2p.data_sharing.DeviceInfo
+import org.smartregister.p2p.data_sharing.WifiDirectDataSharingStrategy
 import org.smartregister.p2p.search.adapter.DeviceListAdapter
 import org.smartregister.p2p.search.contract.P2PManagerListener
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
+import org.smartregister.p2p.utils.Constants
 import org.smartregister.p2p.utils.getDeviceName
 import org.smartregister.p2p.utils.startP2PScreen
 import timber.log.Timber
@@ -391,6 +398,11 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
     interactiveDialog.findViewById<ImageButton>(R.id.data_transfer_dialog_close)
       ?.setOnClickListener { interactiveDialog.cancel() }
 
+    interactiveDialog.findViewById<Button>(R.id.dataTransferBtn)?.setOnClickListener {
+      // initiate data transfer
+      requestSyncParams()
+    }
+
     interactiveDialog.setCancelable(false)
     interactiveDialog.show()
   }
@@ -507,5 +519,41 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
   private fun logDebug(message: String) {
     Snackbar.make(rootView, message, Snackbar.LENGTH_SHORT).show()
     Timber.d(message)
+  }
+
+  fun requestSyncParams() {
+    // write a message to the socket requesting the receiver for acceptable data types
+    // and their last update times which can be sent using a simple string command,
+    // 'SEND_SYNC_PARAMS', and the **app_lifetime_key**
+
+    val deviceInfo: MutableMap<String, String?> = HashMap()
+    deviceInfo[Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY] =
+      P2PLibrary.getInstance()!!.getHashKey()
+    deviceInfo[Constants.BasicDeviceDetails.KEY_DEVICE_ID] =
+      P2PLibrary.getInstance()!!.getDeviceUniqueIdentifier()
+
+    WifiDirectDataSharingStrategy()
+      .send(
+        device = DeviceInfo(strategySpecificDevice = deviceInfo)
+        /** Find out how to get this */
+        ,
+        syncPayload =
+          SyncPayload(
+            JSONObject(Constants.SEND_SYNC_PARAMS).toString(),
+          ),
+        object : DataSharingStrategy.OperationListener {
+          override fun onSuccess(device: DeviceInfo) {
+            TODO("Not yet implemented")
+          }
+
+          override fun onFailure(device: DeviceInfo, ex: Exception) {
+            TODO("Not yet implemented")
+          }
+        }
+      )
+  }
+
+  fun sendSyncParams() {
+    // Respond with the acceptable data types each with its lastUpdated timestamp and batch size
   }
 }

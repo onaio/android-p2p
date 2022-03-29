@@ -15,5 +15,13 @@
  */
 package org.smartregister.p2p.data_sharing
 
-/** Created by Ephraim Kigamba - nek.eam@gmail.com on 21-03-2022. */
-class DeviceInfo(var strategySpecificDevice: Any)
+import org.smartregister.p2p.sync.DataType
+
+data class SyncPackageManifest(
+  val payloadId: Long,
+  val payloadExtension: String,
+  val dataType: DataType,
+  val recordsSize: Int,
+  val payloadSize: Int,
+  val payloadDetails: HashMap<String, Any>
+)
