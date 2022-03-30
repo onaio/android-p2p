@@ -23,7 +23,7 @@ import org.smartregister.p2p.sync.DataType
 
 interface ReceiverTransferDao {
 
-  @WorkerThread fun getDataTypes(): TreeSet<DataType?>?
+  @WorkerThread fun getP2PDataTypes(): TreeSet<DataType>
 
-  @WorkerThread fun receiveJson(@NonNull type: DataType?, @NonNull jsonArray: JSONArray?): Long
+  @WorkerThread fun receiveJson(@NonNull type: DataType, @NonNull jsonArray: JSONArray): Long
 }
