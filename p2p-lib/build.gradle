@@ -72,7 +72,7 @@ dependencies { configuration ->
 
     roomDependencies(configuration)
 
-    testImplementation 'junit:junit:4.+'
+    testImplementation 'junit:junit:4.13.2'
 
     testImplementation deps.junit5_api
     testRuntimeOnly deps.junit5_engine
