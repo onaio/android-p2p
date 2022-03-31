@@ -23,9 +23,9 @@ import org.smartregister.p2p.search.data.JsonData
 import org.smartregister.p2p.sync.DataType
 
 interface SenderTransferDao {
-  @WorkerThread @Nullable fun getDataTypes(): TreeSet<DataType?>?
+  @WorkerThread @Nullable fun getP2PDataTypes(): TreeSet<DataType>
 
   @WorkerThread
   @Nullable
-  fun getJsonData(@NonNull dataType: DataType?, lastRecordId: Long, batchSize: Int): JsonData?
+  fun getJsonData(@NonNull dataType: DataType, lastRecordId: Long, batchSize: Int): JsonData?
 }
