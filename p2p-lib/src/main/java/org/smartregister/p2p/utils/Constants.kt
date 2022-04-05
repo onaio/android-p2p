@@ -38,4 +38,14 @@ interface Constants {
       const val KEY_APP_LIFETIME_KEY = "app-lifetime-key"
     }
   }
+
+  enum class ConnectionLevel {
+    CONNECT_BEFORE_AUTHENTICATE,
+    AUTHENTICATED,
+    AUTHORIZED,
+    SENT_HASH_KEY,
+    RECEIVED_HASH_KEY,
+    SENT_RECEIVED_HISTORY,
+    RECEIPT_OF_RECEIVED_HISTORY
+  }
 }

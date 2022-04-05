@@ -47,7 +47,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
-import org.json.JSONObject
+import com.google.gson.Gson
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.R
 import org.smartregister.p2p.SyncPayload
@@ -539,7 +539,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
         ,
         syncPayload =
           SyncPayload(
-            JSONObject(Constants.SEND_SYNC_PARAMS).toString(),
+            Gson().toJson(Constants.SEND_SYNC_PARAMS),
           ),
         object : DataSharingStrategy.OperationListener {
           override fun onSuccess(device: DeviceInfo) {
