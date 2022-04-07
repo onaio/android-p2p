@@ -15,13 +15,6 @@
  */
 package org.smartregister.p2p.data_sharing
 
-import org.smartregister.p2p.sync.DataType
+import androidx.lifecycle.ViewModel
 
-data class SyncPackageManifest(
-  val payloadId: Long,
-  val payloadExtension: String,
-  val dataType: DataType,
-  val recordsSize: Int,
-  val payloadSize: Int,
-  val payloadDetails: HashMap<String, Any>
-)
+class SyncReceiverHandler: ViewModel()

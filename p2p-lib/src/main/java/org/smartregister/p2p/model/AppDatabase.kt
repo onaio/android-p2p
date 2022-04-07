@@ -23,6 +23,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.commonsware.cwac.saferoom.SafeHelperFactory
 import org.smartregister.p2p.dao.P2pReceivedHistoryDao
+import org.smartregister.p2p.dao.SenderTransferDao
 
 /**
  * Provides [AppDatabase.getInstance] to access database instance. The instance gives access to the
@@ -31,6 +32,7 @@ import org.smartregister.p2p.dao.P2pReceivedHistoryDao
 @Database(entities = [P2PReceivedHistory::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
   abstract fun p2pReceivedHistoryDao(): P2pReceivedHistoryDao?
+  abstract fun senderTransferDao(): SenderTransferDao?
 
   companion object {
     private var instance: AppDatabase? = null

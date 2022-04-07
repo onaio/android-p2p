@@ -15,7 +15,11 @@
  */
 package org.smartregister.p2p.search.contract
 
+import androidx.annotation.NonNull
+import org.smartregister.p2p.SyncPayload
 import org.smartregister.p2p.authentication.model.DeviceRole
+import org.smartregister.p2p.data_sharing.DeviceInfo
+import org.smartregister.p2p.data_sharing.Manifest
 
 /** Interface for functions used to make changes to the data transfer page UI */
 interface P2pModeSelectContract {
@@ -23,4 +27,10 @@ interface P2pModeSelectContract {
   fun showP2PSelectPage(deviceRole: DeviceRole, deviceName: String)
 
   fun getDeviceRole(): DeviceRole
+
+  interface SenderViewModel {
+    fun sendManifest(@NonNull manifest: Manifest)
+    fun getCurrentPeerDevice(): DeviceInfo
+    fun processReceivedHistory(syncPayload: SyncPayload)
+  }
 }
