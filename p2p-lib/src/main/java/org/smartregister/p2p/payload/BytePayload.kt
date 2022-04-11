@@ -13,9 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartregister.p2p
+package org.smartregister.p2p.payload
 
-import kotlinx.serialization.Serializable
+/** Created by Ephraim Kigamba - nek.eam@gmail.com on 04-04-2022. */
+class BytePayload(val payload: ByteArray) : PayloadContract<ByteArray> {
 
-/** Simple class containing message to sync using p2p */
-@Serializable data class SyncPayload(val message: String)
+  override fun getDataType(): SyncPayloadType = SyncPayloadType.BYTES
+
+  override fun getData(): ByteArray = payload
+}
