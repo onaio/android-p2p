@@ -19,6 +19,8 @@ import android.content.Context
 import androidx.annotation.NonNull
 import androidx.annotation.Nullable
 import java.util.UUID
+import org.smartregister.p2p.data_sharing.DataSharingStrategy
+import org.smartregister.p2p.data_sharing.WifiDirectDataSharingStrategy
 import org.smartregister.p2p.model.AppDatabase
 import org.smartregister.p2p.utils.Constants
 import org.smartregister.p2p.utils.Settings
@@ -30,18 +32,19 @@ class P2PLibrary private constructor() {
   private lateinit var options: Options
   private var hashKey: String? = null
   private var deviceUniqueIdentifier: String? = null
+  var dataSharingStrategy: DataSharingStrategy = WifiDirectDataSharingStrategy()
 
   companion object {
     private var instance: P2PLibrary? = null
 
     @NonNull
-    fun getInstance(): P2PLibrary? {
+    fun getInstance(): P2PLibrary {
       checkNotNull(instance) {
-        ("Instance does not exist!!! Call P2PLibrary.init method" +
+        ("Instance does not exist!!! Call P2PLibrary.init(P2PLibrary.Options) method" +
           "in the onCreate method of " +
           "your Application class ")
       }
-      return instance
+      return instance!!
     }
   }
 

@@ -48,9 +48,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
+import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.R
 import org.smartregister.p2p.WifiP2pBroadcastReceiver
 import org.smartregister.p2p.authentication.model.DeviceRole
+import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.search.adapter.DeviceListAdapter
 import org.smartregister.p2p.search.contract.P2PManagerListener
@@ -77,6 +79,8 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
   private var scanning = false
   private lateinit var interactiveDialog: BottomSheetDialog
 
+  private lateinit var dataSharingStrategy: DataSharingStrategy
+
   private val rootView: View by lazy { findViewById(R.id.device_search_root_layout) }
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -89,6 +93,10 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
 
     title = getString(R.string.device_to_device_sync)
     supportActionBar?.setHomeAsUpIndicator(android.R.drawable.ic_menu_close_clear_cancel)
+
+    // Remaining setup for the DataSharingStrategy class
+    dataSharingStrategy = P2PLibrary.getInstance().dataSharingStrategy
+    dataSharingStrategy.setActivity(this)
 
     findViewById<Button>(R.id.scanDevicesBtn).setOnClickListener {
       scanning = true
