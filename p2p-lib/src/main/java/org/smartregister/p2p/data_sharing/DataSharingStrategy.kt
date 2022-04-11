@@ -16,7 +16,9 @@
 package org.smartregister.p2p.data_sharing
 
 import android.app.Activity
-import org.smartregister.p2p.SyncPayload
+import java.io.Serializable
+import org.smartregister.p2p.payload.PayloadContract
+import org.smartregister.p2p.payload.SyncPayload
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 21-03-2022. */
 interface DataSharingStrategy {
@@ -33,9 +35,13 @@ interface DataSharingStrategy {
 
   fun sendManifest(device: DeviceInfo, manifest: Manifest, operationListener: OperationListener)
 
-  fun receive(device: DeviceInfo, syncPayload: SyncPayload, operationListener: OperationListener)
+  fun receive(
+    device: DeviceInfo,
+    syncPayload: SyncPayload,
+    operationListener: OperationListener
+  ): PayloadContract<out Serializable>?
 
-  fun receiveManifest(device: DeviceInfo, manifest: Manifest, operationListener: OperationListener)
+  fun receiveManifest(device: DeviceInfo, operationListener: OperationListener): Manifest?
 
   fun onErrorOccurred(ex: Exception)
 

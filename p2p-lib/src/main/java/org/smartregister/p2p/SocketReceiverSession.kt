@@ -19,6 +19,7 @@ import android.util.Log
 import java.net.Socket
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import org.smartregister.p2p.payload.SyncPayload
 
 class SocketReceiverSession(private val socket: Socket) : ReceiverSession {
   override fun receive() {
