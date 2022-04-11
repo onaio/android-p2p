@@ -13,25 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartregister.p2p
+package org.smartregister.p2p.payload
 
-import android.util.Log
-import java.net.Socket
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import org.smartregister.p2p.payload.SyncPayload
+class SyncPayload(val string: String) : PayloadContract<String> {
 
-class SocketSenderSession(private val socket: Socket) : SenderSession {
-  override fun send() {
-    val writer = socket.getOutputStream().bufferedWriter()
-    val encoded = Json.encodeToString(SyncPayload("Hello"))
-    writer.write(encoded)
-    writer.flush()
-    Log.d(this::class.simpleName, """Message sent: $encoded""")
-    socket.close()
-  }
-}
+  override fun getDataType(): SyncPayloadType = SyncPayloadType.STRING
 
-interface SenderSession {
-  fun send()
+  override fun getData(): String = string
 }

@@ -17,6 +17,7 @@ package org.smartregister.p2p
 
 import org.junit.Assert
 import org.junit.Test
+import org.smartregister.p2p.payload.SyncPayload
 
 /** Unit tests for SyncPayload class */
 class SyncPayloadTest {
