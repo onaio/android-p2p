@@ -19,13 +19,13 @@ import android.util.Log
 import java.net.Socket
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import org.smartregister.p2p.payload.SyncPayload
+import org.smartregister.p2p.payload.StringPayload
 
 class SocketReceiverSession(private val socket: Socket) : ReceiverSession {
   override fun receive() {
     val reader = socket.getInputStream().bufferedReader()
     reader.forEachLine {
-      val decoded = Json.decodeFromString<SyncPayload>(it)
+      val decoded = Json.decodeFromString<StringPayload>(it)
       Log.d(this::class.simpleName, """Message received: $decoded""")
     }
   }

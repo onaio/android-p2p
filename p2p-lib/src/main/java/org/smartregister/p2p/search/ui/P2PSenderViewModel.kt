@@ -49,9 +49,9 @@ class P2PSenderViewModel : ViewModel(), P2pModeSelectContract.SenderViewModel {
         /** Find out how to get this */
         ,
         syncPayload =
-        SyncPayload(
-          Gson().toJson(Constants.SEND_SYNC_PARAMS),
-        ),
+          SyncPayload(
+            Gson().toJson(Constants.SEND_SYNC_PARAMS),
+          ),
         object : DataSharingStrategy.OperationListener {
           override fun onSuccess(device: DeviceInfo) {
             TODO("Not yet implemented")

@@ -29,7 +29,8 @@ import org.smartregister.p2p.model.P2PReceivedHistory
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
 import org.smartregister.p2p.utils.Constants
 
-class P2PReceiverViewModel : ViewModel(), IReceiverSyncLifecycleCallback, P2pModeSelectContract.ReceiverViewModel {
+class P2PReceiverViewModel :
+  ViewModel(), IReceiverSyncLifecycleCallback, P2pModeSelectContract.ReceiverViewModel {
 
   private val connectionLevel: Constants.ConnectionLevel? = null
 

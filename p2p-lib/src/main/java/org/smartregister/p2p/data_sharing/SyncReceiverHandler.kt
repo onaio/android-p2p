@@ -22,42 +22,36 @@ import org.smartregister.p2p.dao.P2pReceivedHistoryDao
 import org.smartregister.p2p.model.P2PReceivedHistory
 import org.smartregister.p2p.search.ui.P2PReceiverViewModel
 
-class SyncReceiverHandler
-constructor(
-    @NonNull val p2PReceiverViewModel: P2PReceiverViewModel
-) : ViewModel() {
+class SyncReceiverHandler constructor(@NonNull val p2PReceiverViewModel: P2PReceiverViewModel) :
+  ViewModel() {
 
-    private val awaitingManifestReceipt = true
-    private val awaitingPayloadManifests: HashMap<Long, Manifest> =
-        HashMap<Long, Manifest>()
+  private val awaitingManifestReceipt = true
+  private val awaitingPayloadManifests: HashMap<Long, Manifest> = HashMap<Long, Manifest>()
 
-    fun processManifest(manifest: Manifest) {
-        // update UI with number of records to expect
+  fun processManifest(manifest: Manifest) {
+    // update UI with number of records to expect
+  }
+
+  fun updateLastRecord(@NonNull entityType: String, lastUpdatedAt: Long) {
+    // Retrieve sending device details
+    val sendingDeviceId = p2PReceiverViewModel.getSendingDeviceId()
+
+    if (sendingDeviceId.isNotBlank()) {
+      val p2pReceivedHistoryDao: P2pReceivedHistoryDao? =
+        P2PLibrary.getInstance()!!.getDb()?.p2pReceivedHistoryDao()
+
+      var receivedHistory: P2PReceivedHistory? =
+        p2pReceivedHistoryDao?.getHistory(sendingDeviceId, entityType)
+
+      if (receivedHistory == null) {
+        receivedHistory = P2PReceivedHistory()
+        receivedHistory.lastUpdatedAt = lastUpdatedAt
+        receivedHistory.entityType = entityType
+        receivedHistory.appLifetimeKey = sendingDeviceId
+      } else {
+        receivedHistory.lastUpdatedAt = lastUpdatedAt
+        p2pReceivedHistoryDao?.updateReceivedHistory(receivedHistory)
+      }
     }
-
-    fun updateLastRecord(@NonNull entityType: String , lastUpdatedAt: Long ) {
-        // Retrieve sending device details
-        val sendingDeviceId = p2PReceiverViewModel.getSendingDeviceId()
-
-        if(sendingDeviceId.isNotBlank()) {
-            val p2pReceivedHistoryDao: P2pReceivedHistoryDao? = P2PLibrary.getInstance()!!.getDb()
-                ?.p2pReceivedHistoryDao()
-
-            var receivedHistory: P2PReceivedHistory? = p2pReceivedHistoryDao
-                ?.getHistory(sendingDeviceId, entityType)
-
-            if (receivedHistory == null) {
-                receivedHistory = P2PReceivedHistory()
-                receivedHistory.lastUpdatedAt = lastUpdatedAt
-                receivedHistory.entityType = entityType
-                receivedHistory.appLifetimeKey = sendingDeviceId
-
-            } else {
-                receivedHistory.lastUpdatedAt = lastUpdatedAt
-                p2pReceivedHistoryDao?.updateReceivedHistory(receivedHistory)
-            }
-        }
-
-    }
-
+  }
 }

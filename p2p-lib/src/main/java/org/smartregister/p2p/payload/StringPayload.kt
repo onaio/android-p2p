@@ -15,7 +15,7 @@
  */
 package org.smartregister.p2p.payload
 
-class SyncPayload(val string: String) : PayloadContract<String> {
+class StringPayload(val string: String) : PayloadContract<String> {
 
   override fun getDataType(): SyncPayloadType = SyncPayloadType.STRING
 

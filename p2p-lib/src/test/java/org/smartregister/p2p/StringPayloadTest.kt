@@ -17,14 +17,14 @@ package org.smartregister.p2p
 
 import org.junit.Assert
 import org.junit.Test
-import org.smartregister.p2p.payload.SyncPayload
+import org.smartregister.p2p.payload.StringPayload
 
 /** Unit tests for SyncPayload class */
-class SyncPayloadTest {
+class StringPayloadTest {
 
   @Test
   fun syncPayloadIsSetCorrectly() {
-    val payload = SyncPayload("test")
+    val payload = StringPayload("test")
     Assert.assertEquals("test", payload.message)
   }
 }

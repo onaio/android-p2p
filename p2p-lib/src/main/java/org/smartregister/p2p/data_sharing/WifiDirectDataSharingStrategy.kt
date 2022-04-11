@@ -32,14 +32,13 @@ import com.google.gson.Gson
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
-import java.io.Serializable
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
 import org.smartregister.p2p.WifiP2pBroadcastReceiver
 import org.smartregister.p2p.payload.BytePayload
 import org.smartregister.p2p.payload.PayloadContract
-import org.smartregister.p2p.payload.SyncPayload
+import org.smartregister.p2p.payload.StringPayload
 import org.smartregister.p2p.payload.SyncPayloadType
 import org.smartregister.p2p.search.contract.P2PManagerListener
 import timber.log.Timber
@@ -223,7 +222,7 @@ class WifiDirectDataSharingStrategy() : DataSharingStrategy, P2PManagerListener 
 
   override fun send(
     device: DeviceInfo,
-    syncPayload: SyncPayload,
+    syncPayload: PayloadContract<out Any>,
     operationListener: DataSharingStrategy.OperationListener
   ) {
     // Check if the socket is setup for sending
@@ -254,7 +253,7 @@ class WifiDirectDataSharingStrategy() : DataSharingStrategy, P2PManagerListener 
           if (dataOutputStream != null) {
             dataOutputStream!!.apply {
               writeUTF(SyncPayloadType.STRING.name)
-              writeBytes(syncPayload.getData())
+              writeBytes(syncPayload.getData() as String)
 
               operationListener.onSuccess(device)
             }
@@ -266,7 +265,7 @@ class WifiDirectDataSharingStrategy() : DataSharingStrategy, P2PManagerListener 
           // TODO: Fix this to take it the [org.smartregister.p2p.payload.BytePayload]
 
           dataOutputStream?.apply {
-            val byteArray = syncPayload.getData().toByteArray()
+            val byteArray = syncPayload.getData() as ByteArray
 
             writeUTF(SyncPayloadType.BYTES.name)
             writeLong(byteArray.size.toLong())
@@ -363,9 +362,8 @@ class WifiDirectDataSharingStrategy() : DataSharingStrategy, P2PManagerListener 
 
   override fun receive(
     device: DeviceInfo,
-    syncPayload: SyncPayload,
     operationListener: DataSharingStrategy.OperationListener
-  ): PayloadContract<out Serializable>? {
+  ): PayloadContract<out Any>? {
     // Check if the socket is setup for listening
     // Check if this is the receiver/sender
     return dataInputStream?.run {
@@ -373,7 +371,7 @@ class WifiDirectDataSharingStrategy() : DataSharingStrategy, P2PManagerListener 
 
       if (dataType == SyncPayloadType.STRING.name) {
         val stringPayload = String(readBytes())
-        SyncPayload(stringPayload)
+        StringPayload(stringPayload)
       } else if (dataType == SyncPayloadType.BYTES.name) {
         var payloadLen = readLong()
         val payloadByteArray = ByteArray(payloadLen.toInt())
