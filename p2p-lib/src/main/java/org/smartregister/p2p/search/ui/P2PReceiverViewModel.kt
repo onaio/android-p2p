@@ -26,9 +26,10 @@ import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.IReceiverSyncLifecycleCallback
 import org.smartregister.p2p.data_sharing.WifiDirectDataSharingStrategy
 import org.smartregister.p2p.model.P2PReceivedHistory
+import org.smartregister.p2p.search.contract.P2pModeSelectContract
 import org.smartregister.p2p.utils.Constants
 
-class P2PReceiverViewModel : ViewModel(), IReceiverSyncLifecycleCallback {
+class P2PReceiverViewModel : ViewModel(), IReceiverSyncLifecycleCallback, P2pModeSelectContract.ReceiverViewModel {
 
   private val connectionLevel: Constants.ConnectionLevel? = null
 
@@ -71,5 +72,9 @@ class P2PReceiverViewModel : ViewModel(), IReceiverSyncLifecycleCallback {
           }
         }
       )
+  }
+
+  override fun getSendingDeviceId(): String {
+    TODO("Not yet implemented")
   }
 }

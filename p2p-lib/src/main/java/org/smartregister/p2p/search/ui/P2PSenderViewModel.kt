@@ -32,6 +32,38 @@ class P2PSenderViewModel : ViewModel(), P2pModeSelectContract.SenderViewModel {
 
   private var connectionLevel: Constants.ConnectionLevel? = null
 
+  override fun requestSyncParams(deviceInfo: DeviceInfo) {
+    // write a message to the socket requesting the receiver for acceptable data types
+    // and their last update times which can be sent using a simple string command,
+    // 'SEND_SYNC_PARAMS', and the **app_lifetime_key**
+
+    val deviceInfo: MutableMap<String, String?> = HashMap()
+    deviceInfo[Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY] =
+      P2PLibrary.getInstance()!!.getHashKey()
+    deviceInfo[Constants.BasicDeviceDetails.KEY_DEVICE_ID] =
+      P2PLibrary.getInstance()!!.getDeviceUniqueIdentifier()
+
+    WifiDirectDataSharingStrategy()
+      .send(
+        device = DeviceInfo(strategySpecificDevice = deviceInfo)
+        /** Find out how to get this */
+        ,
+        syncPayload =
+        SyncPayload(
+          Gson().toJson(Constants.SEND_SYNC_PARAMS),
+        ),
+        object : DataSharingStrategy.OperationListener {
+          override fun onSuccess(device: DeviceInfo) {
+            TODO("Not yet implemented")
+          }
+
+          override fun onFailure(device: DeviceInfo, ex: Exception) {
+            TODO("Not yet implemented")
+          }
+        }
+      )
+  }
+
   override fun sendManifest(manifest: Manifest) {
     if (getCurrentPeerDevice() != null) {
       WifiDirectDataSharingStrategy()

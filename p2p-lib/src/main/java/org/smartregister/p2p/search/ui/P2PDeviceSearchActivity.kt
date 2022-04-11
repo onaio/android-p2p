@@ -39,6 +39,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -47,19 +48,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
-import com.google.gson.Gson
-import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.R
-import org.smartregister.p2p.SyncPayload
 import org.smartregister.p2p.WifiP2pBroadcastReceiver
 import org.smartregister.p2p.authentication.model.DeviceRole
-import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
-import org.smartregister.p2p.data_sharing.WifiDirectDataSharingStrategy
 import org.smartregister.p2p.search.adapter.DeviceListAdapter
 import org.smartregister.p2p.search.contract.P2PManagerListener
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
-import org.smartregister.p2p.utils.Constants
 import org.smartregister.p2p.utils.getDeviceName
 import org.smartregister.p2p.utils.startP2PScreen
 import timber.log.Timber
@@ -76,6 +71,8 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
   private var wifiP2pChannel: WifiP2pManager.Channel? = null
   private var wifiP2pReceiver: BroadcastReceiver? = null
   private val accessFineLocationPermissionRequestInt: Int = 12345
+  val p2PReceiverViewModel by viewModels<P2PReceiverViewModel>()
+  val p2PSenderViewModel by viewModels<P2PSenderViewModel>()
   private var isSender = false
   private var scanning = false
   private lateinit var interactiveDialog: BottomSheetDialog
@@ -400,7 +397,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
 
     interactiveDialog.findViewById<Button>(R.id.dataTransferBtn)?.setOnClickListener {
       // initiate data transfer
-      requestSyncParams()
+      p2PSenderViewModel.requestSyncParams(DeviceInfo(Any()))
     }
 
     interactiveDialog.setCancelable(false)
@@ -519,38 +516,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
   private fun logDebug(message: String) {
     Snackbar.make(rootView, message, Snackbar.LENGTH_SHORT).show()
     Timber.d(message)
-  }
-
-  fun requestSyncParams() {
-    // write a message to the socket requesting the receiver for acceptable data types
-    // and their last update times which can be sent using a simple string command,
-    // 'SEND_SYNC_PARAMS', and the **app_lifetime_key**
-
-    val deviceInfo: MutableMap<String, String?> = HashMap()
-    deviceInfo[Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY] =
-      P2PLibrary.getInstance()!!.getHashKey()
-    deviceInfo[Constants.BasicDeviceDetails.KEY_DEVICE_ID] =
-      P2PLibrary.getInstance()!!.getDeviceUniqueIdentifier()
-
-    WifiDirectDataSharingStrategy()
-      .send(
-        device = DeviceInfo(strategySpecificDevice = deviceInfo)
-        /** Find out how to get this */
-        ,
-        syncPayload =
-          SyncPayload(
-            Gson().toJson(Constants.SEND_SYNC_PARAMS),
-          ),
-        object : DataSharingStrategy.OperationListener {
-          override fun onSuccess(device: DeviceInfo) {
-            TODO("Not yet implemented")
-          }
-
-          override fun onFailure(device: DeviceInfo, ex: Exception) {
-            TODO("Not yet implemented")
-          }
-        }
-      )
   }
 
   fun sendSyncParams() {
