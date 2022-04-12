@@ -6,6 +6,7 @@ plugins {
     id 'com.github.kt3k.coveralls'
     id 'com.diffplug.spotless'
 }
+apply plugin: 'kotlin-kapt'
 
 jacoco {
     toolVersion = '0.8.7'
@@ -93,6 +94,7 @@ dependencies { configuration ->
 
 def roomDependencies(configuration) {
     configuration.implementation(deps.room.ktx)
+    configuration.kapt(deps.room.compiler)
 
     // Room Test helpers
     configuration.testImplementation(deps.room.testing)
