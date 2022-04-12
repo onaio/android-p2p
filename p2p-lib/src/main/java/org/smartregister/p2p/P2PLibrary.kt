@@ -27,7 +27,7 @@ import org.smartregister.p2p.utils.Settings
 import timber.log.Timber
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 14-03-2022. */
-class P2PLibrary private constructor() {
+class P2PLibrary() {
 
   private lateinit var options: Options
   private var hashKey: String? = null
