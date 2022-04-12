@@ -25,9 +25,10 @@ import androidx.room.Entity
  */
 @Entity(tableName = "p2p_received_history", primaryKeys = ["entity_type", "app_lifetime_key"])
 class P2PReceivedHistory {
-  @NonNull @ColumnInfo(name = "app_lifetime_key") var appLifetimeKey: String? = null
 
-  @NonNull @ColumnInfo(name = "entity_type") var entityType: String? = null
+  @NonNull @ColumnInfo(name = "app_lifetime_key") lateinit var appLifetimeKey: String
+
+  @NonNull @ColumnInfo(name = "entity_type") lateinit var entityType: String
 
   @ColumnInfo(name = "last_updated_at") var lastUpdatedAt: Long = 0
 }

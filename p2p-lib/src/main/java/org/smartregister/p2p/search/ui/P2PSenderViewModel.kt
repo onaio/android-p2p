@@ -26,6 +26,7 @@ import org.smartregister.p2p.data_sharing.WifiDirectDataSharingStrategy
 import org.smartregister.p2p.model.P2PReceivedHistory
 import org.smartregister.p2p.payload.StringPayload
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
+import org.smartregister.p2p.search.data.JsonData
 import org.smartregister.p2p.utils.Constants
 
 class P2PSenderViewModel : ViewModel(), P2pModeSelectContract.SenderViewModel {
@@ -97,7 +98,8 @@ class P2PSenderViewModel : ViewModel(), P2pModeSelectContract.SenderViewModel {
         Gson().fromJson(syncPayload.toString(), receivedHistoryListType)
 
       // TODO run this is background
-      val jsonData = P2PLibrary.getInstance().getSenderTransferDao()?.getP2PDataTypes()
+      // TODO fix this
+      val jsonData = JsonData() //P2PLibrary.getInstance().getSenderTransferDao()?.getP2PDataTypes()
 
       if (jsonData != null) {
         // startSyncProcess()

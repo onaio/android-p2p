@@ -115,13 +115,13 @@ class P2PLibrary() {
   class Options(
     val context: Context,
     val dbPassphrase: String,
-    val username: String,
-    val senderTransferDao: SenderTransferDao
+    val username: String
   ) {
     var batchSize: Int = Constants.DEFAULT_SHARE_BATCH_SIZE
   }
 
-  fun getSenderTransferDao(): SenderTransferDao {
+  //TODO re-instate this
+/*  fun getSenderTransferDao(): SenderTransferDao {
     return options.senderTransferDao
-  }
+  }*/
 }
