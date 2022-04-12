@@ -97,7 +97,7 @@ class P2PSenderViewModel : ViewModel(), P2pModeSelectContract.SenderViewModel {
         Gson().fromJson(syncPayload.toString(), receivedHistoryListType)
 
       // TODO run this is background
-      val jsonData = P2PLibrary.getInstance()!!.getDb()?.senderTransferDao()?.getP2PDataTypes()
+      val jsonData = P2PLibrary.getInstance().getSenderTransferDao()?.getP2PDataTypes()
 
       if (jsonData != null) {
         // startSyncProcess()

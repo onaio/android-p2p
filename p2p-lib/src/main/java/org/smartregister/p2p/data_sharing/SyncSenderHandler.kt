@@ -21,6 +21,7 @@ import java.util.TreeSet
 import kotlin.collections.HashMap
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.model.P2PReceivedHistory
+import org.smartregister.p2p.search.data.JsonData
 import org.smartregister.p2p.search.ui.P2PSenderViewModel
 import org.smartregister.p2p.sync.DataType
 
@@ -67,10 +68,8 @@ constructor(
     val nullableRecordId = remainingLastRecordIds[dataType.name]
     val lastRecordId = nullableRecordId ?: 0L
     // TODO run this is background
-    val jsonData =
-      P2PLibrary.getInstance()!!
-        .getDb()
-        ?.senderTransferDao()
+    val jsonData = JsonData()
+      P2PLibrary.getInstance().getSenderTransferDao()
         ?.getJsonData(dataType, lastRecordId, batchSize)!!
 
     // send actual manifest
