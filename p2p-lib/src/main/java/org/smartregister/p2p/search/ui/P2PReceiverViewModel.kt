@@ -20,12 +20,12 @@ import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import kotlinx.coroutines.launch
 import org.smartregister.p2p.P2PLibrary
-import org.smartregister.p2p.SyncPayload
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.IReceiverSyncLifecycleCallback
 import org.smartregister.p2p.data_sharing.WifiDirectDataSharingStrategy
 import org.smartregister.p2p.model.P2PReceivedHistory
+import org.smartregister.p2p.payload.StringPayload
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
 import org.smartregister.p2p.utils.Constants
 
@@ -60,7 +60,7 @@ class P2PReceiverViewModel :
         /** Find out how to get this */
         ,
         syncPayload =
-          SyncPayload(
+        StringPayload(
             Gson().toJson(receivedHistory),
           ),
         object : DataSharingStrategy.OperationListener {

@@ -19,12 +19,12 @@ import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.smartregister.p2p.P2PLibrary
-import org.smartregister.p2p.SyncPayload
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
 import org.smartregister.p2p.data_sharing.WifiDirectDataSharingStrategy
 import org.smartregister.p2p.model.P2PReceivedHistory
+import org.smartregister.p2p.payload.StringPayload
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
 import org.smartregister.p2p.utils.Constants
 
@@ -49,7 +49,7 @@ class P2PSenderViewModel : ViewModel(), P2pModeSelectContract.SenderViewModel {
         /** Find out how to get this */
         ,
         syncPayload =
-          SyncPayload(
+        StringPayload(
             Gson().toJson(Constants.SEND_SYNC_PARAMS),
           ),
         object : DataSharingStrategy.OperationListener {
@@ -87,7 +87,7 @@ class P2PSenderViewModel : ViewModel(), P2pModeSelectContract.SenderViewModel {
     TODO("Not yet implemented")
   }
 
-  override fun processReceivedHistory(syncPayload: SyncPayload) {
+  override fun processReceivedHistory(syncPayload: StringPayload) {
     connectionLevel = Constants.ConnectionLevel.RECEIPT_OF_RECEIVED_HISTORY
 
     // Handle non empty payload
