@@ -68,8 +68,7 @@ constructor(
     val nullableRecordId = remainingLastRecordIds[dataType.name]
     val lastRecordId = nullableRecordId ?: 0L
     // TODO run this is background
-    val jsonData = JsonData()
-      P2PLibrary.getInstance().getSenderTransferDao()
+    val jsonData =  P2PLibrary.getInstance().getSenderTransferDao()
         ?.getJsonData(dataType, lastRecordId, batchSize)!!
 
     // send actual manifest

@@ -16,12 +16,12 @@
 package org.smartregister.p2p.model
 
 import android.content.Context
-import android.text.SpannableStringBuilder
 import androidx.annotation.NonNull
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.commonsware.cwac.saferoom.SafeHelperFactory
+import net.sqlcipher.database.SQLiteDatabase
+import net.sqlcipher.database.SupportFactory
 import org.smartregister.p2p.dao.P2pReceivedHistoryDao
 
 /**
@@ -35,10 +35,9 @@ abstract class AppDatabase : RoomDatabase() {
   companion object {
     private var instance: AppDatabase? = null
     var dbName = "p2p"
-    fun getInstance(@NonNull context: Context, @NonNull passphrase: String?): AppDatabase? {
+    fun getInstance(@NonNull context: Context, @NonNull passphrase: String): AppDatabase? {
       if (instance == null) {
-        val safeHelperFactory: SafeHelperFactory =
-          SafeHelperFactory.fromUser(SpannableStringBuilder(passphrase))
+        val safeHelperFactory = SupportFactory(SQLiteDatabase.getBytes(passphrase.toCharArray()))
         instance =
           Room.databaseBuilder(context.getApplicationContext(), AppDatabase::class.java, dbName)
             .openHelperFactory(safeHelperFactory)

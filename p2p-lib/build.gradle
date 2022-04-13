@@ -96,11 +96,13 @@ def roomDependencies(configuration) {
     configuration.implementation(deps.room.ktx)
     configuration.kapt(deps.room.compiler)
 
-    // Room Test helpers
-    configuration.testImplementation(deps.room.testing)
+    // sql cipher deps
+    configuration.implementation "net.zetetic:android-database-sqlcipher:4.5.0"
+    configuration.implementation "androidx.sqlite:sqlite:2.0.1"
 
-    // Encrypted SQLite help
-    configuration.implementation "com.commonsware.cwac:saferoom:1.0.2"
+    // Room Test helpers
+    configuration.testImplementation "androidx.room:room-testing:2.3.0"
+
 }
 
 task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest'/*, 'createDebugCoverageReport'*/]) {
