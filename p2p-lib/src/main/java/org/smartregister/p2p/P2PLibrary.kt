@@ -18,6 +18,7 @@ package org.smartregister.p2p
 import android.content.Context
 import androidx.annotation.NonNull
 import androidx.annotation.Nullable
+import org.smartregister.p2p.dao.ReceiverTransferDao
 import org.smartregister.p2p.dao.SenderTransferDao
 import java.util.UUID
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
@@ -111,17 +112,23 @@ class P2PLibrary() {
     return options.batchSize
   }
 
+  fun getSenderTransferDao(): SenderTransferDao {
+    return options.senderTransferDao
+  }
+
+  fun getReceiverTransferDao(): ReceiverTransferDao {
+    return options.receiverTransferDao
+  }
+
   /** [P2PLibrary] configurability options an */
   class Options(
     val context: Context,
     val dbPassphrase: String,
     val username: String,
-    val senderTransferDao: SenderTransferDao
+    val senderTransferDao: SenderTransferDao,
+    val receiverTransferDao: ReceiverTransferDao
   ) {
     var batchSize: Int = Constants.DEFAULT_SHARE_BATCH_SIZE
   }
 
-  fun getSenderTransferDao(): SenderTransferDao {
-    return options.senderTransferDao
-  }
 }

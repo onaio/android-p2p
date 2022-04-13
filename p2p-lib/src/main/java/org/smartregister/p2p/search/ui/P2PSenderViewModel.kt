@@ -23,27 +23,32 @@ import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
 import org.smartregister.p2p.data_sharing.WifiDirectDataSharingStrategy
+import org.smartregister.p2p.data_sharing.SyncSenderHandler
 import org.smartregister.p2p.model.P2PReceivedHistory
 import org.smartregister.p2p.payload.StringPayload
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
 import org.smartregister.p2p.utils.Constants
 
-class P2PSenderViewModel : ViewModel(), P2pModeSelectContract.SenderViewModel {
+class P2PSenderViewModel(private val context: P2PDeviceSearchActivity,
+                         private val dataSharingStrategy: DataSharingStrategy
+) : ViewModel(), P2pModeSelectContract.SenderViewModel {
 
   private var connectionLevel: Constants.ConnectionLevel? = null
+
+  private lateinit var syncSenderHandler: SyncSenderHandler
 
   override fun requestSyncParams(deviceInfo: DeviceInfo) {
     // write a message to the socket requesting the receiver for acceptable data types
     // and their last update times which can be sent using a simple string command,
     // 'SEND_SYNC_PARAMS', and the **app_lifetime_key**
 
-    val deviceInfo: MutableMap<String, String?> = HashMap()
+ /*   val deviceInfo: MutableMap<String, String?> = HashMap()
     deviceInfo[Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY] =
       P2PLibrary.getInstance()!!.getHashKey()
     deviceInfo[Constants.BasicDeviceDetails.KEY_DEVICE_ID] =
-      P2PLibrary.getInstance()!!.getDeviceUniqueIdentifier()
+      P2PLibrary.getInstance()!!.getDeviceUniqueIdentifier()*/
 
-    WifiDirectDataSharingStrategy()
+    dataSharingStrategy
       .send(
         device = DeviceInfo(strategySpecificDevice = deviceInfo)
         /** Find out how to get this */
@@ -54,37 +59,33 @@ class P2PSenderViewModel : ViewModel(), P2pModeSelectContract.SenderViewModel {
           ),
         object : DataSharingStrategy.OperationListener {
           override fun onSuccess(device: DeviceInfo) {
-            TODO("Not yet implemented")
           }
 
           override fun onFailure(device: DeviceInfo, ex: Exception) {
-            TODO("Not yet implemented")
           }
         }
       )
   }
 
   override fun sendManifest(manifest: Manifest) {
-    if (getCurrentPeerDevice() != null) {
+    if (getCurrentConnectedDevice() != null) {
       WifiDirectDataSharingStrategy()
         .sendManifest(
-          device = getCurrentPeerDevice(),
+          device = getCurrentConnectedDevice(),
           manifest = manifest,
           object : DataSharingStrategy.OperationListener {
             override fun onSuccess(device: DeviceInfo) {
-              TODO("Not yet implemented")
             }
 
             override fun onFailure(device: DeviceInfo, ex: Exception) {
-              TODO("Not yet implemented")
             }
           }
         )
     }
   }
 
-  override fun getCurrentPeerDevice(): DeviceInfo {
-    TODO("Not yet implemented")
+  override fun getCurrentConnectedDevice(): DeviceInfo {
+    return context.getCurrentConnectedDevice()
   }
 
   override fun processReceivedHistory(syncPayload: StringPayload) {
@@ -97,10 +98,15 @@ class P2PSenderViewModel : ViewModel(), P2pModeSelectContract.SenderViewModel {
         Gson().fromJson(syncPayload.toString(), receivedHistoryListType)
 
       // TODO run this is background
-      val jsonData = P2PLibrary.getInstance().getSenderTransferDao()?.getP2PDataTypes()
+      val jsonData = P2PLibrary.getInstance().getSenderTransferDao().getP2PDataTypes()
+
+      syncSenderHandler = SyncSenderHandler(p2PSenderViewModel = this,
+        dataSyncOrder = jsonData,
+        receivedHistory = receivedHistory)
+
 
       if (jsonData != null) {
-        // startSyncProcess()
+        syncSenderHandler.startSyncProcess()
       } else {
         // sendSyncComplete
       }

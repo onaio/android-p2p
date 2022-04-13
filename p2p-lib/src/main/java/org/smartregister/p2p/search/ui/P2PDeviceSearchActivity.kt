@@ -78,6 +78,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
   private var isSender = false
   private var scanning = false
   private lateinit var interactiveDialog: BottomSheetDialog
+  private lateinit var currentConnectedDevice: WifiP2pDevice
 
   private lateinit var dataSharingStrategy: DataSharingStrategy
 
@@ -405,7 +406,8 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
 
     interactiveDialog.findViewById<Button>(R.id.dataTransferBtn)?.setOnClickListener {
       // initiate data transfer
-      p2PSenderViewModel.requestSyncParams(DeviceInfo(Any()))
+      p2PSenderViewModel.requestSyncParams(getCurrentConnectedDevice())
+
     }
 
     interactiveDialog.setCancelable(false)
@@ -433,6 +435,9 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
 
     interactiveDialog.setCancelable(false)
     interactiveDialog.show()
+
+    // listen for messages
+    p2PReceiverViewModel.processSyncParamsRequest()
   }
 
   private fun initInteractiveDialog() {
@@ -469,6 +474,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
 
   private fun handleDeviceConnectionSuccess(device: WifiP2pDevice) {
     Timber.d("Wifi P2P: Successfully connected to device: ${device.deviceAddress}")
+    currentConnectedDevice = device
     showP2PSelectPage(getDeviceRole(), device.deviceName)
   }
 
@@ -528,5 +534,9 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
 
   fun sendSyncParams() {
     // Respond with the acceptable data types each with its lastUpdated timestamp and batch size
+  }
+
+  fun getCurrentConnectedDevice(): DeviceInfo {
+    return currentConnectedDevice as DeviceInfo
   }
 }
