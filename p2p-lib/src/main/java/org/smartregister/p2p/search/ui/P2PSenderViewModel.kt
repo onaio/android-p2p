@@ -99,7 +99,7 @@ class P2PSenderViewModel : ViewModel(), P2pModeSelectContract.SenderViewModel {
 
       // TODO run this is background
       // TODO fix this
-      val jsonData = JsonData() //P2PLibrary.getInstance().getSenderTransferDao()?.getP2PDataTypes()
+      val jsonData = P2PLibrary.getInstance().getSenderTransferDao()?.getP2PDataTypes()
 
       if (jsonData != null) {
         // startSyncProcess()
