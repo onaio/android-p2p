@@ -16,8 +16,7 @@ class SampleMainActivity : AppCompatActivity() {
         // Init P2PLibrary
         val p2POptions = P2PLibrary.Options(context = this,
             dbPassphrase = "demo",
-            username = "demo",
-        senderTransferDao = P2PSenderTransferDao()
+            username = "demo"
         )
         P2PLibrary().init(p2POptions)
 

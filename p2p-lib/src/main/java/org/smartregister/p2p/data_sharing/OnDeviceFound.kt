@@ -22,7 +22,5 @@ interface OnDeviceFound {
 
   fun deviceFound(devices: List<DeviceInfo>)
 
-  fun onDeviceFound(devices: List<DeviceInfo>)
-
   fun failed(ex: Exception)
 }
