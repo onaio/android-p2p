@@ -44,7 +44,7 @@ import org.smartregister.p2p.search.contract.P2PManagerListener
 import timber.log.Timber
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 21-03-2022. */
-class WifiDirectDataSharingStrategy() : DataSharingStrategy, P2PManagerListener {
+class WifiDirectDataSharingStrategy() : DataSharingStrategy<WifiP2pDevice>, P2PManagerListener {
 
   lateinit var context: Activity
   private val wifiP2pManager: WifiP2pManager by lazy(LazyThreadSafetyMode.NONE) {
@@ -216,8 +216,8 @@ class WifiDirectDataSharingStrategy() : DataSharingStrategy, P2PManagerListener 
   }
 
   override fun connect(
-    device: DeviceInfo,
-    operationListener: DataSharingStrategy.OperationListener
+    device: DeviceInfo<WifiP2pDevice>,
+    operationListener: DataSharingStrategy.OperationListener<WifiP2pDevice>
   ) {
     val wifiDirectDevice = device.strategySpecificDevice as WifiP2pDevice
 
@@ -251,8 +251,8 @@ class WifiDirectDataSharingStrategy() : DataSharingStrategy, P2PManagerListener 
   }
 
   override fun disconnect(
-    device: DeviceInfo,
-    operationListener: DataSharingStrategy.OperationListener
+    device: DeviceInfo<WifiP2pDevice>,
+    operationListener: DataSharingStrategy.OperationListener<WifiP2pDevice>
   ) {
     wifiP2pManager.cancelConnect(
       wifiP2pChannel,
@@ -272,9 +272,9 @@ class WifiDirectDataSharingStrategy() : DataSharingStrategy, P2PManagerListener 
   }
 
   override fun send(
-    device: DeviceInfo,
+    device: DeviceInfo<WifiP2pDevice>,
     syncPayload: PayloadContract<out Any>,
-    operationListener: DataSharingStrategy.OperationListener
+    operationListener: DataSharingStrategy.OperationListener<WifiP2pDevice>
   ) {
     // Check if the socket is setup for sending
     // Check if this is the sender/receiver
@@ -396,9 +396,9 @@ class WifiDirectDataSharingStrategy() : DataSharingStrategy, P2PManagerListener 
     }
 
   override fun sendManifest(
-    device: DeviceInfo,
+    device: DeviceInfo<WifiP2pDevice>,
     manifest: Manifest,
-    operationListener: DataSharingStrategy.OperationListener
+    operationListener: DataSharingStrategy.OperationListener<WifiP2pDevice>
   ) {
     // Check if the socket is setup for sending
     // Check if this is the sender/receiver
@@ -412,8 +412,8 @@ class WifiDirectDataSharingStrategy() : DataSharingStrategy, P2PManagerListener 
   }
 
   override fun receive(
-    device: DeviceInfo,
-    operationListener: DataSharingStrategy.OperationListener
+    device: DeviceInfo<WifiP2pDevice>,
+    operationListener: DataSharingStrategy.OperationListener<WifiP2pDevice>
   ): PayloadContract<out Any>? {
     // Check if the socket is setup for listening
     // Check if this is the receiver/sender
@@ -445,8 +445,8 @@ class WifiDirectDataSharingStrategy() : DataSharingStrategy, P2PManagerListener 
   }
 
   override fun receiveManifest(
-    device: DeviceInfo,
-    operationListener: DataSharingStrategy.OperationListener
+    device: DeviceInfo<WifiP2pDevice>,
+    operationListener: DataSharingStrategy.OperationListener<WifiP2pDevice>
   ): Manifest? {
     // Check if the socket is setup for listening
     // Check if this is the receiver/sender
@@ -469,20 +469,20 @@ class WifiDirectDataSharingStrategy() : DataSharingStrategy, P2PManagerListener 
     closeSocketAndStreams()
   }
 
-  override fun onConnectionFailed(device: DeviceInfo, ex: Exception) {
+  override fun onConnectionFailed(device: DeviceInfo<WifiP2pDevice>, ex: Exception) {
     // TODO: Return this to the device
     closeSocketAndStreams()
   }
 
-  override fun onConnectionSucceeded(device: DeviceInfo) {
+  override fun onConnectionSucceeded(device: DeviceInfo<WifiP2pDevice>) {
     // TODO: Return this to the device
   }
 
-  override fun onDisconnectFailed(device: DeviceInfo, ex: Exception) {
+  override fun onDisconnectFailed(device: DeviceInfo<WifiP2pDevice>, ex: Exception) {
     // TODO: Return this to the device
   }
 
-  override fun onDisconnectSucceeded(device: DeviceInfo) {
+  override fun onDisconnectSucceeded(device: DeviceInfo<WifiP2pDevice>) {
     // TODO: Return this to the device
 
     closeSocketAndStreams()

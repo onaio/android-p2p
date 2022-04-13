@@ -78,9 +78,9 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
   private var isSender = false
   private var scanning = false
   private lateinit var interactiveDialog: BottomSheetDialog
-  private var currentConnectedDevice = DeviceInfo(Any())
+  private lateinit var currentConnectedDevice : DeviceInfo<Any>
 
-  private lateinit var dataSharingStrategy: DataSharingStrategy
+  private lateinit var dataSharingStrategy: DataSharingStrategy<Any>
 
   private val rootView: View by lazy { findViewById(R.id.device_search_root_layout) }
 
@@ -536,7 +536,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
     // Respond with the acceptable data types each with its lastUpdated timestamp and batch size
   }
 
-  fun getCurrentConnectedDevice(): DeviceInfo {
+  fun getCurrentConnectedDevice(): DeviceInfo<Any> {
     return currentConnectedDevice
   }
 }

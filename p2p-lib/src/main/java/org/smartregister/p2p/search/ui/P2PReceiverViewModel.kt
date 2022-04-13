@@ -25,14 +25,13 @@ import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.IReceiverSyncLifecycleCallback
-import org.smartregister.p2p.data_sharing.WifiDirectDataSharingStrategy
 import org.smartregister.p2p.model.P2PReceivedHistory
 import org.smartregister.p2p.payload.StringPayload
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
 import org.smartregister.p2p.utils.Constants
 
 class P2PReceiverViewModel (private val context: P2PDeviceSearchActivity,
-                            private val dataSharingStrategy: DataSharingStrategy):
+                            private val dataSharingStrategy: DataSharingStrategy<Any>):
   ViewModel(), IReceiverSyncLifecycleCallback, P2pModeSelectContract.ReceiverViewModel {
 
   private val connectionLevel: Constants.ConnectionLevel? = null
@@ -40,12 +39,12 @@ class P2PReceiverViewModel (private val context: P2PDeviceSearchActivity,
   fun processSyncParamsRequest() {
 
     dataSharingStrategy.receive(context.getCurrentConnectedDevice(),
-        object : DataSharingStrategy.OperationListener {
-          override fun onSuccess(device: DeviceInfo) {
-            checkIfDeviceKeyHasChanged((device as WifiP2pDevice).deviceName)
+        object : DataSharingStrategy.OperationListener<Any> {
+          override fun onSuccess(device: DeviceInfo<Any>) {
+            checkIfDeviceKeyHasChanged((device.strategySpecificDevice as WifiP2pDevice).deviceName)
           }
 
-          override fun onFailure(device: DeviceInfo, ex: Exception) {
+          override fun onFailure(device: DeviceInfo<Any>, ex: Exception) {
           }
         }
       )
@@ -53,8 +52,8 @@ class P2PReceiverViewModel (private val context: P2PDeviceSearchActivity,
 
   fun checkIfDeviceKeyHasChanged(senderDeviceId: String) {
     viewModelScope.launch {
-      var receivedHistory =
-        P2PLibrary.getInstance()!!
+      val receivedHistory =
+        P2PLibrary.getInstance()
           .getDb()
           ?.p2pReceivedHistoryDao()
           ?.getDeviceReceivedHistory(senderDeviceId)
@@ -73,26 +72,24 @@ class P2PReceiverViewModel (private val context: P2PDeviceSearchActivity,
 
     val deviceInfo: MutableMap<String, String?> = HashMap()
     deviceInfo[Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY] =
-      P2PLibrary.getInstance()!!.getHashKey()
+      P2PLibrary.getInstance().getHashKey()
     deviceInfo[Constants.BasicDeviceDetails.KEY_DEVICE_ID] =
-      P2PLibrary.getInstance()!!.getDeviceUniqueIdentifier()
+      P2PLibrary.getInstance().getDeviceUniqueIdentifier()
 
-    WifiDirectDataSharingStrategy()
+    dataSharingStrategy
       .send(
-        device = DeviceInfo(strategySpecificDevice = deviceInfo)
-        /** Find out how to get this */
-        ,
+        device = DeviceInfo(strategySpecificDevice = deviceInfo),
         syncPayload =
         StringPayload(
             Gson().toJson(receivedHistory),
           ),
-        object : DataSharingStrategy.OperationListener {
-          override fun onSuccess(device: DeviceInfo) {
-            TODO("Not yet implemented")
+        object : DataSharingStrategy.OperationListener<Any> {
+          override fun onSuccess(device: DeviceInfo<Any>) {
+
           }
 
-          override fun onFailure(device: DeviceInfo, ex: Exception) {
-            TODO("Not yet implemented")
+          override fun onFailure(device: DeviceInfo<Any>, ex: Exception) {
+
           }
         }
       )
@@ -104,7 +101,7 @@ class P2PReceiverViewModel (private val context: P2PDeviceSearchActivity,
   }
 
   class Factory(private val context: P2PDeviceSearchActivity,
-                private val dataSharingStrategy: DataSharingStrategy)
+                private val dataSharingStrategy: DataSharingStrategy<Any>)
     : ViewModelProvider.Factory {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
       return P2PReceiverViewModel(context, dataSharingStrategy) as T
