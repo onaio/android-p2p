@@ -17,6 +17,7 @@ package org.smartregister.p2p.search.ui
 
 import android.net.wifi.p2p.WifiP2pDevice
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import kotlinx.coroutines.launch
@@ -98,6 +99,16 @@ class P2PReceiverViewModel (private val context: P2PDeviceSearchActivity,
   }
 
   override fun getSendingDeviceId(): String {
-    TODO("Not yet implemented")
+    //TODO implement this
+    return "";
   }
+
+  class Factory(private val context: P2PDeviceSearchActivity,
+                private val dataSharingStrategy: DataSharingStrategy)
+    : ViewModelProvider.Factory {
+    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+      return P2PReceiverViewModel(context, dataSharingStrategy) as T
+    }
+  }
+
 }

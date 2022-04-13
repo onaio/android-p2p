@@ -16,6 +16,7 @@
 package org.smartregister.p2p.search.ui
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.smartregister.p2p.P2PLibrary
@@ -110,6 +111,14 @@ class P2PSenderViewModel(private val context: P2PDeviceSearchActivity,
       } else {
         // sendSyncComplete
       }
+    }
+  }
+
+  class Factory(private val context: P2PDeviceSearchActivity,
+                private val dataSharingStrategy: DataSharingStrategy)
+    : ViewModelProvider.Factory {
+    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+      return P2PSenderViewModel(context, dataSharingStrategy) as T
     }
   }
 }

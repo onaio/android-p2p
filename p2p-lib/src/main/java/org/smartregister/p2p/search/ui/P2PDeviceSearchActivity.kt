@@ -73,12 +73,12 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
   private var wifiP2pChannel: WifiP2pManager.Channel? = null
   private var wifiP2pReceiver: BroadcastReceiver? = null
   private val accessFineLocationPermissionRequestInt: Int = 12345
-  val p2PReceiverViewModel by viewModels<P2PReceiverViewModel>()
-  val p2PSenderViewModel by viewModels<P2PSenderViewModel>()
+  private val p2PReceiverViewModel by viewModels<P2PReceiverViewModel>{P2PReceiverViewModel.Factory(context = this, dataSharingStrategy = dataSharingStrategy) }
+  private val p2PSenderViewModel by viewModels <P2PSenderViewModel>{ P2PSenderViewModel.Factory(context = this, dataSharingStrategy = dataSharingStrategy)  }
   private var isSender = false
   private var scanning = false
   private lateinit var interactiveDialog: BottomSheetDialog
-  private lateinit var currentConnectedDevice: WifiP2pDevice
+  private var currentConnectedDevice = DeviceInfo(Any())
 
   private lateinit var dataSharingStrategy: DataSharingStrategy
 
@@ -474,7 +474,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
 
   private fun handleDeviceConnectionSuccess(device: WifiP2pDevice) {
     Timber.d("Wifi P2P: Successfully connected to device: ${device.deviceAddress}")
-    currentConnectedDevice = device
+    currentConnectedDevice = DeviceInfo(device)
     showP2PSelectPage(getDeviceRole(), device.deviceName)
   }
 
@@ -537,6 +537,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
   }
 
   fun getCurrentConnectedDevice(): DeviceInfo {
-    return currentConnectedDevice as DeviceInfo
+    return currentConnectedDevice
   }
 }
