@@ -23,7 +23,7 @@ interface DataSharingStrategy<DeviceObjectForStrategy> {
 
   fun setActivity(context: Activity)
 
-  fun searchDevices(onDeviceFound: OnDeviceFound)
+  fun searchDevices(onDeviceFound: OnDeviceFound<DeviceObjectForStrategy>)
 
   fun connect(device: DeviceInfo<DeviceObjectForStrategy>, operationListener: OperationListener<DeviceObjectForStrategy>)
 

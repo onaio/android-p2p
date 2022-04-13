@@ -68,7 +68,7 @@ class WifiDirectDataSharingStrategy() : DataSharingStrategy<WifiP2pDevice>, P2PM
     this.context = context
   }
 
-  override fun searchDevices(onDeviceFound: OnDeviceFound) {
+  override fun searchDevices(onDeviceFound: OnDeviceFound<WifiP2pDevice>) {
     // Wifi P2p
     wifiP2pChannel = wifiP2pManager.initialize(context, context.mainLooper, null)
     wifiP2pChannel?.also { channel ->
@@ -187,7 +187,7 @@ class WifiDirectDataSharingStrategy() : DataSharingStrategy<WifiP2pDevice>, P2PM
     }
   }
 
-  private fun initiatePeerDiscovery(onDeviceFound: OnDeviceFound?) {
+  private fun initiatePeerDiscovery(onDeviceFound: OnDeviceFound<WifiP2pDevice>?) {
     if (ActivityCompat.checkSelfPermission(
         context,
         android.Manifest.permission.ACCESS_FINE_LOCATION

@@ -18,9 +18,9 @@ package org.smartregister.p2p.data_sharing
 import java.lang.Exception
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 21-03-2022. */
-interface OnDeviceFound {
+interface OnDeviceFound<DeviceObjectForStrategy> {
 
-  fun deviceFound(devices: List<DeviceInfo>)
+  fun deviceFound(devices: List<DeviceInfo<DeviceObjectForStrategy>>)
 
   fun failed(ex: Exception)
 }
