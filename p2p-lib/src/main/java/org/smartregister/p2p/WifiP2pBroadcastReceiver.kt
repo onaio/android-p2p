@@ -37,7 +37,8 @@ class WifiP2pBroadcastReceiver(
   override fun onReceive(context: Context, intent: Intent) {
     when (intent.action) {
       WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION -> {
-        val p2pGroupInfo = intent.getParcelableExtra<WifiP2pGroup>(WifiP2pManager.EXTRA_WIFI_P2P_GROUP)
+        val p2pGroupInfo =
+          intent.getParcelableExtra<WifiP2pGroup>(WifiP2pManager.EXTRA_WIFI_P2P_GROUP)
         val wifiP2pInfo = intent.getParcelableExtra<WifiP2pInfo>(WifiP2pManager.EXTRA_WIFI_P2P_INFO)
         listener.onConnectionInfoAvailable(wifiP2pInfo!!, p2pGroupInfo)
       }

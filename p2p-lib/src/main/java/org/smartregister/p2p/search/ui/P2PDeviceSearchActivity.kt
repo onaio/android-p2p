@@ -16,22 +16,9 @@
 package org.smartregister.p2p.search.ui
 
 import android.Manifest
-import android.content.BroadcastReceiver
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.content.pm.PackageManager
-import android.net.wifi.p2p.WifiP2pConfig
-import android.net.wifi.p2p.WifiP2pDevice
-import android.net.wifi.p2p.WifiP2pDeviceList
-import android.net.wifi.p2p.WifiP2pGroup
-import android.net.wifi.p2p.WifiP2pInfo
-import android.net.wifi.p2p.WifiP2pManager
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -39,7 +26,6 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -51,12 +37,11 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.R
-import org.smartregister.p2p.WifiP2pBroadcastReceiver
 import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
+import org.smartregister.p2p.data_sharing.OnDeviceFound
 import org.smartregister.p2p.search.adapter.DeviceListAdapter
-import org.smartregister.p2p.search.contract.P2PManagerListener
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
 import org.smartregister.p2p.utils.getDeviceName
 import org.smartregister.p2p.utils.startP2PScreen
@@ -66,20 +51,24 @@ import timber.log.Timber
  * This is the exposed activity that provides access to all P2P operations and steps. It can be
  * called from other apps via [startP2PScreen] function.
  */
-class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pModeSelectContract {
-
+class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
+  /*
   private val wifiP2pManager: WifiP2pManager by lazy(LazyThreadSafetyMode.NONE) {
     getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager
   }
   private var wifiP2pChannel: WifiP2pManager.Channel? = null
-  private var wifiP2pReceiver: BroadcastReceiver? = null
+  private var wifiP2pReceiver: BroadcastReceiver? = null*/
   private val accessFineLocationPermissionRequestInt: Int = 12345
-  private val p2PReceiverViewModel by viewModels<P2PReceiverViewModel>{P2PReceiverViewModel.Factory(context = this, dataSharingStrategy = dataSharingStrategy) }
-  private val p2PSenderViewModel by viewModels <P2PSenderViewModel>{ P2PSenderViewModel.Factory(context = this, dataSharingStrategy = dataSharingStrategy)  }
+  private val p2PReceiverViewModel by viewModels<P2PReceiverViewModel> {
+    P2PReceiverViewModel.Factory(context = this, dataSharingStrategy = dataSharingStrategy)
+  }
+  private val p2PSenderViewModel by viewModels<P2PSenderViewModel> {
+    P2PSenderViewModel.Factory(context = this, dataSharingStrategy = dataSharingStrategy)
+  }
   private var isSender = false
   private var scanning = false
   private lateinit var interactiveDialog: BottomSheetDialog
-  private lateinit var currentConnectedDevice : DeviceInfo
+  private lateinit var currentConnectedDevice: DeviceInfo
 
   private lateinit var dataSharingStrategy: DataSharingStrategy
 
@@ -108,7 +97,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
 
   fun startScanning() {
     // Wifi P2p
-    wifiP2pChannel = wifiP2pManager.initialize(this, mainLooper, null)
+    /*wifiP2pChannel = wifiP2pManager.initialize(this, mainLooper, null)
     wifiP2pChannel?.also { channel ->
       wifiP2pReceiver = WifiP2pBroadcastReceiver(wifiP2pManager, channel, this, this)
     }
@@ -121,10 +110,23 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
 
     listenForWifiP2pIntents()
     initiatePeerDiscovery()
+    */
+
+    dataSharingStrategy.searchDevices(
+      object : OnDeviceFound {
+        override fun deviceFound(devices: List<DeviceInfo>) {
+          showDevicesList(devices)
+        }
+
+        override fun failed(ex: Exception) {
+          TODO("Not yet implemented")
+        }
+      }
+    )
 
     showScanningDialog()
   }
-
+  /*
   fun renameWifiDirectName() {
     val deviceName = getDeviceName(this)
 
@@ -166,7 +168,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
         }
       )
     }
-  }
+  }*/
 
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
     if (item.itemId == android.R.id.home) {
@@ -180,14 +182,17 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
   override fun onResume() {
     super.onResume()
 
-    if (scanning) {
+    /*if (scanning) {
       listenForWifiP2pIntents()
       initiatePeerDiscoveryOnceAccessFineLocationGranted()
       requestDeviceInfo()
       requestConnectionInfo()
-    }
-  }
+    }*/
 
+    // TODO: Add this to the DataSharingStrategy interface
+    // dataSharingStrategy.onResume()
+  }
+  /*
   private fun listenForWifiP2pIntents() {
     wifiP2pReceiver?.also {
       registerReceiver(
@@ -201,8 +206,8 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
         }
       )
     }
-  }
-
+  }*/
+  /*
   private fun initiatePeerDiscoveryOnceAccessFineLocationGranted() {
     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
         PackageManager.PERMISSION_GRANTED
@@ -215,8 +220,8 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
     } else {
       initiatePeerDiscovery()
     }
-  }
-
+  }*/
+  /*
   private fun requestDeviceInfo() {
     wifiP2pChannel?.also { wifiP2pChannel ->
       if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
@@ -239,11 +244,14 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
 
   private fun requestConnectionInfo() {
     wifiP2pManager.requestConnectionInfo(wifiP2pChannel) { onConnectionInfoAvailable(it) }
-  }
+  }*/
 
   override fun onPause() {
     super.onPause()
-    wifiP2pReceiver?.also { unregisterReceiver(it) }
+    /*wifiP2pReceiver?.also { unregisterReceiver(it) }*/
+
+    // TODO: Fix this onPause
+    // dataSharingStrategy.onPause()
   }
 
   override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -265,7 +273,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
       }
     }
   }
-
+  /*
   override fun onRequestPermissionsResult(
     requestCode: Int,
     permissions: Array<String>,
@@ -353,7 +361,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
   override fun handleP2pPeersChanged(peerDeviceList: WifiP2pDeviceList) {
     Timber.d("Wifi P2P: Peers x ${peerDeviceList.deviceList.size}")
     showDevicesList(peerDeviceList)
-  }
+  }*/
 
   fun showScanningDialog() {
     interactiveDialog = BottomSheetDialog(this)
@@ -375,7 +383,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
     interactiveDialog.show()
   }
 
-  fun showDevicesList(peerDeviceList: WifiP2pDeviceList) {
+  fun showDevicesList(peerDeviceList: List<DeviceInfo>) {
     initInteractiveDialog()
     interactiveDialog.findViewById<ConstraintLayout>(R.id.loading_devices_layout)?.visibility =
       View.GONE
@@ -384,10 +392,25 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
     val devicesListRecyclerView =
       interactiveDialog.findViewById<RecyclerView>(R.id.devices_list_recycler_view)
     if (devicesListRecyclerView != null) {
-      devicesListRecyclerView.adapter =
-        DeviceListAdapter(peerDeviceList.deviceList.toList(), { connectToDevice(it) })
+      devicesListRecyclerView.adapter = DeviceListAdapter(peerDeviceList, { connectToDevice(it) })
       devicesListRecyclerView.layoutManager = LinearLayoutManager(this)
     }
+  }
+
+  fun connectToDevice(device: DeviceInfo) {
+    dataSharingStrategy.connect(
+      device,
+      object : DataSharingStrategy.OperationListener {
+        override fun onSuccess(device: DeviceInfo) {
+          currentConnectedDevice = device
+          showP2PSelectPage(getDeviceRole(), currentConnectedDevice.getDisplayName())
+        }
+
+        override fun onFailure(device: DeviceInfo, ex: Exception) {
+          TODO("Not yet implemented")
+        }
+      }
+    )
   }
 
   fun showSenderDialog(practitionerName: String) {
@@ -408,7 +431,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
     interactiveDialog.findViewById<Button>(R.id.dataTransferBtn)?.setOnClickListener {
       // initiate data transfer
       p2PSenderViewModel.requestSyncParams(getCurrentConnectedDevice())
-
     }
 
     interactiveDialog.setCancelable(false)
@@ -446,7 +468,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
       interactiveDialog = BottomSheetDialog(this)
     }
   }
-
+  /*
   private fun connectToDevice(device: WifiP2pDevice) {
     Timber.d("Wifi P2P: Initiating connection to device: ${device.deviceName}")
     isSender = true
@@ -502,7 +524,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
       // Start syncing given the ip addresses
       showReceiverDialog()
     }
-  }
+  }*/
 
   override fun showP2PSelectPage(deviceRole: DeviceRole, deviceName: String) {
     rootView
@@ -519,18 +541,20 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
   override fun getDeviceRole(): DeviceRole {
     return if (isSender) DeviceRole.SENDER else DeviceRole.RECEIVER
   }
+  /*
 
-  override fun onConnectionInfoAvailable(info: WifiP2pInfo) {
-    onConnectionInfoAvailable(info, null)
-  }
-
-  private fun getWifiP2pReason(reasonInt: Int): String =
-    when (reasonInt) {
-      0 -> "Error"
-      1 -> "Unsupported"
-      2 -> "Busy"
-      else -> "Unknown"
+    override fun onConnectionInfoAvailable(info: WifiP2pInfo) {
+      onConnectionInfoAvailable(info, null)
     }
+
+    private fun getWifiP2pReason(reasonInt: Int): String =
+      when (reasonInt) {
+        0 -> "Error"
+        1 -> "Unsupported"
+        2 -> "Busy"
+        else -> "Unknown"
+      }
+  */
 
   private fun logDebug(message: String) {
     Snackbar.make(rootView, message, Snackbar.LENGTH_SHORT).show()

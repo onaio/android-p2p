@@ -23,15 +23,15 @@ import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
-import org.smartregister.p2p.data_sharing.WifiDirectDataSharingStrategy
 import org.smartregister.p2p.data_sharing.SyncSenderHandler
 import org.smartregister.p2p.model.P2PReceivedHistory
 import org.smartregister.p2p.payload.StringPayload
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
 import org.smartregister.p2p.utils.Constants
 
-class P2PSenderViewModel(private val context: P2PDeviceSearchActivity,
-                         private val dataSharingStrategy: DataSharingStrategy
+class P2PSenderViewModel(
+  private val context: P2PDeviceSearchActivity,
+  private val dataSharingStrategy: DataSharingStrategy
 ) : ViewModel(), P2pModeSelectContract.SenderViewModel {
 
   private var connectionLevel: Constants.ConnectionLevel? = null
@@ -43,45 +43,39 @@ class P2PSenderViewModel(private val context: P2PDeviceSearchActivity,
     // and their last update times which can be sent using a simple string command,
     // 'SEND_SYNC_PARAMS', and the **app_lifetime_key**
 
- /*   val deviceInfo: MutableMap<String, String?> = HashMap()
+    /*   val deviceInfo: MutableMap<String, String?> = HashMap()
     deviceInfo[Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY] =
       P2PLibrary.getInstance()!!.getHashKey()
     deviceInfo[Constants.BasicDeviceDetails.KEY_DEVICE_ID] =
       P2PLibrary.getInstance()!!.getDeviceUniqueIdentifier()*/
 
-    dataSharingStrategy
-      .send(
-        device = DeviceInfo(strategySpecificDevice = deviceInfo)
-        /** Find out how to get this */
-        ,
-        syncPayload =
+    dataSharingStrategy.send(
+      device = dataSharingStrategy.getCurrentDevice()!!
+      /** Find out how to get this */
+      ,
+      syncPayload =
         StringPayload(
-            Gson().toJson(Constants.SEND_SYNC_PARAMS),
-          ),
-        object : DataSharingStrategy.OperationListener {
-          override fun onSuccess(device: DeviceInfo) {
-          }
+          Gson().toJson(Constants.SEND_SYNC_PARAMS),
+        ),
+      object : DataSharingStrategy.OperationListener {
+        override fun onSuccess(device: DeviceInfo) {}
 
-          override fun onFailure(device: DeviceInfo, ex: Exception) {
-          }
-        }
-      )
+        override fun onFailure(device: DeviceInfo, ex: Exception) {}
+      }
+    )
   }
 
   override fun sendManifest(manifest: Manifest) {
     if (getCurrentConnectedDevice() != null) {
-      dataSharingStrategy
-        .sendManifest(
-          device = getCurrentConnectedDevice(),
-          manifest = manifest,
-          object : DataSharingStrategy.OperationListener {
-            override fun onSuccess(device: DeviceInfo) {
-            }
+      dataSharingStrategy.sendManifest(
+        device = getCurrentConnectedDevice(),
+        manifest = manifest,
+        object : DataSharingStrategy.OperationListener {
+          override fun onSuccess(device: DeviceInfo) {}
 
-            override fun onFailure(device: DeviceInfo, ex: Exception) {
-            }
-          }
-        )
+          override fun onFailure(device: DeviceInfo, ex: Exception) {}
+        }
+      )
     }
   }
 
@@ -101,10 +95,12 @@ class P2PSenderViewModel(private val context: P2PDeviceSearchActivity,
       // TODO run this is background
       val jsonData = P2PLibrary.getInstance().getSenderTransferDao().getP2PDataTypes()
 
-      syncSenderHandler = SyncSenderHandler(p2PSenderViewModel = this,
-        dataSyncOrder = jsonData,
-        receivedHistory = receivedHistory)
-
+      syncSenderHandler =
+        SyncSenderHandler(
+          p2PSenderViewModel = this,
+          dataSyncOrder = jsonData,
+          receivedHistory = receivedHistory
+        )
 
       if (jsonData != null) {
         syncSenderHandler.startSyncProcess()
@@ -114,9 +110,10 @@ class P2PSenderViewModel(private val context: P2PDeviceSearchActivity,
     }
   }
 
-  class Factory(private val context: P2PDeviceSearchActivity,
-                private val dataSharingStrategy: DataSharingStrategy)
-    : ViewModelProvider.Factory {
+  class Factory(
+    private val context: P2PDeviceSearchActivity,
+    private val dataSharingStrategy: DataSharingStrategy
+  ) : ViewModelProvider.Factory {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
       return P2PSenderViewModel(context, dataSharingStrategy) as T
     }

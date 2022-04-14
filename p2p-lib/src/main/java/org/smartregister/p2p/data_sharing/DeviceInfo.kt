@@ -16,4 +16,13 @@
 package org.smartregister.p2p.data_sharing
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 21-03-2022. */
-class DeviceInfo(var strategySpecificDevice: Any)
+interface DeviceInfo {
+
+  var strategySpecificDevice: Any
+
+  fun getDisplayName(): String
+
+  fun name(): String
+
+  fun address(): String
+}

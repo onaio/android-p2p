@@ -15,7 +15,6 @@
  */
 package org.smartregister.p2p.search.adapter
 
-import android.net.wifi.p2p.WifiP2pDevice
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -26,12 +25,13 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import org.smartregister.p2p.R
+import org.smartregister.p2p.data_sharing.DeviceInfo
 import timber.log.Timber
 
 /** Recycler view adapter used to list discovered devices on the device list bottom sheet */
 class DeviceListAdapter(
-  private val peerDeviceList: List<WifiP2pDevice>,
-  private val onDeviceClick: (deviceAddress: WifiP2pDevice) -> Unit
+  private val peerDeviceList: List<DeviceInfo>,
+  private val onDeviceClick: (deviceAddress: DeviceInfo) -> Unit
 ) : RecyclerView.Adapter<DeviceListAdapter.ViewHolder>() {
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DeviceListAdapter.ViewHolder {
@@ -43,25 +43,25 @@ class DeviceListAdapter(
   override fun onBindViewHolder(holder: DeviceListAdapter.ViewHolder, position: Int) {
     val peerDevice = peerDeviceList[position]
 
-    holder.deviceName.text = peerDevice.deviceName
-    holder.deviceAddress.text = peerDevice.deviceAddress
+    holder.deviceName.text = peerDevice.name()
+    holder.deviceAddress.text = peerDevice.address()
     holder.currentDevice = peerDevice
   }
 
   override fun getItemCount(): Int = peerDeviceList.size
 
   /** View holder used by [DeviceListAdapter] */
-  inner class ViewHolder(itemView: View, onDeviceClick: (deviceAddress: WifiP2pDevice) -> Unit) :
+  inner class ViewHolder(itemView: View, onDeviceClick: (device: DeviceInfo) -> Unit) :
     RecyclerView.ViewHolder(itemView) {
 
     val deviceName = itemView.findViewById<TextView>(R.id.device_item_title)
     val deviceAddress = itemView.findViewById<TextView>(R.id.device_item_subtitle)
-    var currentDevice: WifiP2pDevice? = null
+    var currentDevice: DeviceInfo? = null
 
     init {
       itemView.setOnClickListener {
         currentDevice?.let {
-          Timber.e("Item ${it.deviceName} has been clicked")
+          Timber.e("Item ${it.getDisplayName()} has been clicked")
           deviceAddress.setText(R.string.pairing)
           itemView.findViewById<ProgressBar>(R.id.device_item_pairing_icon).visibility =
             View.VISIBLE

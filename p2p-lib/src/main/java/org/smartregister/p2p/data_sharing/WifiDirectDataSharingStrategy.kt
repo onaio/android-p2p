@@ -75,61 +75,68 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     // Wifi P2p
     wifiP2pChannel = wifiP2pManager.initialize(context, context.mainLooper, null)
     wifiP2pChannel?.also { channel ->
-      wifiP2pReceiver = WifiP2pBroadcastReceiver(wifiP2pManager, channel, object: P2PManagerListener {
-        override fun handleWifiP2pDisabled() {
-          this@WifiDirectDataSharingStrategy.handleWifiP2pDisabled()
-        }
+      wifiP2pReceiver =
+        WifiP2pBroadcastReceiver(
+          wifiP2pManager,
+          channel,
+          object : P2PManagerListener {
+            override fun handleWifiP2pDisabled() {
+              this@WifiDirectDataSharingStrategy.handleWifiP2pDisabled()
+            }
 
-        override fun handleWifiP2pEnabled() {
-          this@WifiDirectDataSharingStrategy.handleWifiP2pEnabled()
-        }
+            override fun handleWifiP2pEnabled() {
+              this@WifiDirectDataSharingStrategy.handleWifiP2pEnabled()
+            }
 
-        override fun handleUnexpectedWifiP2pState(wifiState: Int) {
-          this@WifiDirectDataSharingStrategy.handleUnexpectedWifiP2pState(wifiState)
-        }
+            override fun handleUnexpectedWifiP2pState(wifiState: Int) {
+              this@WifiDirectDataSharingStrategy.handleUnexpectedWifiP2pState(wifiState)
+            }
 
-        override fun handleWifiP2pDevice(device: WifiP2pDevice) {
-          onDeviceFound.deviceFound(listOf(DeviceInfo(device)))
+            override fun handleWifiP2pDevice(device: WifiP2pDevice) {
+              onDeviceFound.deviceFound(listOf(WifiDirectDevice(device)))
 
-          this@WifiDirectDataSharingStrategy.handleWifiP2pDevice(device)
-        }
+              this@WifiDirectDataSharingStrategy.handleWifiP2pDevice(device)
+            }
 
-        override fun handleP2pDiscoveryStarted() {
-          this@WifiDirectDataSharingStrategy.handleP2pDiscoveryStarted()
-        }
+            override fun handleP2pDiscoveryStarted() {
+              this@WifiDirectDataSharingStrategy.handleP2pDiscoveryStarted()
+            }
 
-        override fun handleP2pDiscoveryStopped() {
-          this@WifiDirectDataSharingStrategy.handleP2pDiscoveryStopped()
-        }
+            override fun handleP2pDiscoveryStopped() {
+              this@WifiDirectDataSharingStrategy.handleP2pDiscoveryStopped()
+            }
 
-        override fun handleUnexpectedWifiP2pDiscoveryState(discoveryState: Int) {
-          this@WifiDirectDataSharingStrategy.handleUnexpectedWifiP2pDiscoveryState(discoveryState)
-        }
+            override fun handleUnexpectedWifiP2pDiscoveryState(discoveryState: Int) {
+              this@WifiDirectDataSharingStrategy.handleUnexpectedWifiP2pDiscoveryState(
+                discoveryState
+              )
+            }
 
-        override fun handleP2pPeersChanged(peerDeviceList: WifiP2pDeviceList) {
-          val devicesList = peerDeviceList.deviceList
-            .map { DeviceInfo(it) }
-          onDeviceFound.deviceFound(devicesList)
+            override fun handleP2pPeersChanged(peerDeviceList: WifiP2pDeviceList) {
+              val devicesList = peerDeviceList.deviceList.map { WifiDirectDevice(it) }
+              onDeviceFound.deviceFound(devicesList)
 
-          this@WifiDirectDataSharingStrategy.handleP2pPeersChanged(peerDeviceList)
-        }
+              this@WifiDirectDataSharingStrategy.handleP2pPeersChanged(peerDeviceList)
+            }
 
-        override fun handleAccessFineLocationNotGranted() {
-          this@WifiDirectDataSharingStrategy.handleAccessFineLocationNotGranted()
-        }
+            override fun handleAccessFineLocationNotGranted() {
+              this@WifiDirectDataSharingStrategy.handleAccessFineLocationNotGranted()
+            }
 
-        override fun handleMinimumSDKVersionNotMet(minimumSdkVersion: Int) {
-          this@WifiDirectDataSharingStrategy.handleMinimumSDKVersionNotMet(minimumSdkVersion)
-        }
+            override fun handleMinimumSDKVersionNotMet(minimumSdkVersion: Int) {
+              this@WifiDirectDataSharingStrategy.handleMinimumSDKVersionNotMet(minimumSdkVersion)
+            }
 
-        override fun onConnectionInfoAvailable(info: WifiP2pInfo, wifiP2pGroup: WifiP2pGroup?) {
-          this@WifiDirectDataSharingStrategy.onConnectionInfoAvailable(info, wifiP2pGroup)
-        }
+            override fun onConnectionInfoAvailable(info: WifiP2pInfo, wifiP2pGroup: WifiP2pGroup?) {
+              this@WifiDirectDataSharingStrategy.onConnectionInfoAvailable(info, wifiP2pGroup)
+            }
 
-        override fun onConnectionInfoAvailable(info: WifiP2pInfo) {
-          this@WifiDirectDataSharingStrategy.onConnectionInfoAvailable(info, null)
-        }
-      }, context)
+            override fun onConnectionInfoAvailable(info: WifiP2pInfo) {
+              this@WifiDirectDataSharingStrategy.onConnectionInfoAvailable(info, null)
+            }
+          },
+          context
+        )
     }
 
     // renameWifiDirectName();
@@ -510,7 +517,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
   override fun getCurrentDevice(): DeviceInfo? {
     if (currentDevice != null) {
-      return DeviceInfo(currentDevice!!)
+      return WifiDirectDevice(currentDevice!!)
     } else {
       return null
     }
@@ -536,7 +543,6 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   override fun handleWifiP2pDevice(device: WifiP2pDevice) {
     // TODO: Handle the issue here
     // This is a new p2p device
-
   }
 
   override fun handleP2pDiscoveryStarted() {
@@ -581,8 +587,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     if (info.groupFormed && wifiP2pGroup != null) {
       this.wifiP2pGroup = wifiP2pGroup
       val isGroupOwner = info.isGroupOwner
-      currentDevice = wifiP2pGroup.clientList
-         .first { it.isGroupOwner != isGroupOwner }
+      currentDevice = wifiP2pGroup.clientList.first { it.isGroupOwner != isGroupOwner }
     }
 
     if (onConnectionInfo != null) {
@@ -620,4 +625,22 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       2 -> "Busy"
       else -> "Unknown"
     }
+
+  class WifiDirectDevice(var wifiP2pDevice: WifiP2pDevice) : DeviceInfo {
+
+    override var strategySpecificDevice: Any
+      get() = wifiP2pDevice
+      set(value) {}
+
+    override fun getDisplayName(): String =
+      "${wifiP2pDevice.deviceName} (${wifiP2pDevice.deviceAddress})"
+
+    override fun name(): String {
+      return wifiP2pDevice.deviceName
+    }
+
+    override fun address(): String {
+      return wifiP2pDevice.deviceAddress
+    }
+  }
 }
