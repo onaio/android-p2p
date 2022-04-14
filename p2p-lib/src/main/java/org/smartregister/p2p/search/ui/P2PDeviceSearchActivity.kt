@@ -26,6 +26,7 @@ import android.content.pm.PackageManager
 import android.net.wifi.p2p.WifiP2pConfig
 import android.net.wifi.p2p.WifiP2pDevice
 import android.net.wifi.p2p.WifiP2pDeviceList
+import android.net.wifi.p2p.WifiP2pGroup
 import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
 import android.os.Build
@@ -493,6 +494,16 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
     logDebug("Wifi P2P: Minimum SDK Version not met: $minimumSdkVersion")
   }
 
+  override fun onConnectionInfoAvailable(info: WifiP2pInfo, wifiP2pGroup: WifiP2pGroup?) {
+    val message =
+      "Connection info available: groupFormed = ${info.groupFormed}, isGroupOwner = ${info.isGroupOwner}"
+    Timber.d(message)
+    if (info.groupFormed && !isSender) {
+      // Start syncing given the ip addresses
+      showReceiverDialog()
+    }
+  }
+
   override fun showP2PSelectPage(deviceRole: DeviceRole, deviceName: String) {
     rootView
       .findViewById<TextView>(R.id.description)
@@ -510,13 +521,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
   }
 
   override fun onConnectionInfoAvailable(info: WifiP2pInfo) {
-    val message =
-      "Connection info available: groupFormed = ${info.groupFormed}, isGroupOwner = ${info.isGroupOwner}"
-    Timber.d(message)
-    if (info.groupFormed && !isSender) {
-      // Start syncing given the ip addresses
-      showReceiverDialog()
-    }
+    onConnectionInfoAvailable(info, null)
   }
 
   private fun getWifiP2pReason(reasonInt: Int): String =
@@ -537,6 +542,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2PManagerListener, P2pMode
   }
 
   fun getCurrentConnectedDevice(): DeviceInfo {
-    return currentConnectedDevice
+    return dataSharingStrategy.getCurrentDevice()!!
   }
 }

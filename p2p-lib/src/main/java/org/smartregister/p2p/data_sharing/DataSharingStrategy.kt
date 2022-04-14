@@ -57,6 +57,8 @@ interface DataSharingStrategy {
 
   fun onSearchingFailed(ex: Exception)
 
+  fun getCurrentDevice(): DeviceInfo?
+
   interface OperationListener {
 
     fun onSuccess(device: DeviceInfo)

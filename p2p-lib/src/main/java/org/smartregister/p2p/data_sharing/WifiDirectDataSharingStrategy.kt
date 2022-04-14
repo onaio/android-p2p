@@ -23,6 +23,7 @@ import android.content.pm.PackageManager
 import android.net.wifi.p2p.WifiP2pConfig
 import android.net.wifi.p2p.WifiP2pDevice
 import android.net.wifi.p2p.WifiP2pDeviceList
+import android.net.wifi.p2p.WifiP2pGroup
 import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
 import android.os.Build
@@ -56,6 +57,8 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
   private var wifiP2pInfo: WifiP2pInfo? = null
   private var onConnectionInfo: (() -> Unit)? = null
+  private var wifiP2pGroup: WifiP2pGroup? = null
+  private var currentDevice: WifiP2pDevice? = null
 
   val PORT = 8988
   val SOCKET_TIMEOUT = 5_000
@@ -119,8 +122,12 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
           this@WifiDirectDataSharingStrategy.handleMinimumSDKVersionNotMet(minimumSdkVersion)
         }
 
-        override fun onConnectionInfoAvailable(info: WifiP2pInfo?) {
-          this@WifiDirectDataSharingStrategy.onConnectionInfoAvailable(info)
+        override fun onConnectionInfoAvailable(info: WifiP2pInfo, wifiP2pGroup: WifiP2pGroup?) {
+          this@WifiDirectDataSharingStrategy.onConnectionInfoAvailable(info, wifiP2pGroup)
+        }
+
+        override fun onConnectionInfoAvailable(info: WifiP2pInfo) {
+          this@WifiDirectDataSharingStrategy.onConnectionInfoAvailable(info, null)
         }
       }, context)
     }
@@ -135,7 +142,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   }
 
   private fun requestConnectionInfo() {
-    wifiP2pManager.requestConnectionInfo(wifiP2pChannel) { onConnectionInfoAvailable(it) }
+    wifiP2pManager.requestConnectionInfo(wifiP2pChannel) { onConnectionInfoAvailable(it, null) }
   }
 
   private fun listenForWifiP2pIntents() {
@@ -501,6 +508,14 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     // TODO: Return this to the device
   }
 
+  override fun getCurrentDevice(): DeviceInfo? {
+    if (currentDevice != null) {
+      return DeviceInfo(currentDevice!!)
+    } else {
+      return null
+    }
+  }
+
   private fun logDebug(message: String) {
     Timber.d(message)
   }
@@ -548,14 +563,14 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     // TODO: Handle the issue here
   }
 
-  override fun onConnectionInfoAvailable(info: WifiP2pInfo?) {
+  override fun onConnectionInfoAvailable(info: WifiP2pInfo, wifiP2pGroup: WifiP2pGroup?) {
     if (wifiP2pInfo == null) {
       Timber.e("Connection info provided is NULL")
       return
     }
 
     val message =
-      "Connection info available: groupFormed = ${info!!.groupFormed}, isGroupOwner = ${info.isGroupOwner}"
+      "Connection info available: groupFormed = ${info.groupFormed}, isGroupOwner = ${info.isGroupOwner}"
     Timber.d(message)
     wifiP2pInfo = info
     /*if (info.groupFormed && !isSender) {
@@ -563,10 +578,21 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       showReceiverDialog()
     }*/
 
+    if (info.groupFormed && wifiP2pGroup != null) {
+      this.wifiP2pGroup = wifiP2pGroup
+      val isGroupOwner = info.isGroupOwner
+      currentDevice = wifiP2pGroup.clientList
+         .first { it.isGroupOwner != isGroupOwner }
+    }
+
     if (onConnectionInfo != null) {
       onConnectionInfo?.invoke()
       onConnectionInfo = null
     }
+  }
+
+  override fun onConnectionInfoAvailable(info: WifiP2pInfo) {
+    this.onConnectionInfoAvailable(info, null)
   }
 
   fun closeSocketAndStreams() {

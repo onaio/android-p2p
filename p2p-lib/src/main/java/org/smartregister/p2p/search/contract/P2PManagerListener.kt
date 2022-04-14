@@ -17,6 +17,8 @@ package org.smartregister.p2p.search.contract
 
 import android.net.wifi.p2p.WifiP2pDevice
 import android.net.wifi.p2p.WifiP2pDeviceList
+import android.net.wifi.p2p.WifiP2pGroup
+import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 25-02-2022. */
@@ -41,4 +43,6 @@ interface P2PManagerListener : WifiP2pManager.ConnectionInfoListener {
   fun handleAccessFineLocationNotGranted()
 
   fun handleMinimumSDKVersionNotMet(minimumSdkVersion: Int)
+
+  fun onConnectionInfoAvailable(info: WifiP2pInfo, wifiP2pGroup: WifiP2pGroup?)
 }

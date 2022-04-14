@@ -20,6 +20,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.wifi.p2p.WifiP2pGroup
+import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
 import android.os.Build
 import androidx.core.app.ActivityCompat
@@ -34,7 +36,11 @@ class WifiP2pBroadcastReceiver(
 
   override fun onReceive(context: Context, intent: Intent) {
     when (intent.action) {
-      WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION -> handleConnectionChanged()
+      WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION -> {
+        val p2pGroupInfo = intent.getParcelableExtra<WifiP2pGroup>(WifiP2pManager.EXTRA_WIFI_P2P_GROUP)
+        val wifiP2pInfo = intent.getParcelableExtra<WifiP2pInfo>(WifiP2pManager.EXTRA_WIFI_P2P_INFO)
+        listener.onConnectionInfoAvailable(wifiP2pInfo!!, p2pGroupInfo)
+      }
       WifiP2pManager.WIFI_P2P_DISCOVERY_CHANGED_ACTION ->
         handleDiscoveryChanged(intent.getIntExtra(WifiP2pManager.EXTRA_DISCOVERY_STATE, -1))
       WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION -> handlePeersChanged()
