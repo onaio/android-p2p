@@ -572,7 +572,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   }
 
   override fun onConnectionInfoAvailable(info: WifiP2pInfo, wifiP2pGroup: WifiP2pGroup?) {
-    if (wifiP2pInfo == null) {
+    if (info == null) {
       Timber.e("Connection info provided is NULL")
       return
     }
