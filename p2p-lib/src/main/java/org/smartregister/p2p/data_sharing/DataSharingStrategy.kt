@@ -19,37 +19,37 @@ import android.app.Activity
 import org.smartregister.p2p.payload.PayloadContract
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 21-03-2022. */
-interface DataSharingStrategy<DeviceObjectForStrategy> {
+interface DataSharingStrategy {
 
   fun setActivity(context: Activity)
 
-  fun searchDevices(onDeviceFound: OnDeviceFound<DeviceObjectForStrategy>)
+  fun searchDevices(onDeviceFound: OnDeviceFound)
 
-  fun connect(device: DeviceInfo<DeviceObjectForStrategy>, operationListener: OperationListener<DeviceObjectForStrategy>)
+  fun connect(device: DeviceInfo, operationListener: OperationListener)
 
-  fun disconnect(device: DeviceInfo<DeviceObjectForStrategy>, operationListener: OperationListener<DeviceObjectForStrategy>)
+  fun disconnect(device: DeviceInfo, operationListener: OperationListener)
 
   fun send(
-    device: DeviceInfo<DeviceObjectForStrategy>,
+    device: DeviceInfo,
     syncPayload: PayloadContract<out Any>,
-    operationListener: OperationListener<DeviceObjectForStrategy>
+    operationListener: OperationListener
   )
 
-  fun sendManifest(device: DeviceInfo<DeviceObjectForStrategy>, manifest: Manifest, operationListener: OperationListener<DeviceObjectForStrategy>)
+  fun sendManifest(device: DeviceInfo, manifest: Manifest, operationListener: OperationListener)
 
-  fun receive(device: DeviceInfo<DeviceObjectForStrategy>, operationListener: OperationListener<DeviceObjectForStrategy>): PayloadContract<out Any>?
+  fun receive(device: DeviceInfo, operationListener: OperationListener): PayloadContract<out Any>?
 
-  fun receiveManifest(device: DeviceInfo<DeviceObjectForStrategy>, operationListener: OperationListener<DeviceObjectForStrategy>): Manifest?
+  fun receiveManifest(device: DeviceInfo, operationListener: OperationListener): Manifest?
 
   fun onErrorOccurred(ex: Exception)
 
-  fun onConnectionFailed(device: DeviceInfo<DeviceObjectForStrategy>, ex: Exception)
+  fun onConnectionFailed(device: DeviceInfo, ex: Exception)
 
-  fun onConnectionSucceeded(device: DeviceInfo<DeviceObjectForStrategy>)
+  fun onConnectionSucceeded(device: DeviceInfo)
 
-  fun onDisconnectFailed(device: DeviceInfo<DeviceObjectForStrategy>, ex: Exception)
+  fun onDisconnectFailed(device: DeviceInfo, ex: Exception)
 
-  fun onDisconnectSucceeded(device: DeviceInfo<DeviceObjectForStrategy>)
+  fun onDisconnectSucceeded(device: DeviceInfo)
 
   fun onPairingFailed(ex: Exception)
 
@@ -57,10 +57,10 @@ interface DataSharingStrategy<DeviceObjectForStrategy> {
 
   fun onSearchingFailed(ex: Exception)
 
-  interface OperationListener<DeviceObjectForStrategy> {
+  interface OperationListener {
 
-    fun onSuccess(device: DeviceInfo<DeviceObjectForStrategy>)
+    fun onSuccess(device: DeviceInfo)
 
-    fun onFailure(device: DeviceInfo<DeviceObjectForStrategy>, ex: Exception)
+    fun onFailure(device: DeviceInfo, ex: Exception)
   }
 }

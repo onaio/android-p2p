@@ -16,6 +16,7 @@
 package org.smartregister.p2p
 
 import android.content.Context
+import android.net.wifi.p2p.WifiP2pDevice
 import androidx.annotation.NonNull
 import androidx.annotation.Nullable
 import org.smartregister.p2p.dao.ReceiverTransferDao
@@ -34,7 +35,7 @@ class P2PLibrary() {
   private lateinit var options: Options
   private var hashKey: String? = null
   private var deviceUniqueIdentifier: String? = null
-  var dataSharingStrategy: DataSharingStrategy = WifiDirectDataSharingStrategy()
+  var dataSharingStrategy : DataSharingStrategy = WifiDirectDataSharingStrategy()
 
   companion object {
     private var instance: P2PLibrary? = null

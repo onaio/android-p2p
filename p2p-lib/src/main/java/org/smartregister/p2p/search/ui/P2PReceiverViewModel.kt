@@ -31,20 +31,20 @@ import org.smartregister.p2p.search.contract.P2pModeSelectContract
 import org.smartregister.p2p.utils.Constants
 
 class P2PReceiverViewModel (private val context: P2PDeviceSearchActivity,
-                            private val dataSharingStrategy: DataSharingStrategy<Any>):
+                            private val dataSharingStrategy: DataSharingStrategy):
   ViewModel(), IReceiverSyncLifecycleCallback, P2pModeSelectContract.ReceiverViewModel {
 
   private val connectionLevel: Constants.ConnectionLevel? = null
 
   fun processSyncParamsRequest() {
 
-    dataSharingStrategy.receive(context.getCurrentConnectedDevice(),
-        object : DataSharingStrategy.OperationListener<Any> {
-          override fun onSuccess(device: DeviceInfo<Any>) {
+    val payload = dataSharingStrategy.receive(context.getCurrentConnectedDevice(),
+        object : DataSharingStrategy.OperationListener {
+          override fun onSuccess(device: DeviceInfo) {
             checkIfDeviceKeyHasChanged((device.strategySpecificDevice as WifiP2pDevice).deviceName)
           }
 
-          override fun onFailure(device: DeviceInfo<Any>, ex: Exception) {
+          override fun onFailure(device: DeviceInfo, ex: Exception) {
           }
         }
       )
@@ -83,12 +83,12 @@ class P2PReceiverViewModel (private val context: P2PDeviceSearchActivity,
         StringPayload(
             Gson().toJson(receivedHistory),
           ),
-        object : DataSharingStrategy.OperationListener<Any> {
-          override fun onSuccess(device: DeviceInfo<Any>) {
+        object : DataSharingStrategy.OperationListener {
+          override fun onSuccess(device: DeviceInfo) {
 
           }
 
-          override fun onFailure(device: DeviceInfo<Any>, ex: Exception) {
+          override fun onFailure(device: DeviceInfo, ex: Exception) {
 
           }
         }
@@ -101,7 +101,7 @@ class P2PReceiverViewModel (private val context: P2PDeviceSearchActivity,
   }
 
   class Factory(private val context: P2PDeviceSearchActivity,
-                private val dataSharingStrategy: DataSharingStrategy<Any>)
+                private val dataSharingStrategy: DataSharingStrategy)
     : ViewModelProvider.Factory {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
       return P2PReceiverViewModel(context, dataSharingStrategy) as T

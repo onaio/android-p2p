@@ -31,14 +31,14 @@ import org.smartregister.p2p.search.contract.P2pModeSelectContract
 import org.smartregister.p2p.utils.Constants
 
 class P2PSenderViewModel(private val context: P2PDeviceSearchActivity,
-                         private val dataSharingStrategy: DataSharingStrategy<Any>
+                         private val dataSharingStrategy: DataSharingStrategy
 ) : ViewModel(), P2pModeSelectContract.SenderViewModel {
 
   private var connectionLevel: Constants.ConnectionLevel? = null
 
   private lateinit var syncSenderHandler: SyncSenderHandler
 
-  override fun requestSyncParams(deviceInfo: DeviceInfo<Any>) {
+  override fun requestSyncParams(deviceInfo: DeviceInfo) {
     // write a message to the socket requesting the receiver for acceptable data types
     // and their last update times which can be sent using a simple string command,
     // 'SEND_SYNC_PARAMS', and the **app_lifetime_key**
@@ -58,11 +58,11 @@ class P2PSenderViewModel(private val context: P2PDeviceSearchActivity,
         StringPayload(
             Gson().toJson(Constants.SEND_SYNC_PARAMS),
           ),
-        object : DataSharingStrategy.OperationListener<Any> {
-          override fun onSuccess(device: DeviceInfo<Any>) {
+        object : DataSharingStrategy.OperationListener {
+          override fun onSuccess(device: DeviceInfo) {
           }
 
-          override fun onFailure(device: DeviceInfo<Any>, ex: Exception) {
+          override fun onFailure(device: DeviceInfo, ex: Exception) {
           }
         }
       )
@@ -74,18 +74,18 @@ class P2PSenderViewModel(private val context: P2PDeviceSearchActivity,
         .sendManifest(
           device = getCurrentConnectedDevice(),
           manifest = manifest,
-          object : DataSharingStrategy.OperationListener<Any> {
-            override fun onSuccess(device: DeviceInfo<Any>) {
+          object : DataSharingStrategy.OperationListener {
+            override fun onSuccess(device: DeviceInfo) {
             }
 
-            override fun onFailure(device: DeviceInfo<Any>, ex: Exception) {
+            override fun onFailure(device: DeviceInfo, ex: Exception) {
             }
           }
         )
     }
   }
 
-  override fun getCurrentConnectedDevice(): DeviceInfo<Any> {
+  override fun getCurrentConnectedDevice(): DeviceInfo {
     return context.getCurrentConnectedDevice()
   }
 
@@ -115,7 +115,7 @@ class P2PSenderViewModel(private val context: P2PDeviceSearchActivity,
   }
 
   class Factory(private val context: P2PDeviceSearchActivity,
-                private val dataSharingStrategy: DataSharingStrategy<Any>)
+                private val dataSharingStrategy: DataSharingStrategy)
     : ViewModelProvider.Factory {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
       return P2PSenderViewModel(context, dataSharingStrategy) as T

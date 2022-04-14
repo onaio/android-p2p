@@ -44,7 +44,7 @@ import org.smartregister.p2p.search.contract.P2PManagerListener
 import timber.log.Timber
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 21-03-2022. */
-class WifiDirectDataSharingStrategy() : DataSharingStrategy<WifiP2pDevice>, P2PManagerListener {
+class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
   lateinit var context: Activity
   private val wifiP2pManager: WifiP2pManager by lazy(LazyThreadSafetyMode.NONE) {
@@ -68,7 +68,7 @@ class WifiDirectDataSharingStrategy() : DataSharingStrategy<WifiP2pDevice>, P2PM
     this.context = context
   }
 
-  override fun searchDevices(onDeviceFound: OnDeviceFound<WifiP2pDevice>) {
+  override fun searchDevices(onDeviceFound: OnDeviceFound) {
     // Wifi P2p
     wifiP2pChannel = wifiP2pManager.initialize(context, context.mainLooper, null)
     wifiP2pChannel?.also { channel ->
@@ -187,7 +187,7 @@ class WifiDirectDataSharingStrategy() : DataSharingStrategy<WifiP2pDevice>, P2PM
     }
   }
 
-  private fun initiatePeerDiscovery(onDeviceFound: OnDeviceFound<WifiP2pDevice>?) {
+  private fun initiatePeerDiscovery(onDeviceFound: OnDeviceFound?) {
     if (ActivityCompat.checkSelfPermission(
         context,
         android.Manifest.permission.ACCESS_FINE_LOCATION
@@ -216,8 +216,8 @@ class WifiDirectDataSharingStrategy() : DataSharingStrategy<WifiP2pDevice>, P2PM
   }
 
   override fun connect(
-    device: DeviceInfo<WifiP2pDevice>,
-    operationListener: DataSharingStrategy.OperationListener<WifiP2pDevice>
+    device: DeviceInfo,
+    operationListener: DataSharingStrategy.OperationListener
   ) {
     val wifiDirectDevice = device.strategySpecificDevice as WifiP2pDevice
 
@@ -251,8 +251,8 @@ class WifiDirectDataSharingStrategy() : DataSharingStrategy<WifiP2pDevice>, P2PM
   }
 
   override fun disconnect(
-    device: DeviceInfo<WifiP2pDevice>,
-    operationListener: DataSharingStrategy.OperationListener<WifiP2pDevice>
+    device: DeviceInfo,
+    operationListener: DataSharingStrategy.OperationListener
   ) {
     wifiP2pManager.cancelConnect(
       wifiP2pChannel,
@@ -272,9 +272,9 @@ class WifiDirectDataSharingStrategy() : DataSharingStrategy<WifiP2pDevice>, P2PM
   }
 
   override fun send(
-    device: DeviceInfo<WifiP2pDevice>,
+    device: DeviceInfo,
     syncPayload: PayloadContract<out Any>,
-    operationListener: DataSharingStrategy.OperationListener<WifiP2pDevice>
+    operationListener: DataSharingStrategy.OperationListener
   ) {
     // Check if the socket is setup for sending
     // Check if this is the sender/receiver
@@ -396,9 +396,9 @@ class WifiDirectDataSharingStrategy() : DataSharingStrategy<WifiP2pDevice>, P2PM
     }
 
   override fun sendManifest(
-    device: DeviceInfo<WifiP2pDevice>,
+    device: DeviceInfo,
     manifest: Manifest,
-    operationListener: DataSharingStrategy.OperationListener<WifiP2pDevice>
+    operationListener: DataSharingStrategy.OperationListener
   ) {
     // Check if the socket is setup for sending
     // Check if this is the sender/receiver
@@ -412,8 +412,8 @@ class WifiDirectDataSharingStrategy() : DataSharingStrategy<WifiP2pDevice>, P2PM
   }
 
   override fun receive(
-    device: DeviceInfo<WifiP2pDevice>,
-    operationListener: DataSharingStrategy.OperationListener<WifiP2pDevice>
+    device: DeviceInfo,
+    operationListener: DataSharingStrategy.OperationListener
   ): PayloadContract<out Any>? {
     // Check if the socket is setup for listening
     // Check if this is the receiver/sender
@@ -445,8 +445,8 @@ class WifiDirectDataSharingStrategy() : DataSharingStrategy<WifiP2pDevice>, P2PM
   }
 
   override fun receiveManifest(
-    device: DeviceInfo<WifiP2pDevice>,
-    operationListener: DataSharingStrategy.OperationListener<WifiP2pDevice>
+    device: DeviceInfo,
+    operationListener: DataSharingStrategy.OperationListener
   ): Manifest? {
     // Check if the socket is setup for listening
     // Check if this is the receiver/sender
@@ -469,20 +469,20 @@ class WifiDirectDataSharingStrategy() : DataSharingStrategy<WifiP2pDevice>, P2PM
     closeSocketAndStreams()
   }
 
-  override fun onConnectionFailed(device: DeviceInfo<WifiP2pDevice>, ex: Exception) {
+  override fun onConnectionFailed(device: DeviceInfo, ex: Exception) {
     // TODO: Return this to the device
     closeSocketAndStreams()
   }
 
-  override fun onConnectionSucceeded(device: DeviceInfo<WifiP2pDevice>) {
+  override fun onConnectionSucceeded(device: DeviceInfo) {
     // TODO: Return this to the device
   }
 
-  override fun onDisconnectFailed(device: DeviceInfo<WifiP2pDevice>, ex: Exception) {
+  override fun onDisconnectFailed(device: DeviceInfo, ex: Exception) {
     // TODO: Return this to the device
   }
 
-  override fun onDisconnectSucceeded(device: DeviceInfo<WifiP2pDevice>) {
+  override fun onDisconnectSucceeded(device: DeviceInfo) {
     // TODO: Return this to the device
 
     closeSocketAndStreams()
