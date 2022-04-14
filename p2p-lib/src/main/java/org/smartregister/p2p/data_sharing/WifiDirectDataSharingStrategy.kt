@@ -250,6 +250,8 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
         wifiP2pConfig,
         object : WifiP2pManager.ActionListener {
           override fun onSuccess() {
+            currentDevice = wifiDirectDevice
+
             onConnectionSucceeded(device)
             operationListener.onSuccess(device)
           }
