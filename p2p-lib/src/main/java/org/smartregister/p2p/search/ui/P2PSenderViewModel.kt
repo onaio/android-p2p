@@ -38,7 +38,7 @@ class P2PSenderViewModel(
 
   private lateinit var syncSenderHandler: SyncSenderHandler
 
-  override fun requestSyncParams(deviceInfo: DeviceInfo) {
+  override fun requestSyncParams(deviceInfo: DeviceInfo?) {
     // write a message to the socket requesting the receiver for acceptable data types
     // and their last update times which can be sent using a simple string command,
     // 'SEND_SYNC_PARAMS', and the **app_lifetime_key**
@@ -50,7 +50,7 @@ class P2PSenderViewModel(
       P2PLibrary.getInstance()!!.getDeviceUniqueIdentifier()*/
 
     dataSharingStrategy.send(
-      device = dataSharingStrategy.getCurrentDevice()!!
+      device = dataSharingStrategy.getCurrentDevice()
       /** Find out how to get this */
       ,
       syncPayload =
@@ -58,9 +58,9 @@ class P2PSenderViewModel(
           Gson().toJson(Constants.SEND_SYNC_PARAMS),
         ),
       object : DataSharingStrategy.OperationListener {
-        override fun onSuccess(device: DeviceInfo) {}
+        override fun onSuccess(device: DeviceInfo?) {}
 
-        override fun onFailure(device: DeviceInfo, ex: Exception) {}
+        override fun onFailure(device: DeviceInfo?, ex: Exception) {}
       }
     )
   }
@@ -71,15 +71,15 @@ class P2PSenderViewModel(
         device = getCurrentConnectedDevice(),
         manifest = manifest,
         object : DataSharingStrategy.OperationListener {
-          override fun onSuccess(device: DeviceInfo) {}
+          override fun onSuccess(device: DeviceInfo?) {}
 
-          override fun onFailure(device: DeviceInfo, ex: Exception) {}
+          override fun onFailure(device: DeviceInfo?, ex: Exception) {}
         }
       )
     }
   }
 
-  override fun getCurrentConnectedDevice(): DeviceInfo {
+  override fun getCurrentConnectedDevice(): DeviceInfo? {
     return context.getCurrentConnectedDevice()
   }
 

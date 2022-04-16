@@ -26,6 +26,7 @@ import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.IReceiverSyncLifecycleCallback
 import org.smartregister.p2p.model.P2PReceivedHistory
+import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.payload.StringPayload
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
 import org.smartregister.p2p.utils.Constants
@@ -39,15 +40,20 @@ class P2PReceiverViewModel(
 
   fun processSyncParamsRequest() {
 
-    val payload =
       dataSharingStrategy.receive(
         context.getCurrentConnectedDevice(),
+        object: DataSharingStrategy.PayloadReceiptListener {
+          override fun onPayloadReceived(payload: PayloadContract<out Any>?) {
+
+            //
+          }
+        },
         object : DataSharingStrategy.OperationListener {
-          override fun onSuccess(device: DeviceInfo) {
-            checkIfDeviceKeyHasChanged((device.strategySpecificDevice as WifiP2pDevice).deviceName)
+          override fun onSuccess(device: DeviceInfo?) {
+            checkIfDeviceKeyHasChanged((device?.strategySpecificDevice as WifiP2pDevice).deviceName)
           }
 
-          override fun onFailure(device: DeviceInfo, ex: Exception) {}
+          override fun onFailure(device: DeviceInfo?, ex: Exception) {}
         }
       )
   }
@@ -77,15 +83,15 @@ class P2PReceiverViewModel(
       P2PLibrary.getInstance().getDeviceUniqueIdentifier()
 
     dataSharingStrategy.send(
-      device = dataSharingStrategy.getCurrentDevice()!!,
+      device = dataSharingStrategy.getCurrentDevice(),
       syncPayload =
         StringPayload(
           Gson().toJson(receivedHistory),
         ),
       object : DataSharingStrategy.OperationListener {
-        override fun onSuccess(device: DeviceInfo) {}
+        override fun onSuccess(device: DeviceInfo?) {}
 
-        override fun onFailure(device: DeviceInfo, ex: Exception) {}
+        override fun onFailure(device: DeviceInfo?, ex: Exception) {}
       }
     )
   }

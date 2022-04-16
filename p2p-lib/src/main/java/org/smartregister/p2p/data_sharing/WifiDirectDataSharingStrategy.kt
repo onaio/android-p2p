@@ -36,6 +36,10 @@ import java.io.IOException
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.smartregister.p2p.WifiP2pBroadcastReceiver
 import org.smartregister.p2p.payload.BytePayload
 import org.smartregister.p2p.payload.PayloadContract
@@ -71,7 +75,10 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     this.context = context
   }
 
-  override fun searchDevices(onDeviceFound: OnDeviceFound) {
+  override fun searchDevices(
+    onDeviceFound: OnDeviceFound,
+    onConnected: DataSharingStrategy.PairingListener
+  ) {
     // Wifi P2p
     wifiP2pChannel = wifiP2pManager.initialize(context, context.mainLooper, null)
     wifiP2pChannel?.also { channel ->
@@ -129,6 +136,10 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
             override fun onConnectionInfoAvailable(info: WifiP2pInfo, wifiP2pGroup: WifiP2pGroup?) {
               this@WifiDirectDataSharingStrategy.onConnectionInfoAvailable(info, wifiP2pGroup)
+
+              if (info.groupFormed) {
+                onConnected.onSuccess(null)
+              }
             }
 
             override fun onConnectionInfoAvailable(info: WifiP2pInfo) {
@@ -288,14 +299,14 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   }
 
   override fun send(
-    device: DeviceInfo,
+    device: DeviceInfo?,
     syncPayload: PayloadContract<out Any>,
     operationListener: DataSharingStrategy.OperationListener
   ) {
     // Check if the socket is setup for sending
     // Check if this is the sender/receiver
     if (wifiP2pInfo == null) {
-      val p2pDevice = (device.strategySpecificDevice as WifiP2pDevice)
+      val p2pDevice = (device?.strategySpecificDevice as WifiP2pDevice)
       val errorMsg = "WifiP2PInfo is not available"
       Timber.e(errorMsg)
       operationListener.onFailure(
@@ -309,88 +320,94 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
         send(device, syncPayload, operationListener)
       }*/
 
-    val socket = makeSocketConnections(wifiP2pInfo!!.groupOwnerAddress.toString())
-    if (socket != null) {
+    GlobalScope.launch {
+      makeSocketConnections(wifiP2pInfo!!.groupOwnerAddress.toString()) { socket ->
+        if (socket != null) {
 
-      when (syncPayload.getDataType()) {
-        SyncPayloadType.STRING -> {
+          when (syncPayload.getDataType()) {
+            SyncPayloadType.STRING -> {
 
-          // TODO: Fix this to take it the [org.smartregister.p2p.payload.BytePayload]
+              // TODO: Fix this to take it the [org.smartregister.p2p.payload.BytePayload]
 
-          if (dataOutputStream != null) {
-            dataOutputStream!!.apply {
-              writeUTF(SyncPayloadType.STRING.name)
-              writeBytes(syncPayload.getData() as String)
+              if (dataOutputStream != null) {
+                dataOutputStream!!.apply {
+                  writeUTF(SyncPayloadType.STRING.name)
+                  writeBytes(syncPayload.getData() as String)
 
-              operationListener.onSuccess(device)
-            }
-          } else {
-            operationListener.onFailure(device, java.lang.Exception(""))
-          }
-        }
-        SyncPayloadType.BYTES -> {
-          // TODO: Fix this to take it the [org.smartregister.p2p.payload.BytePayload]
-
-          dataOutputStream?.apply {
-            val byteArray = syncPayload.getData() as ByteArray
-
-            writeUTF(SyncPayloadType.BYTES.name)
-            writeLong(byteArray.size.toLong())
-
-            val len = byteArray.size
-            var offset = 0
-            var chunkSize = 1024
-
-            while (offset < len) {
-              write(byteArray, offset, chunkSize)
-
-              offset += chunkSize
-              if ((len - offset) < chunkSize) {
-                chunkSize = len - offset
+                  operationListener.onSuccess(device)
+                }
+              } else {
+                operationListener.onFailure(device, java.lang.Exception(""))
               }
             }
+            SyncPayloadType.BYTES -> {
+              // TODO: Fix this to take it the [org.smartregister.p2p.payload.BytePayload]
 
-            operationListener.onSuccess(device)
+              dataOutputStream?.apply {
+                val byteArray = syncPayload.getData() as ByteArray
+
+                writeUTF(SyncPayloadType.BYTES.name)
+                writeLong(byteArray.size.toLong())
+
+                val len = byteArray.size
+                var offset = 0
+                var chunkSize = 1024
+
+                while (offset < len) {
+                  write(byteArray, offset, chunkSize)
+
+                  offset += chunkSize
+                  if ((len - offset) < chunkSize) {
+                    chunkSize = len - offset
+                  }
+                }
+
+                operationListener.onSuccess(device)
+              }
+            }
           }
+        } else {
+          onConnectionInfo =
+            fun() {
+              send(device, syncPayload, operationListener)
+            }
         }
       }
-    } else {
-      onConnectionInfo =
-        fun() {
-          send(device, syncPayload, operationListener)
-        }
     }
   }
 
-  fun makeSocketConnections(groupOwnerAddress: String): Socket? {
+  suspend fun makeSocketConnections(groupOwnerAddress: String, onSocketConnectionMade: (socket: Socket?) -> Unit) {
+    var socketResult: Socket?
     if (socket != null) {
-      return socket
-    }
-
-    if (wifiP2pInfo == null) {
+      socketResult = socket
+    } else if (wifiP2pInfo == null) {
       // Request connections
       requestConnectionInfo()
 
-      return null
+      socketResult = null
     } else if (wifiP2pInfo?.isGroupOwner == true) {
       // Start a server to accept connections.
-      return acceptConnectionsToServerSocket()
+      socketResult = acceptConnectionsToServerSocket()
     } else {
       // Connect to the server running on the group owner device.
-      return connectToServerSocket(groupOwnerAddress)
+      socketResult = connectToServerSocket(groupOwnerAddress)
     }
+
+    onSocketConnectionMade.invoke(socketResult)
   }
 
-  private fun acceptConnectionsToServerSocket(): Socket? =
-    try {
-      /*ServerSocket(PORT).use { server ->
-        server.accept().use { socket -> transmit(sender, socket) }
-      }*/
-      val serverSocket = ServerSocket(PORT)
-      serverSocket.accept().apply { constructStreamsFromSocket(this) }
-    } catch (e: Exception) {
-      Timber.e(e)
-      null
+  private suspend fun acceptConnectionsToServerSocket(): Socket? =
+    withContext(Dispatchers.IO) {
+      try {
+        /*ServerSocket(PORT).use { server ->
+          server.accept().use { socket -> transmit(sender, socket) }
+        }*/
+        val serverSocket = ServerSocket(PORT)
+        serverSocket.accept().apply { constructStreamsFromSocket(this) }
+      } catch (e: Exception) {
+        Timber.e(e)
+        null
+      }
     }
 
   private fun constructStreamsFromSocket(socket: Socket) {
@@ -398,21 +415,23 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     dataOutputStream = DataOutputStream(socket.getOutputStream())
   }
 
-  private fun connectToServerSocket(groupOwnerAddress: String): Socket? =
-    try {
-      Socket().apply {
-        bind(null)
-        connect(InetSocketAddress(groupOwnerAddress, PORT), SOCKET_TIMEOUT)
-        // transmit(sender, socket)
-        constructStreamsFromSocket(this)
+  private suspend fun connectToServerSocket(groupOwnerAddress: String): Socket? =
+    withContext(Dispatchers.IO) {
+      try {
+        Socket().apply {
+          bind(null)
+          connect(InetSocketAddress(groupOwnerAddress, PORT), SOCKET_TIMEOUT)
+          // transmit(sender, socket)
+          constructStreamsFromSocket(this)
+        }
+      } catch (e: Exception) {
+        Timber.e(e)
+        null
       }
-    } catch (e: Exception) {
-      Timber.e(e)
-      null
     }
 
   override fun sendManifest(
-    device: DeviceInfo,
+    device: DeviceInfo?,
     manifest: Manifest,
     operationListener: DataSharingStrategy.OperationListener
   ) {
@@ -428,34 +447,60 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   }
 
   override fun receive(
-    device: DeviceInfo,
+    device: DeviceInfo?,
+    payloadReceiptListener: DataSharingStrategy.PayloadReceiptListener,
     operationListener: DataSharingStrategy.OperationListener
-  ): PayloadContract<out Any>? {
+  ) {
     // Check if the socket is setup for listening
     // Check if this is the receiver/sender
-    return dataInputStream?.run {
-      val dataType = readUTF()
 
-      if (dataType == SyncPayloadType.STRING.name) {
-        val stringPayload = String(readBytes())
-        StringPayload(stringPayload)
-      } else if (dataType == SyncPayloadType.BYTES.name) {
-        var payloadLen = readLong()
-        val payloadByteArray = ByteArray(payloadLen.toInt())
-        var currentBufferPos = 0
-        var n = 0
+    if (wifiP2pInfo == null) {
+      val p2pDevice = (device?.strategySpecificDevice as WifiP2pDevice)
+      val errorMsg = "WifiP2PInfo is not available"
+      Timber.e(errorMsg)
+      operationListener.onFailure(
+        device,
+        Exception("Error sending to ${p2pDevice.deviceName}(${p2pDevice.deviceAddress}): $errorMsg")
+      )
+    } /*
 
-        while (payloadLen > 0 &&
-          read(payloadByteArray, currentBufferPos, Math.min(1024, payloadLen).toInt()).also {
-            n = it
-          } != -1) {
-          currentBufferPos += payloadLen.toInt()
-          payloadLen -= n.toLong()
-          Timber.e("file size  $payloadLen")
+      val sendingLogic = fun() {
+        send(device, syncPayload, operationListener)
+      }*/
+
+    GlobalScope.launch {
+      makeSocketConnections(wifiP2pInfo!!.groupOwnerAddress.toString()) { socket ->
+        if (socket != null) {
+
+          dataInputStream?.run {
+            val dataType = readUTF()
+
+            if (dataType == SyncPayloadType.STRING.name) {
+              val stringPayload = String(readBytes())
+              payloadReceiptListener.onPayloadReceived(StringPayload(stringPayload))
+            } else if (dataType == SyncPayloadType.BYTES.name) {
+              var payloadLen = readLong()
+              val payloadByteArray = ByteArray(payloadLen.toInt())
+              var currentBufferPos = 0
+              var n = 0
+
+              while (payloadLen > 0 &&
+                read(payloadByteArray, currentBufferPos, Math.min(1024, payloadLen).toInt()).also {
+                  n = it
+                } != -1
+              ) {
+                currentBufferPos += payloadLen.toInt()
+                payloadLen -= n.toLong()
+                Timber.e("file size  $payloadLen")
+              }
+              payloadReceiptListener.onPayloadReceived(BytePayload(payloadByteArray))
+            } else {
+              operationListener.onFailure(getCurrentDevice(), Exception("Unknown datatype: $dataType"))
+            }
+          }
+        } else {
+          operationListener.onFailure(getCurrentDevice(), Exception("Socket is null"))
         }
-        BytePayload(payloadByteArray)
-      } else {
-        null
       }
     }
   }
@@ -588,8 +633,11 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
     if (info.groupFormed && wifiP2pGroup != null) {
       this.wifiP2pGroup = wifiP2pGroup
-      val isGroupOwner = info.isGroupOwner
-      currentDevice = wifiP2pGroup.clientList.first { it.isGroupOwner != isGroupOwner }
+
+      if (info.isGroupOwner) {
+        val isGroupOwner = info.isGroupOwner
+        currentDevice = wifiP2pGroup.clientList.first { it.isGroupOwner != isGroupOwner }
+      }
     }
 
     if (onConnectionInfo != null) {

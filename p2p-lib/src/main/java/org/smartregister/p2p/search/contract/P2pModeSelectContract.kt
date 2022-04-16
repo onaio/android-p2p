@@ -30,9 +30,9 @@ interface P2pModeSelectContract {
 
   interface SenderViewModel {
     fun sendManifest(@NonNull manifest: Manifest)
-    fun getCurrentConnectedDevice(): DeviceInfo
+    fun getCurrentConnectedDevice(): DeviceInfo?
     fun processReceivedHistory(syncPayload: StringPayload)
-    fun requestSyncParams(deviceInfo: DeviceInfo)
+    fun requestSyncParams(deviceInfo: DeviceInfo?)
   }
 
   interface ReceiverViewModel {

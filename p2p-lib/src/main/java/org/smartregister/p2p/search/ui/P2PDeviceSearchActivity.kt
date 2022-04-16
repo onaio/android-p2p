@@ -68,7 +68,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
   private var isSender = false
   private var scanning = false
   private lateinit var interactiveDialog: BottomSheetDialog
-  private lateinit var currentConnectedDevice: DeviceInfo
+  private var currentConnectedDevice: DeviceInfo? = null
 
   private lateinit var dataSharingStrategy: DataSharingStrategy
 
@@ -120,6 +120,17 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
 
         override fun failed(ex: Exception) {
           TODO("Not yet implemented")
+        }
+      },
+      object: DataSharingStrategy.PairingListener {
+
+        override fun onSuccess(device: DeviceInfo?) {
+
+          if (currentConnectedDevice == null) {
+            currentConnectedDevice = device
+            val displayName = device?.getDisplayName() ?: "Unknown"
+            showP2PSelectPage(getDeviceRole(), displayName)
+          }
         }
       }
     )
@@ -398,15 +409,16 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
   }
 
   fun connectToDevice(device: DeviceInfo) {
+    isSender = true
     dataSharingStrategy.connect(
       device,
       object : DataSharingStrategy.OperationListener {
-        override fun onSuccess(device: DeviceInfo) {
+        override fun onSuccess(device: DeviceInfo?) {
           currentConnectedDevice = device
-          showP2PSelectPage(getDeviceRole(), currentConnectedDevice.getDisplayName())
+          showP2PSelectPage(getDeviceRole(), currentConnectedDevice!!.getDisplayName())
         }
 
-        override fun onFailure(device: DeviceInfo, ex: Exception) {
+        override fun onFailure(device: DeviceInfo?, ex: Exception) {
           TODO("Not yet implemented")
         }
       }
@@ -565,7 +577,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
     // Respond with the acceptable data types each with its lastUpdated timestamp and batch size
   }
 
-  fun getCurrentConnectedDevice(): DeviceInfo {
-    return dataSharingStrategy.getCurrentDevice()!!
+  fun getCurrentConnectedDevice(): DeviceInfo? {
+    return dataSharingStrategy.getCurrentDevice()
   }
 }

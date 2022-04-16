@@ -23,21 +23,21 @@ interface DataSharingStrategy {
 
   fun setActivity(context: Activity)
 
-  fun searchDevices(onDeviceFound: OnDeviceFound)
+  fun searchDevices(onDeviceFound: OnDeviceFound, onConnected: PairingListener)
 
   fun connect(device: DeviceInfo, operationListener: OperationListener)
 
   fun disconnect(device: DeviceInfo, operationListener: OperationListener)
 
   fun send(
-    device: DeviceInfo,
+    device: DeviceInfo?,
     syncPayload: PayloadContract<out Any>,
     operationListener: OperationListener
   )
 
-  fun sendManifest(device: DeviceInfo, manifest: Manifest, operationListener: OperationListener)
+  fun sendManifest(device: DeviceInfo?, manifest: Manifest, operationListener: OperationListener)
 
-  fun receive(device: DeviceInfo, operationListener: OperationListener): PayloadContract<out Any>?
+  fun receive(device: DeviceInfo?, payloadReceiptListener: PayloadReceiptListener, operationListener: OperationListener)
 
   fun receiveManifest(device: DeviceInfo, operationListener: OperationListener): Manifest?
 
@@ -61,8 +61,19 @@ interface DataSharingStrategy {
 
   interface OperationListener {
 
-    fun onSuccess(device: DeviceInfo)
+    fun onSuccess(device: DeviceInfo?)
 
-    fun onFailure(device: DeviceInfo, ex: Exception)
+    fun onFailure(device: DeviceInfo?, ex: Exception)
+  }
+
+
+  interface PairingListener {
+
+    fun onSuccess(device: DeviceInfo?)
+  }
+
+  interface PayloadReceiptListener {
+
+    fun onPayloadReceived(payload: PayloadContract<out Any>?)
   }
 }
