@@ -321,7 +321,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       }*/
 
     GlobalScope.launch {
-      makeSocketConnections(wifiP2pInfo!!.groupOwnerAddress.toString()) { socket ->
+      makeSocketConnections(wifiP2pInfo!!.groupOwnerAddress.hostAddress) { socket ->
         if (socket != null) {
 
           when (syncPayload.getDataType()) {
@@ -332,7 +332,10 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
               if (dataOutputStream != null) {
                 dataOutputStream!!.apply {
                   writeUTF(SyncPayloadType.STRING.name)
+                  flush()
+
                   writeBytes(syncPayload.getData() as String)
+                  flush()
 
                   operationListener.onSuccess(device)
                 }
@@ -469,7 +472,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       }*/
 
     GlobalScope.launch {
-      makeSocketConnections(wifiP2pInfo!!.groupOwnerAddress.toString()) { socket ->
+      makeSocketConnections(wifiP2pInfo!!.groupOwnerAddress.hostAddress) { socket ->
         if (socket != null) {
 
           dataInputStream?.run {
@@ -636,7 +639,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
       if (info.isGroupOwner) {
         val isGroupOwner = info.isGroupOwner
-        currentDevice = wifiP2pGroup.clientList.first { it.isGroupOwner != isGroupOwner }
+        currentDevice = wifiP2pGroup.clientList.firstOrNull { it.isGroupOwner != isGroupOwner }
       }
     }
 
