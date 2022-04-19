@@ -30,6 +30,7 @@ import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.payload.StringPayload
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
 import org.smartregister.p2p.utils.Constants
+import timber.log.Timber
 
 class P2PReceiverViewModel(
   private val context: P2PDeviceSearchActivity,
@@ -44,7 +45,7 @@ class P2PReceiverViewModel(
         context.getCurrentConnectedDevice(),
         object: DataSharingStrategy.PayloadReceiptListener {
           override fun onPayloadReceived(payload: PayloadContract<out Any>?) {
-
+            Timber.i("Payload received ")
             //
           }
         },

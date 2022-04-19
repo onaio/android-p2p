@@ -127,10 +127,12 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
         override fun onSuccess(device: DeviceInfo?) {
 
           if (currentConnectedDevice == null) {
-            currentConnectedDevice = device
-            val displayName = device?.getDisplayName() ?: "Unknown"
-            showP2PSelectPage(getDeviceRole(), displayName)
+            Timber.e("Devices paired with another: DeviceInfo is null")
           }
+
+          currentConnectedDevice = device
+          val displayName = device?.getDisplayName() ?: "Unknown"
+          showP2PSelectPage(getDeviceRole(), displayName)
         }
       }
     )
