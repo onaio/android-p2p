@@ -39,6 +39,32 @@ class P2PReceiverViewModel(
 
   private val connectionLevel: Constants.ConnectionLevel? = null
 
+
+  fun processSenderDeviceDetails() {
+
+    dataSharingStrategy.receive(
+      context.getCurrentConnectedDevice(),
+      object: DataSharingStrategy.PayloadReceiptListener {
+        override fun onPayloadReceived(payload: PayloadContract<out Any>?) {
+          Timber.e("Payload received : ${(payload as StringPayload).string}")
+
+          var map : MutableMap<String, String?> = HashMap()
+          val deviceDetails = Gson().fromJson((payload as StringPayload).string, map.javaClass)
+
+          // TODO: Fix possible crash here due to NPE
+          checkIfDeviceKeyHasChanged(deviceDetails[Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY]!!)
+        }
+      },
+      object : DataSharingStrategy.OperationListener {
+        override fun onSuccess(device: DeviceInfo?) {
+
+        }
+
+        override fun onFailure(device: DeviceInfo?, ex: Exception) {}
+      }
+    )
+  }
+
   fun processSyncParamsRequest() {
 
       dataSharingStrategy.receive(
@@ -59,13 +85,13 @@ class P2PReceiverViewModel(
       )
   }
 
-  fun checkIfDeviceKeyHasChanged(senderDeviceId: String) {
+  fun checkIfDeviceKeyHasChanged(appLifetimeKey: String) {
     viewModelScope.launch {
       val receivedHistory =
         P2PLibrary.getInstance()
           .getDb()
           ?.p2pReceivedHistoryDao()
-          ?.getDeviceReceivedHistory(senderDeviceId)
+          ?.getDeviceReceivedHistory(appLifetimeKey)
 
       if (receivedHistory != null) {
         sendLastReceivedRecords(receivedHistory)
@@ -90,7 +116,9 @@ class P2PReceiverViewModel(
           Gson().toJson(receivedHistory),
         ),
       object : DataSharingStrategy.OperationListener {
-        override fun onSuccess(device: DeviceInfo?) {}
+        override fun onSuccess(device: DeviceInfo?) {
+          Timber.e("Successfully sent the last received records")
+        }
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {}
       }

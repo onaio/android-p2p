@@ -444,7 +444,8 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
 
     interactiveDialog.findViewById<Button>(R.id.dataTransferBtn)?.setOnClickListener {
       // initiate data transfer
-      p2PSenderViewModel.requestSyncParams(getCurrentConnectedDevice())
+      p2PSenderViewModel.sendDeviceDetails(getCurrentConnectedDevice())
+      //p2PSenderViewModel.requestSyncParams(getCurrentConnectedDevice())
     }
 
     interactiveDialog.setCancelable(false)
@@ -474,7 +475,8 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
     interactiveDialog.show()
 
     // listen for messages
-    p2PReceiverViewModel.processSyncParamsRequest()
+    p2PReceiverViewModel.processSenderDeviceDetails()
+    //p2PReceiverViewModel.processSyncParamsRequest()
   }
 
   private fun initInteractiveDialog() {
