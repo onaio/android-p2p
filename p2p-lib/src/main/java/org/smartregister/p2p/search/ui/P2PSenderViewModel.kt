@@ -25,9 +25,11 @@ import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
 import org.smartregister.p2p.data_sharing.SyncSenderHandler
 import org.smartregister.p2p.model.P2PReceivedHistory
+import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.payload.StringPayload
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
 import org.smartregister.p2p.utils.Constants
+import timber.log.Timber
 
 class P2PSenderViewModel(
   private val context: P2PDeviceSearchActivity,
@@ -37,6 +39,61 @@ class P2PSenderViewModel(
   private var connectionLevel: Constants.ConnectionLevel? = null
 
   private lateinit var syncSenderHandler: SyncSenderHandler
+
+
+  fun sendDeviceDetails(deviceInfo: DeviceInfo?) {
+    // write a message to the socket requesting the receiver for acceptable data types
+    // and their last update times which can be sent using a simple string command,
+    // 'SEND_SYNC_PARAMS', and the **app_lifetime_key**
+
+       val deviceDetailsMap: MutableMap<String, String?> = HashMap()
+    deviceDetailsMap[Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY] =
+      P2PLibrary.getInstance()!!.getHashKey()
+    deviceDetailsMap[Constants.BasicDeviceDetails.KEY_DEVICE_ID] =
+      P2PLibrary.getInstance()!!.getDeviceUniqueIdentifier()
+
+    dataSharingStrategy.send(
+      device = dataSharingStrategy.getCurrentDevice()
+      /** Find out how to get this */
+      ,
+      syncPayload =
+      StringPayload(
+        Gson().toJson(deviceDetailsMap),
+      ),
+      object : DataSharingStrategy.OperationListener {
+        override fun onSuccess(device: DeviceInfo?) {
+          // TODO: Return this step but we can skip it for now
+          //requestSyncParams(device)
+          Timber.e("Successfully sent the device details map")
+
+          dataSharingStrategy.receive(device, object: DataSharingStrategy.PayloadReceiptListener {
+
+            override fun onPayloadReceived(payload: PayloadContract<out Any>?) {
+              // WE are receiving the history
+
+              Timber.e("I have received last history : ${(payload as StringPayload).string}")
+              val sampleList : List<P2PReceivedHistory?> = listOf()
+              val lastReceivedHistory = Gson().fromJson((payload as StringPayload).string, sampleList.javaClass)
+
+
+
+              // TODO: Fetch data based on last received history and send it to the receiver
+            }
+          }, object: DataSharingStrategy.OperationListener {
+            override fun onSuccess(device: DeviceInfo?) {
+
+            }
+
+            override fun onFailure(device: DeviceInfo?, ex: Exception) {
+
+            }
+          })
+        }
+
+        override fun onFailure(device: DeviceInfo?, ex: Exception) {}
+      }
+    )
+  }
 
   override fun requestSyncParams(deviceInfo: DeviceInfo?) {
     // write a message to the socket requesting the receiver for acceptable data types

@@ -334,7 +334,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
                   writeUTF(SyncPayloadType.STRING.name)
                   flush()
 
-                  writeBytes(syncPayload.getData() as String)
+                  writeUTF(syncPayload.getData() as String)
                   flush()
 
                   operationListener.onSuccess(device)
@@ -479,7 +479,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
             val dataType = readUTF()
 
             if (dataType == SyncPayloadType.STRING.name) {
-              val stringPayload = String(readBytes())
+              val stringPayload = readUTF()
               payloadReceiptListener.onPayloadReceived(StringPayload(stringPayload))
             } else if (dataType == SyncPayloadType.BYTES.name) {
               var payloadLen = readLong()
