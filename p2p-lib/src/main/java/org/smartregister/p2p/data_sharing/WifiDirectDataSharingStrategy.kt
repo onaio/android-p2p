@@ -379,7 +379,10 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     }
   }
 
-  suspend fun makeSocketConnections(groupOwnerAddress: String, onSocketConnectionMade: (socket: Socket?) -> Unit) {
+  suspend fun makeSocketConnections(
+    groupOwnerAddress: String,
+    onSocketConnectionMade: (socket: Socket?) -> Unit
+  ) {
     var socketResult: Socket?
     if (socket != null) {
       socketResult = socket
@@ -490,15 +493,17 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
               while (payloadLen > 0 &&
                 read(payloadByteArray, currentBufferPos, Math.min(1024, payloadLen).toInt()).also {
                   n = it
-                } != -1
-              ) {
+                } != -1) {
                 currentBufferPos += payloadLen.toInt()
                 payloadLen -= n.toLong()
                 Timber.e("file size  $payloadLen")
               }
               payloadReceiptListener.onPayloadReceived(BytePayload(payloadByteArray))
             } else {
-              operationListener.onFailure(getCurrentDevice(), Exception("Unknown datatype: $dataType"))
+              operationListener.onFailure(
+                getCurrentDevice(),
+                Exception("Unknown datatype: $dataType")
+              )
             }
           }
         } else {

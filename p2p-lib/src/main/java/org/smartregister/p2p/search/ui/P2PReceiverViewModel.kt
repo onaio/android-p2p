@@ -39,26 +39,25 @@ class P2PReceiverViewModel(
 
   private val connectionLevel: Constants.ConnectionLevel? = null
 
-
   fun processSenderDeviceDetails() {
 
     dataSharingStrategy.receive(
       context.getCurrentConnectedDevice(),
-      object: DataSharingStrategy.PayloadReceiptListener {
+      object : DataSharingStrategy.PayloadReceiptListener {
         override fun onPayloadReceived(payload: PayloadContract<out Any>?) {
           Timber.e("Payload received : ${(payload as StringPayload).string}")
 
-          var map : MutableMap<String, String?> = HashMap()
+          var map: MutableMap<String, String?> = HashMap()
           val deviceDetails = Gson().fromJson((payload as StringPayload).string, map.javaClass)
 
           // TODO: Fix possible crash here due to NPE
-          checkIfDeviceKeyHasChanged(deviceDetails[Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY]!!)
+          checkIfDeviceKeyHasChanged(
+            deviceDetails[Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY]!!
+          )
         }
       },
       object : DataSharingStrategy.OperationListener {
-        override fun onSuccess(device: DeviceInfo?) {
-
-        }
+        override fun onSuccess(device: DeviceInfo?) {}
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {}
       }
@@ -67,22 +66,22 @@ class P2PReceiverViewModel(
 
   fun processSyncParamsRequest() {
 
-      dataSharingStrategy.receive(
-        context.getCurrentConnectedDevice(),
-        object: DataSharingStrategy.PayloadReceiptListener {
-          override fun onPayloadReceived(payload: PayloadContract<out Any>?) {
-            Timber.i("Payload received ")
-            //
-          }
-        },
-        object : DataSharingStrategy.OperationListener {
-          override fun onSuccess(device: DeviceInfo?) {
-            checkIfDeviceKeyHasChanged((device?.strategySpecificDevice as WifiP2pDevice).deviceName)
-          }
-
-          override fun onFailure(device: DeviceInfo?, ex: Exception) {}
+    dataSharingStrategy.receive(
+      context.getCurrentConnectedDevice(),
+      object : DataSharingStrategy.PayloadReceiptListener {
+        override fun onPayloadReceived(payload: PayloadContract<out Any>?) {
+          Timber.i("Payload received ")
+          //
         }
-      )
+      },
+      object : DataSharingStrategy.OperationListener {
+        override fun onSuccess(device: DeviceInfo?) {
+          checkIfDeviceKeyHasChanged((device?.strategySpecificDevice as WifiP2pDevice).deviceName)
+        }
+
+        override fun onFailure(device: DeviceInfo?, ex: Exception) {}
+      }
+    )
   }
 
   fun checkIfDeviceKeyHasChanged(appLifetimeKey: String) {

@@ -16,6 +16,8 @@
 package org.smartregister.p2p.search.ui
 
 import android.Manifest
+import android.content.Intent
+import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -26,6 +28,7 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -33,6 +36,13 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationSettingsRequest
+import com.google.android.gms.location.LocationSettingsResponse
+import com.google.android.gms.tasks.OnFailureListener
+import com.google.android.gms.tasks.OnSuccessListener
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
 import org.smartregister.p2p.P2PLibrary
@@ -74,6 +84,8 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
 
   private val rootView: View by lazy { findViewById(R.id.device_search_root_layout) }
 
+  val REQUEST_CHECK_LOCATION_ENABLED = 2398
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_p2_pdevice_search)
@@ -91,7 +103,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
 
     findViewById<Button>(R.id.scanDevicesBtn).setOnClickListener {
       scanning = true
-      startScanning()
+      requestLocationPermissionsAndEnableLocation()
     }
   }
 
@@ -122,7 +134,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
           TODO("Not yet implemented")
         }
       },
-      object: DataSharingStrategy.PairingListener {
+      object : DataSharingStrategy.PairingListener {
 
         override fun onSuccess(device: DeviceInfo?) {
 
@@ -139,6 +151,96 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
 
     showScanningDialog()
   }
+
+  fun requestLocationPermissionsAndEnableLocation() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+      requestAccessFineLocationIfNotGranted()
+    }
+
+    checkLocationEnabled()
+  }
+
+  /**
+   * Checks if location is currently enabled
+   *
+   * @param activity
+   */
+  fun checkLocationEnabled() {
+
+    /*val googleApiClient: GoogleApiClient = GoogleApiClient.Builder(activity)
+        .addApi(LocationServices.API).build()
+    googleApiClient.connect()
+    val locationRequest: LocationRequest =
+        LocationRequest.create()
+    locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+    locationRequest.setInterval(10000)
+    locationRequest.setFastestInterval(10000L / 2)
+    val builder: LocationSettingsRequest.Builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
+    builder.setAlwaysShow(true)
+    val result: PendingResult<LocationSettingsResult> =
+        LocationServices.SettingsApi.checkLocationSettings(googleApiClient, builder.build())
+    result.setResultCallback(resultCallback)*/
+
+    val builder = LocationSettingsRequest.Builder().addLocationRequest(createLocationRequest())
+    val result = LocationServices.getSettingsClient(this).checkLocationSettings(builder.build())
+    result.addOnSuccessListener(
+      this,
+      OnSuccessListener<LocationSettingsResponse?> {
+        Toast.makeText(this@P2PDeviceSearchActivity, "addOnSuccessListener", Toast.LENGTH_SHORT)
+          .show()
+        // All location settings are satisfied. The client can initialize
+        // location requests here.
+        // ...
+        startScanning()
+      }
+    )
+    result.addOnFailureListener(
+      this,
+      OnFailureListener { e ->
+        Toast.makeText(this@P2PDeviceSearchActivity, "addOnFailureListener", Toast.LENGTH_SHORT)
+          .show()
+        if (e is ResolvableApiException) {
+          // Location settings are not satisfied, but this can be fixed
+          // by showing the user a dialog.
+          try {
+            // Show the dialog by calling startResolutionForResult(),
+            // and check the result in onActivityResult().
+            val resolvable = e as ResolvableApiException
+            resolvable.startResolutionForResult(
+              this@P2PDeviceSearchActivity,
+              REQUEST_CHECK_LOCATION_ENABLED
+            )
+          } catch (sendEx: IntentSender.SendIntentException) {
+            // Ignore the error.
+            Timber.e(sendEx)
+          }
+        }
+      }
+    )
+
+    /*val locationEnabled = LocationManagerCompat.isLocationEnabled()
+
+    if (!locationEnabled) {
+
+    }*/
+  }
+
+  fun createLocationRequest(): LocationRequest {
+    return LocationRequest.create().apply {
+      interval = 3600000
+      fastestInterval = 3600000
+      priority = LocationRequest.PRIORITY_LOW_POWER
+    }
+  }
+
+  override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    super.onActivityResult(requestCode, resultCode, data)
+
+    if (requestCode == REQUEST_CHECK_LOCATION_ENABLED) {
+      startScanning()
+    }
+  }
+
   /*
   fun renameWifiDirectName() {
     val deviceName = getDeviceName(this)
@@ -445,7 +547,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
     interactiveDialog.findViewById<Button>(R.id.dataTransferBtn)?.setOnClickListener {
       // initiate data transfer
       p2PSenderViewModel.sendDeviceDetails(getCurrentConnectedDevice())
-      //p2PSenderViewModel.requestSyncParams(getCurrentConnectedDevice())
+      // p2PSenderViewModel.requestSyncParams(getCurrentConnectedDevice())
     }
 
     interactiveDialog.setCancelable(false)
@@ -476,7 +578,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
 
     // listen for messages
     p2PReceiverViewModel.processSenderDeviceDetails()
-    //p2PReceiverViewModel.processSyncParamsRequest()
+    // p2PReceiverViewModel.processSyncParamsRequest()
   }
 
   private fun initInteractiveDialog() {
