@@ -20,6 +20,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
@@ -86,7 +87,8 @@ class P2PReceiverViewModel(
   }
 
   fun checkIfDeviceKeyHasChanged(appLifetimeKey: String) {
-    viewModelScope.launch {
+    Timber.e("In check if device key has changed with app lifetime key $appLifetimeKey")
+    viewModelScope.launch(Dispatchers.IO) {
       val receivedHistory =
         P2PLibrary.getInstance()
           .getDb()
@@ -95,8 +97,10 @@ class P2PReceiverViewModel(
 
       if (receivedHistory != null) {
         sendLastReceivedRecords(receivedHistory)
+        Timber.e("Send  received history")
       } else {
         sendLastReceivedRecords(listOf(P2PReceivedHistory()))
+        Timber.e("send empty received history")
       }
     }
   }
@@ -120,7 +124,9 @@ class P2PReceiverViewModel(
           Timber.e("Successfully sent the last received records")
         }
 
-        override fun onFailure(device: DeviceInfo?, ex: Exception) {}
+        override fun onFailure(device: DeviceInfo?, ex: Exception) {
+          Timber.e("Failed to send the last received records")
+        }
       }
     )
   }
