@@ -97,10 +97,10 @@ class P2PReceiverViewModel(
 
       if (receivedHistory != null) {
         sendLastReceivedRecords(receivedHistory)
-        Timber.e("Send  received history")
+        Timber.e("Sent received history")
       } else {
         sendLastReceivedRecords(listOf(P2PReceivedHistory()))
-        Timber.e("send empty received history")
+        Timber.e("Sent empty received history")
       }
     }
   }

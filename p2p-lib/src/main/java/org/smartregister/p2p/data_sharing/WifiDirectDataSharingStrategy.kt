@@ -388,12 +388,15 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       requestConnectionInfo()
 
       socketResult = null
+      socket = socketResult
     } else if (wifiP2pInfo?.isGroupOwner == true) {
       // Start a server to accept connections.
       socketResult = acceptConnectionsToServerSocket()
+      socket = socketResult
     } else {
       // Connect to the server running on the group owner device.
       socketResult = connectToServerSocket(groupOwnerAddress)
+      socket = socketResult
     }
 
     onSocketConnectionMade.invoke(socketResult)
