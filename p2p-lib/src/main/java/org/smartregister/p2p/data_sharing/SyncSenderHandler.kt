@@ -17,10 +17,14 @@ package org.smartregister.p2p.data_sharing
 
 import androidx.annotation.NonNull
 import androidx.annotation.Nullable
+import com.google.gson.Gson
 import java.util.TreeSet
 import kotlin.collections.HashMap
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.model.P2PReceivedHistory
+import org.smartregister.p2p.payload.BytePayload
+import org.smartregister.p2p.payload.PayloadContract
+import org.smartregister.p2p.payload.StringPayload
 import org.smartregister.p2p.search.ui.P2PSenderViewModel
 import org.smartregister.p2p.sync.DataType
 import timber.log.Timber
@@ -38,6 +42,7 @@ constructor(
   private var awaitingDataTypeRecordsBatchSize = 0
 
   private var awaitingManifestTransfer = false
+  private lateinit var awaitingPayload : PayloadContract<out Any>
 
   fun startSyncProcess() {
     Timber.e("Start sync process")
@@ -85,13 +90,13 @@ constructor(
       Timber.e("Json data is has content")
       val recordsArray = jsonData.getJsonArray()
 
-      // TODO: Check if I should remove this
       remainingLastRecordIds[dataType.name] = jsonData.getHighestRecordId()
 
       val recordsJsonString = recordsArray.toString()
       awaitingDataTypeName = dataType.name
       awaitingDataTypeHighestId = jsonData.getHighestRecordId()
       awaitingDataTypeRecordsBatchSize = recordsArray!!.length()
+      awaitingPayload = BytePayload(recordsArray.toString().toByteArray(),)
 
       if (recordsJsonString.isNotBlank()) {
 
@@ -106,10 +111,14 @@ constructor(
 
         p2PSenderViewModel.sendManifest(manifest = manifest)
       } else {
-        Timber.e("Jaon data is null")
+        Timber.e("Json data is null")
         dataSyncOrder.remove(dataType)
         sendNextManifest()
       }
     }
+  }
+
+  fun processManifestSent() {
+    p2PSenderViewModel.sendChunkData(awaitingPayload)
   }
 }

@@ -19,6 +19,7 @@ import androidx.annotation.NonNull
 import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
+import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.payload.StringPayload
 
 /** Interface for functions used to make changes to the data transfer page UI */
@@ -34,6 +35,7 @@ interface P2pModeSelectContract {
     fun processReceivedHistory(syncPayload: StringPayload)
     fun requestSyncParams(deviceInfo: DeviceInfo?)
     fun sendSyncComplete()
+    fun sendChunkData(awaitingPayload : PayloadContract<out Any>)
   }
 
   interface ReceiverViewModel {

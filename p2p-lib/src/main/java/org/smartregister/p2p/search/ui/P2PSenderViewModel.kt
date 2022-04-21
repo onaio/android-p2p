@@ -25,6 +25,7 @@ import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
 import org.smartregister.p2p.data_sharing.SyncSenderHandler
 import org.smartregister.p2p.model.P2PReceivedHistory
+import org.smartregister.p2p.payload.BytePayload
 import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.payload.StringPayload
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
@@ -124,6 +125,23 @@ class P2PSenderViewModel(
     Timber.e("P2P sync complete")
   }
 
+  override fun sendChunkData(awaitingPayload : PayloadContract<out Any>) {
+    //TODO Implement sending of chunk data
+    Timber.e("Send chunk data")
+    dataSharingStrategy.send(device = getCurrentConnectedDevice(),
+    syncPayload = awaitingPayload,
+      object : DataSharingStrategy.OperationListener{
+        override fun onSuccess(device: DeviceInfo?) {
+          Timber.e("Chunk data sent successfully")
+        }
+
+        override fun onFailure(device: DeviceInfo?, ex: Exception) {
+          Timber.e("Failed to send chunk data")
+        }
+
+      } )
+  }
+
   override fun sendManifest(manifest: Manifest) {
     if (getCurrentConnectedDevice() != null) {
       dataSharingStrategy.sendManifest(
@@ -132,6 +150,8 @@ class P2PSenderViewModel(
         object : DataSharingStrategy.OperationListener {
           override fun onSuccess(device: DeviceInfo?) {
             Timber.e("Manifest sent successfully  ${manifest.dataType.name },  ${manifest.dataType.type}, ${manifest.payloadSize}, ${manifest.recordsSize}" )
+            // Start sending the actual data
+            syncSenderHandler.processManifestSent()
           }
 
           override fun onFailure(device: DeviceInfo?, ex: Exception) {

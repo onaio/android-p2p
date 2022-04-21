@@ -20,13 +20,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.json.JSONArray
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.IReceiverSyncLifecycleCallback
+import org.smartregister.p2p.data_sharing.SyncReceiverHandler
 import org.smartregister.p2p.model.P2PReceivedHistory
+import org.smartregister.p2p.payload.BytePayload
 import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.payload.StringPayload
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
@@ -39,12 +43,12 @@ class P2PReceiverViewModel(
 ) : ViewModel(), IReceiverSyncLifecycleCallback, P2pModeSelectContract.ReceiverViewModel {
 
   private val connectionLevel: Constants.ConnectionLevel? = null
-
+  private lateinit var syncReceiverHandler: SyncReceiverHandler
 
   fun processSenderDeviceDetails() {
 
     dataSharingStrategy.receive(
-      context.getCurrentConnectedDevice(),
+      dataSharingStrategy.getCurrentDevice(),
       object: DataSharingStrategy.PayloadReceiptListener {
         override fun onPayloadReceived(payload: PayloadContract<out Any>?) {
           Timber.e("Payload received : ${(payload as StringPayload).string}")
@@ -113,6 +117,8 @@ class P2PReceiverViewModel(
     deviceInfo[Constants.BasicDeviceDetails.KEY_DEVICE_ID] =
       P2PLibrary.getInstance().getDeviceUniqueIdentifier()
 
+    syncReceiverHandler = SyncReceiverHandler(this)
+
     dataSharingStrategy.send(
       device = dataSharingStrategy.getCurrentDevice(),
       syncPayload =
@@ -122,6 +128,26 @@ class P2PReceiverViewModel(
       object : DataSharingStrategy.OperationListener {
         override fun onSuccess(device: DeviceInfo?) {
           Timber.e("Successfully sent the last received records")
+          // Listen for incoming manifest
+          val receivedManifest = dataSharingStrategy.receiveManifest(device = dataSharingStrategy.getCurrentDevice()!!,
+            object: DataSharingStrategy.OperationListener{
+              override fun onSuccess(device: DeviceInfo?) {
+                Timber.e("Manifest successfully received")
+
+              }
+
+              override fun onFailure(device: DeviceInfo?, ex: Exception) {
+                Timber.e("Failed to receive manifest")
+              }
+
+            }
+          )
+
+          // Handle successfully received manifest
+          if (receivedManifest != null) {
+            Timber.e("Manifest with data successfully received")
+            syncReceiverHandler.processManifest(receivedManifest)
+          }
         }
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
@@ -129,6 +155,32 @@ class P2PReceiverViewModel(
         }
       }
     )
+  }
+
+  fun processChunkData() {
+    Timber.e("Listen for incoming chunk data")
+    // Listen for incoming chunk data
+    dataSharingStrategy.receive(dataSharingStrategy.getCurrentDevice(), object: DataSharingStrategy.PayloadReceiptListener{
+      override fun onPayloadReceived(payload: PayloadContract<out Any>?) {
+        Timber.e("Successfully received chunk data")
+        // Process chunk data
+        val chunkDataType = object : TypeToken<ArrayList<JSONArray?>?>() {}.type
+        val chunkData: JSONArray =
+          Gson().fromJson(String((payload as BytePayload).getData()), chunkDataType)
+        syncReceiverHandler.processData(chunkData)
+      }
+
+    }, object: DataSharingStrategy.OperationListener{
+      override fun onSuccess(device: DeviceInfo?) {
+        //TODO Handle successful receipt of chunk data
+      }
+
+      override fun onFailure(device: DeviceInfo?, ex: Exception) {
+        //TODO handle failure to receive chunk data
+      }
+
+    })
+
   }
 
   override fun getSendingDeviceId(): String {

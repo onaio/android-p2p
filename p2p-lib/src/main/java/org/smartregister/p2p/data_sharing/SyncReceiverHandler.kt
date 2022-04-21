@@ -17,22 +17,32 @@ package org.smartregister.p2p.data_sharing
 
 import androidx.annotation.NonNull
 import androidx.lifecycle.ViewModel
+import org.json.JSONArray
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.dao.P2pReceivedHistoryDao
 import org.smartregister.p2p.model.P2PReceivedHistory
 import org.smartregister.p2p.search.ui.P2PReceiverViewModel
+import timber.log.Timber
 
 class SyncReceiverHandler constructor(@NonNull val p2PReceiverViewModel: P2PReceiverViewModel) :
   ViewModel() {
 
-  private var awaitingManifestReceipt = true
-  private var awaitingPayloadManifests: HashMap<Long, Manifest> = HashMap<Long, Manifest>()
+  private lateinit var currentManifest:Manifest
 
   fun processManifest(manifest: Manifest) {
-    awaitingPayloadManifests.put(0,manifest)
+    currentManifest = manifest
     // update UI with number of records to expect
-    awaitingManifestReceipt = false
     p2PReceiverViewModel.upDateProgress("Transferring %,d records", manifest.recordsSize)
+    p2PReceiverViewModel.processChunkData()
+  }
+
+  fun processData(data: JSONArray) {
+    Timber.e("Processing chunk data")
+
+    var lastUpdatedAt = P2PLibrary.getInstance().getReceiverTransferDao()
+      .receiveJson(currentManifest.dataType, data)
+
+    updateLastRecord(currentManifest.dataType.name, lastUpdatedAt = lastUpdatedAt)
   }
 
   fun updateLastRecord(@NonNull entityType: String, lastUpdatedAt: Long) {
