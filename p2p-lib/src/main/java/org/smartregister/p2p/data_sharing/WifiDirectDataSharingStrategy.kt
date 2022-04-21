@@ -496,8 +496,8 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
                   n = it
                 } != -1) {
 
+                currentBufferPos += n
                 payloadLen -= n.toLong()
-                currentBufferPos += Math.min(1024, payloadLen).toInt()
                 Timber.e("file size  $payloadLen")
               }
               payloadReceiptListener.onPayloadReceived(BytePayload(payloadByteArray))

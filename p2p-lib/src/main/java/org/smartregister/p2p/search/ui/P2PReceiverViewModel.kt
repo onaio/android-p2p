@@ -164,9 +164,10 @@ class P2PReceiverViewModel(
       override fun onPayloadReceived(payload: PayloadContract<out Any>?) {
         Timber.e("Successfully received chunk data")
         // Process chunk data
-        val chunkDataType = object : TypeToken<ArrayList<JSONArray?>?>() {}.type
-        val chunkData: JSONArray =
-          Gson().fromJson(String((payload as BytePayload).getData()), chunkDataType)
+        val jsonString = String((payload as BytePayload).getData())
+        Timber.e("Received data!!!")
+        Timber.e(jsonString)
+        val chunkData = JSONArray(jsonString)
         syncReceiverHandler.processData(chunkData)
       }
 
