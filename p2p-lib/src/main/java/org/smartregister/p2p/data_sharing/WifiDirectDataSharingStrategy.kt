@@ -391,12 +391,15 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       requestConnectionInfo()
 
       socketResult = null
+      socket = socketResult
     } else if (wifiP2pInfo?.isGroupOwner == true) {
       // Start a server to accept connections.
       socketResult = acceptConnectionsToServerSocket()
+      socket = socketResult
     } else {
       // Connect to the server running on the group owner device.
       socketResult = connectToServerSocket(groupOwnerAddress)
+      socket = socketResult
     }
 
     onSocketConnectionMade.invoke(socketResult)
@@ -447,8 +450,9 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     dataOutputStream?.apply {
       val manifestString = Gson().toJson(manifest)
       writeUTF(SyncPayloadType.MANIFEST.name)
-      writeBytes(manifestString)
+      writeUTF(manifestString)
       flush()
+      operationListener.onSuccess(device = device)
     }
   }
 
@@ -494,7 +498,8 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
                 read(payloadByteArray, currentBufferPos, Math.min(1024, payloadLen).toInt()).also {
                   n = it
                 } != -1) {
-                currentBufferPos += payloadLen.toInt()
+
+                currentBufferPos += n
                 payloadLen -= n.toLong()
                 Timber.e("file size  $payloadLen")
               }
@@ -525,7 +530,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
       if (dataType == SyncPayloadType.MANIFEST.name) {
 
-        val manifestString = String(readBytes())
+        val manifestString = readUTF()
         Gson().fromJson(manifestString, Manifest::class.java)
       } else {
         null
