@@ -33,9 +33,11 @@ interface P2pModeSelectContract {
     fun getCurrentConnectedDevice(): DeviceInfo?
     fun processReceivedHistory(syncPayload: StringPayload)
     fun requestSyncParams(deviceInfo: DeviceInfo?)
+    fun sendSyncComplete()
   }
 
   interface ReceiverViewModel {
     fun getSendingDeviceId(): String
+    fun upDateProgress(msg: String, recordSize: Int)
   }
 }

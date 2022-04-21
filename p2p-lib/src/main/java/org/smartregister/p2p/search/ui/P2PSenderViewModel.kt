@@ -72,12 +72,9 @@ class P2PSenderViewModel(
               // WE are receiving the history
 
               Timber.e("I have received last history : ${(payload as StringPayload).string}")
-              val sampleList : List<P2PReceivedHistory?> = listOf()
-              val lastReceivedHistory = Gson().fromJson((payload as StringPayload).string, sampleList.javaClass)
-
-
 
               // TODO: Fetch data based on last received history and send it to the receiver
+              processReceivedHistory(payload)
             }
           }, object: DataSharingStrategy.OperationListener {
             override fun onSuccess(device: DeviceInfo?) {
@@ -122,15 +119,24 @@ class P2PSenderViewModel(
     )
   }
 
+  override fun sendSyncComplete() {
+    //TODO Implement this
+    Timber.e("P2P sync complete")
+  }
+
   override fun sendManifest(manifest: Manifest) {
     if (getCurrentConnectedDevice() != null) {
       dataSharingStrategy.sendManifest(
         device = getCurrentConnectedDevice(),
         manifest = manifest,
         object : DataSharingStrategy.OperationListener {
-          override fun onSuccess(device: DeviceInfo?) {}
+          override fun onSuccess(device: DeviceInfo?) {
+            Timber.e("Manifest sent successfully  ${manifest.dataType.name },  ${manifest.dataType.type}, ${manifest.payloadSize}, ${manifest.recordsSize}" )
+          }
 
-          override fun onFailure(device: DeviceInfo?, ex: Exception) {}
+          override fun onFailure(device: DeviceInfo?, ex: Exception) {
+            Timber.e("manifest failed to send")
+          }
         }
       )
     }
@@ -145,9 +151,9 @@ class P2PSenderViewModel(
 
     // Handle non empty payload
     if (syncPayload != null) {
-      val receivedHistoryListType = object : TypeToken<ArrayList<P2PReceivedHistory?>?>() {}.type
+      val receivedHistoryListType = object : TypeToken<List<P2PReceivedHistory?>?>() {}.type
       val receivedHistory: List<P2PReceivedHistory> =
-        Gson().fromJson(syncPayload.toString(), receivedHistoryListType)
+        Gson().fromJson(syncPayload.string, receivedHistoryListType)
 
       // TODO run this is background
       val jsonData = P2PLibrary.getInstance().getSenderTransferDao().getP2PDataTypes()
@@ -160,9 +166,11 @@ class P2PSenderViewModel(
         )
 
       if (jsonData != null) {
+        Timber.e("Process received history json data not null")
         syncSenderHandler.startSyncProcess()
       } else {
-        // sendSyncComplete
+        Timber.e("Process received history json data null")
+        sendSyncComplete()
       }
     }
   }

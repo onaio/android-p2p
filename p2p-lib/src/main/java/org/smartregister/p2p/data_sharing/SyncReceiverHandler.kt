@@ -25,11 +25,14 @@ import org.smartregister.p2p.search.ui.P2PReceiverViewModel
 class SyncReceiverHandler constructor(@NonNull val p2PReceiverViewModel: P2PReceiverViewModel) :
   ViewModel() {
 
-  private val awaitingManifestReceipt = true
-  private val awaitingPayloadManifests: HashMap<Long, Manifest> = HashMap<Long, Manifest>()
+  private var awaitingManifestReceipt = true
+  private var awaitingPayloadManifests: HashMap<Long, Manifest> = HashMap<Long, Manifest>()
 
   fun processManifest(manifest: Manifest) {
+    awaitingPayloadManifests.put(0,manifest)
     // update UI with number of records to expect
+    awaitingManifestReceipt = false
+    p2PReceiverViewModel.upDateProgress("Transferring %,d records", manifest.recordsSize)
   }
 
   fun updateLastRecord(@NonNull entityType: String, lastUpdatedAt: Long) {

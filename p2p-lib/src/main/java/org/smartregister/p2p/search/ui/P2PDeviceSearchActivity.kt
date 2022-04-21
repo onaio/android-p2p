@@ -119,7 +119,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
         }
 
         override fun failed(ex: Exception) {
-          TODO("Not yet implemented")
+          //TODO implement handling of search for devices failure
         }
       },
       object: DataSharingStrategy.PairingListener {

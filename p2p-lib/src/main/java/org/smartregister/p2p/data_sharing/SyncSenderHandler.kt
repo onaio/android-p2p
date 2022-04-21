@@ -23,6 +23,7 @@ import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.model.P2PReceivedHistory
 import org.smartregister.p2p.search.ui.P2PSenderViewModel
 import org.smartregister.p2p.sync.DataType
+import timber.log.Timber
 
 class SyncSenderHandler
 constructor(
@@ -31,7 +32,7 @@ constructor(
   @Nullable val receivedHistory: List<P2PReceivedHistory>
 ) {
   private val remainingLastRecordIds = HashMap<String, Long>()
-  private val batchSize = 0
+  private val batchSize = 25
   private var awaitingDataTypeName: String? = null
   private var awaitingDataTypeHighestId: Long = 0
   private var awaitingDataTypeRecordsBatchSize = 0
@@ -39,6 +40,7 @@ constructor(
   private var awaitingManifestTransfer = false
 
   fun startSyncProcess() {
+    Timber.e("Start sync process")
     generateRecordsToSend()
     sendNextManifest()
   }
@@ -50,20 +52,25 @@ constructor(
 
     if (receivedHistory != null && receivedHistory.size > 0) {
       for (dataTypeHistory in receivedHistory) {
+        if (dataTypeHistory.lastUpdatedAt == 0L) {
+          continue
+        }
         remainingLastRecordIds[dataTypeHistory.entityType!!] = dataTypeHistory.lastUpdatedAt
       }
     }
   }
 
   fun sendNextManifest() {
+    Timber.e("in send next manifest")
     if (!dataSyncOrder.isEmpty()) {
       sendJsonDataManifest(dataSyncOrder.first())
     } else {
-      // sendSyncComplete()
+      p2PSenderViewModel.sendSyncComplete()
     }
   }
 
   fun sendJsonDataManifest(@NonNull dataType: DataType) {
+    Timber.e("Sending json manifest")
     val nullableRecordId = remainingLastRecordIds[dataType.name]
     val lastRecordId = nullableRecordId ?: 0L
     // TODO run this is background
@@ -75,6 +82,7 @@ constructor(
     // send actual manifest
 
     if (jsonData != null) {
+      Timber.e("Json data is has content")
       val recordsArray = jsonData.getJsonArray()
 
       // TODO: Check if I should remove this
@@ -98,6 +106,7 @@ constructor(
 
         p2PSenderViewModel.sendManifest(manifest = manifest)
       } else {
+        Timber.e("Jaon data is null")
         dataSyncOrder.remove(dataType)
         sendNextManifest()
       }

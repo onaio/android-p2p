@@ -95,7 +95,7 @@ class P2PReceiverViewModel(
           ?.p2pReceivedHistoryDao()
           ?.getDeviceReceivedHistory(appLifetimeKey)
 
-      if (receivedHistory != null) {
+      if (receivedHistory != null && !receivedHistory.isEmpty()) {
         sendLastReceivedRecords(receivedHistory)
         Timber.e("Sent received history")
       } else {
@@ -134,6 +134,10 @@ class P2PReceiverViewModel(
   override fun getSendingDeviceId(): String {
     // TODO implement this
     return ""
+  }
+
+  override fun upDateProgress(msg: String, recordSize: Int) {
+    //TODO Update Contacts.Intents.UI with record size
   }
 
   class Factory(
