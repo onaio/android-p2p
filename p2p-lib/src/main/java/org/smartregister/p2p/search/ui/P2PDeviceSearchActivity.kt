@@ -26,6 +26,7 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -73,6 +74,8 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
   private lateinit var dataSharingStrategy: DataSharingStrategy
 
   private val rootView: View by lazy { findViewById(R.id.device_search_root_layout) }
+
+  var requestDisconnection = false
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -122,7 +125,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
           //TODO implement handling of search for devices failure
         }
       },
-      object: DataSharingStrategy.PairingListener {
+      object : DataSharingStrategy.PairingListener {
 
         override fun onSuccess(device: DeviceInfo?) {
 
@@ -133,6 +136,24 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
           currentConnectedDevice = device
           val displayName = device?.getDisplayName() ?: "Unknown"
           showP2PSelectPage(getDeviceRole(), displayName)
+        }
+
+        override fun onFailure(device: DeviceInfo?, ex: Exception) {
+          Timber.e("Devices searching failed")
+          Timber.e(ex)
+          removeScanningDialog()
+        }
+
+        override fun onDisconnected() {
+          if (!requestDisconnection) {
+            removeScanningDialog()
+            Toast.makeText(
+                this@P2PDeviceSearchActivity,
+                "Connection was disconnected",
+                Toast.LENGTH_LONG
+              )
+              .show()
+          }
         }
       }
     )
@@ -396,6 +417,12 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
     interactiveDialog.show()
   }
 
+  fun removeScanningDialog() {
+    if (::interactiveDialog.isInitialized) {
+      interactiveDialog.dismiss()
+    }
+  }
+
   fun showDevicesList(peerDeviceList: List<DeviceInfo>) {
     initInteractiveDialog()
     interactiveDialog.findViewById<ConstraintLayout>(R.id.loading_devices_layout)?.visibility =
@@ -445,7 +472,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
     interactiveDialog.findViewById<Button>(R.id.dataTransferBtn)?.setOnClickListener {
       // initiate data transfer
       p2PSenderViewModel.sendDeviceDetails(getCurrentConnectedDevice())
-      //p2PSenderViewModel.requestSyncParams(getCurrentConnectedDevice())
+      // p2PSenderViewModel.requestSyncParams(getCurrentConnectedDevice())
     }
 
     interactiveDialog.setCancelable(false)
@@ -476,7 +503,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
 
     // listen for messages
     p2PReceiverViewModel.processSenderDeviceDetails()
-    //p2PReceiverViewModel.processSyncParamsRequest()
+    // p2PReceiverViewModel.processSyncParamsRequest()
   }
 
   private fun initInteractiveDialog() {
