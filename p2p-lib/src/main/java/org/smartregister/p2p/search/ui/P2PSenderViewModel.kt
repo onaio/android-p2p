@@ -19,13 +19,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
 import org.smartregister.p2p.data_sharing.SyncSenderHandler
 import org.smartregister.p2p.model.P2PReceivedHistory
-import org.smartregister.p2p.payload.BytePayload
 import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.payload.StringPayload
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
@@ -41,13 +44,12 @@ class P2PSenderViewModel(
 
   private lateinit var syncSenderHandler: SyncSenderHandler
 
-
   fun sendDeviceDetails(deviceInfo: DeviceInfo?) {
     // write a message to the socket requesting the receiver for acceptable data types
     // and their last update times which can be sent using a simple string command,
     // 'SEND_SYNC_PARAMS', and the **app_lifetime_key**
 
-       val deviceDetailsMap: MutableMap<String, String?> = HashMap()
+    val deviceDetailsMap: MutableMap<String, String?> = HashMap()
     deviceDetailsMap[Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY] =
       P2PLibrary.getInstance()!!.getHashKey()
     deviceDetailsMap[Constants.BasicDeviceDetails.KEY_DEVICE_ID] =
@@ -58,19 +60,21 @@ class P2PSenderViewModel(
       /** Find out how to get this */
       ,
       syncPayload =
-      StringPayload(
-        Gson().toJson(deviceDetailsMap),
-      ),
+        StringPayload(
+          Gson().toJson(deviceDetailsMap),
+        ),
       object : DataSharingStrategy.OperationListener {
         override fun onSuccess(device: DeviceInfo?) {
           // TODO: Return this step but we can skip it for now
-          //requestSyncParams(device)
+          // requestSyncParams(device)
           Timber.e("Successfully sent the device details map")
 
-          dataSharingStrategy.receive(device, object: DataSharingStrategy.PayloadReceiptListener {
+          dataSharingStrategy.receive(
+            device,
+            object : DataSharingStrategy.PayloadReceiptListener {
 
-            override fun onPayloadReceived(payload: PayloadContract<out Any>?) {
-              // WE are receiving the history
+              override fun onPayloadReceived(payload: PayloadContract<out Any>?) {
+                // WE are receiving the history
 
               Timber.e("I have received last history : ${(payload as StringPayload).string}")
 
@@ -82,10 +86,9 @@ class P2PSenderViewModel(
 
             }
 
-            override fun onFailure(device: DeviceInfo?, ex: Exception) {
-
+              override fun onFailure(device: DeviceInfo?, ex: Exception) {}
             }
-          })
+          )
         }
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {}
@@ -121,8 +124,24 @@ class P2PSenderViewModel(
   }
 
   override fun sendSyncComplete() {
-    //TODO Implement this
     Timber.e("P2P sync complete")
+    GlobalScope.launch {
+      withContext(Dispatchers.Main) {
+        context.showTransferCompleteDialog()
+      }
+      dataSharingStrategy.disconnect(getCurrentConnectedDevice()!!,
+      object: DataSharingStrategy.OperationListener{
+        override fun onSuccess(device: DeviceInfo?) {
+          Timber.e("Diconnection successful")
+        }
+
+        override fun onFailure(device: DeviceInfo?, ex: Exception) {
+          Timber.e("Diconnection failed")
+          Timber.e(ex.message)
+        }
+
+      })
+    }
   }
 
   override fun sendChunkData(awaitingPayload : PayloadContract<out Any>) {
@@ -133,6 +152,7 @@ class P2PSenderViewModel(
       object : DataSharingStrategy.OperationListener{
         override fun onSuccess(device: DeviceInfo?) {
           Timber.e("Chunk data sent successfully")
+          syncSenderHandler.sendNextManifest()
         }
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {

@@ -301,7 +301,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     operationListener: DataSharingStrategy.OperationListener
   ) {
     requestedDisconnection = true
-    wifiP2pManager.cancelConnect(
+    wifiP2pManager.removeGroup(
       wifiP2pChannel,
       object : WifiP2pManager.ActionListener {
         override fun onSuccess() {
@@ -521,8 +521,8 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
                   n = it
                 } != -1) {
 
-                payloadLen -= n.toLong()
                 currentBufferPos += n
+                payloadLen -= n.toLong()
                 Timber.e("file size  $payloadLen")
               }
               payloadReceiptListener.onPayloadReceived(BytePayload(payloadByteArray))

@@ -16,6 +16,8 @@
 package org.smartregister.p2p.search.ui
 
 import android.Manifest
+import android.content.Intent
+import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -34,6 +36,13 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationSettingsRequest
+import com.google.android.gms.location.LocationSettingsResponse
+import com.google.android.gms.tasks.OnFailureListener
+import com.google.android.gms.tasks.OnSuccessListener
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.snackbar.Snackbar
 import org.smartregister.p2p.P2PLibrary
@@ -75,6 +84,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
 
   private val rootView: View by lazy { findViewById(R.id.device_search_root_layout) }
 
+  val REQUEST_CHECK_LOCATION_ENABLED = 2398
   var requestDisconnection = false
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -94,7 +104,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
 
     findViewById<Button>(R.id.scanDevicesBtn).setOnClickListener {
       scanning = true
-      startScanning()
+      requestLocationPermissionsAndEnableLocation()
     }
   }
 
@@ -160,6 +170,79 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
 
     showScanningDialog()
   }
+
+  fun requestLocationPermissionsAndEnableLocation() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+      requestAccessFineLocationIfNotGranted()
+    }
+
+    checkLocationEnabled()
+  }
+
+  /**
+   * Checks if location is currently enabled
+   *
+   * @param activity
+   */
+  fun checkLocationEnabled() {
+    val builder = LocationSettingsRequest.Builder().addLocationRequest(createLocationRequest())
+    val result = LocationServices.getSettingsClient(this).checkLocationSettings(builder.build())
+    result.addOnSuccessListener(
+      this,
+      OnSuccessListener<LocationSettingsResponse?> {
+        Toast.makeText(this@P2PDeviceSearchActivity, "addOnSuccessListener", Toast.LENGTH_SHORT)
+          .show()
+        // All location settings are satisfied. The client can initialize
+        // location requests here.
+        // ...
+        startScanning()
+      }
+    )
+    result.addOnFailureListener(
+      this,
+      OnFailureListener { e ->
+        if (e is ResolvableApiException) {
+          // Location settings are not satisfied, but this can be fixed
+          // by showing the user a dialog.
+          try {
+            // Show the dialog by calling startResolutionForResult(),
+            // and check the result in onActivityResult().
+            val resolvable = e as ResolvableApiException
+            resolvable.startResolutionForResult(
+              this@P2PDeviceSearchActivity,
+              REQUEST_CHECK_LOCATION_ENABLED
+            )
+          } catch (sendEx: IntentSender.SendIntentException) {
+            // Ignore the error.
+            Timber.e(sendEx)
+          }
+        }
+      }
+    )
+
+    /*val locationEnabled = LocationManagerCompat.isLocationEnabled()
+
+    if (!locationEnabled) {
+
+    }*/
+  }
+
+  fun createLocationRequest(): LocationRequest {
+    return LocationRequest.create().apply {
+      interval = 3600000
+      fastestInterval = 3600000
+      priority = LocationRequest.PRIORITY_LOW_POWER
+    }
+  }
+
+  override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    super.onActivityResult(requestCode, resultCode, data)
+
+    if (requestCode == REQUEST_CHECK_LOCATION_ENABLED && resultCode == RESULT_OK) {
+      requestLocationPermissionsAndEnableLocation()
+    }
+  }
+
   /*
   fun renameWifiDirectName() {
     val deviceName = getDeviceName(this)
@@ -472,7 +555,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
     interactiveDialog.findViewById<Button>(R.id.dataTransferBtn)?.setOnClickListener {
       // initiate data transfer
       p2PSenderViewModel.sendDeviceDetails(getCurrentConnectedDevice())
-      // p2PSenderViewModel.requestSyncParams(getCurrentConnectedDevice())
+      showTransferProgressDialog()
     }
 
     interactiveDialog.setCancelable(false)
@@ -503,7 +586,61 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
 
     // listen for messages
     p2PReceiverViewModel.processSenderDeviceDetails()
-    // p2PReceiverViewModel.processSyncParamsRequest()
+  }
+
+  fun showTransferProgressDialog() {
+    initInteractiveDialog()
+    interactiveDialog.setContentView(R.layout.data_transfer_bottom_sheet)
+
+    val transferTitle = if (isSender) this.getString(R.string.sending) else this.getString(R.string.receiving)
+    interactiveDialog
+      .findViewById<TextView>(R.id.data_transfer_title)
+      ?.setText(transferTitle)
+
+    val transferDescription = if (isSender) String.format(getString(R.string.sending_data_to),"")
+    else String.format(getString(R.string.receiving_data_from),"")
+    interactiveDialog
+      .findViewById<TextView>(R.id.data_transfer_description)
+      ?.setText(transferDescription)
+
+    interactiveDialog.findViewById<ImageButton>(R.id.data_transfer_dialog_close)
+      ?.setOnClickListener { interactiveDialog.cancel() }
+
+    interactiveDialog.findViewById<Button>(R.id.dataTransferBtn)?.apply {
+      setOnClickListener {
+        // close wifi direct connection
+      }
+      setText(getString(R.string.cancel))
+    }
+
+    interactiveDialog.setCancelable(false)
+    interactiveDialog.show()
+  }
+
+  fun showTransferCompleteDialog() {
+    initInteractiveDialog()
+    interactiveDialog.setContentView(R.layout.data_transfer_bottom_sheet)
+
+    interactiveDialog
+      .findViewById<TextView>(R.id.data_transfer_title)
+      ?.setText(getString(R.string.data_transfer_comlete))
+
+    interactiveDialog
+      .findViewById<TextView>(R.id.data_transfer_description)
+      ?.setText(String.format(getString(R.string.device_data_successfully_sent)))
+
+    interactiveDialog.findViewById<ImageButton>(R.id.data_transfer_dialog_close)
+      ?.setOnClickListener { interactiveDialog.cancel() }
+
+    interactiveDialog.findViewById<Button>(R.id.dataTransferBtn)?.apply {
+      setOnClickListener {
+        // close wifi direct connection
+      }
+      setText(getString(R.string.okay))
+    }
+
+    interactiveDialog.setCancelable(false)
+    interactiveDialog.show()
   }
 
   private fun initInteractiveDialog() {

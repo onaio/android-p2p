@@ -43,6 +43,8 @@ class SyncReceiverHandler constructor(@NonNull val p2PReceiverViewModel: P2PRece
       .receiveJson(currentManifest.dataType, data)
 
     updateLastRecord(currentManifest.dataType.name, lastUpdatedAt = lastUpdatedAt)
+
+    p2PReceiverViewModel.processIncomingManifest()
   }
 
   fun updateLastRecord(@NonNull entityType: String, lastUpdatedAt: Long) {

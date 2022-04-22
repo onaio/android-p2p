@@ -20,13 +20,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
+import org.smartregister.p2p.data_sharing.Manifest
 import org.smartregister.p2p.data_sharing.IReceiverSyncLifecycleCallback
 import org.smartregister.p2p.data_sharing.SyncReceiverHandler
 import org.smartregister.p2p.model.P2PReceivedHistory
@@ -53,17 +55,23 @@ class P2PReceiverViewModel(
         override fun onPayloadReceived(payload: PayloadContract<out Any>?) {
           Timber.e("Payload received : ${(payload as StringPayload).string}")
 
-          var map : MutableMap<String, String?> = HashMap()
+          var map: MutableMap<String, String?> = HashMap()
           val deviceDetails = Gson().fromJson((payload as StringPayload).string, map.javaClass)
 
           // TODO: Fix possible crash here due to NPE
-          checkIfDeviceKeyHasChanged(deviceDetails[Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY]!!)
+          checkIfDeviceKeyHasChanged(
+            deviceDetails[Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY]!!
+          )
+
+          GlobalScope.launch {
+            withContext(Dispatchers.Main) {
+              context.showTransferProgressDialog()
+            }
+          }
         }
       },
       object : DataSharingStrategy.OperationListener {
-        override fun onSuccess(device: DeviceInfo?) {
-
-        }
+        override fun onSuccess(device: DeviceInfo?) {}
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {}
       }
@@ -72,22 +80,22 @@ class P2PReceiverViewModel(
 
   fun processSyncParamsRequest() {
 
-      dataSharingStrategy.receive(
-        context.getCurrentConnectedDevice(),
-        object: DataSharingStrategy.PayloadReceiptListener {
-          override fun onPayloadReceived(payload: PayloadContract<out Any>?) {
-            Timber.i("Payload received ")
-            //
-          }
-        },
-        object : DataSharingStrategy.OperationListener {
-          override fun onSuccess(device: DeviceInfo?) {
-            checkIfDeviceKeyHasChanged((device?.strategySpecificDevice as WifiP2pDevice).deviceName)
-          }
-
-          override fun onFailure(device: DeviceInfo?, ex: Exception) {}
+    dataSharingStrategy.receive(
+      context.getCurrentConnectedDevice(),
+      object : DataSharingStrategy.PayloadReceiptListener {
+        override fun onPayloadReceived(payload: PayloadContract<out Any>?) {
+          Timber.i("Payload received ")
+          //
         }
-      )
+      },
+      object : DataSharingStrategy.OperationListener {
+        override fun onSuccess(device: DeviceInfo?) {
+          checkIfDeviceKeyHasChanged((device?.strategySpecificDevice as WifiP2pDevice).deviceName)
+        }
+
+        override fun onFailure(device: DeviceInfo?, ex: Exception) {}
+      }
+    )
   }
 
   fun checkIfDeviceKeyHasChanged(appLifetimeKey: String) {
@@ -164,9 +172,10 @@ class P2PReceiverViewModel(
       override fun onPayloadReceived(payload: PayloadContract<out Any>?) {
         Timber.e("Successfully received chunk data")
         // Process chunk data
-        val chunkDataType = object : TypeToken<ArrayList<JSONArray?>?>() {}.type
-        val chunkData: JSONArray =
-          Gson().fromJson(String((payload as BytePayload).getData()), chunkDataType)
+        val jsonString = String((payload as BytePayload).getData())
+        Timber.e("Received data!!!")
+        Timber.e(jsonString)
+        val chunkData = JSONArray(jsonString)
         syncReceiverHandler.processData(chunkData)
       }
 
@@ -181,6 +190,55 @@ class P2PReceiverViewModel(
 
     })
 
+  }
+
+  fun processIncomingManifest() {
+    val incomingManifest = listenForIncomingManifest()
+
+    // Handle successfully received manifest
+    if (incomingManifest != null && incomingManifest.dataType.name == Constants.SYNC_COMPLETE) {
+      Timber.e("Data transfer complete")
+      GlobalScope.launch {
+        withContext(Dispatchers.Main) {
+          context.showTransferCompleteDialog()
+        }
+
+        dataSharingStrategy.disconnect(dataSharingStrategy.getCurrentDevice()!!,
+          object: DataSharingStrategy.OperationListener{
+            override fun onSuccess(device: DeviceInfo?) {
+              Timber.e("Diconnection successful")
+            }
+
+            override fun onFailure(device: DeviceInfo?, ex: Exception) {
+              Timber.e("Diconnection failed")
+            }
+
+          })
+      }
+
+    } else {
+      Timber.e("Subsequent manifest with data successfully received")
+      syncReceiverHandler.processManifest(incomingManifest!!)
+    }
+  }
+
+  fun listenForIncomingManifest(): Manifest? {
+    Timber.e("Listening for subsequent manifests")
+    // Listen for incoming manifest
+    val receivedManifest = dataSharingStrategy.receiveManifest(device = dataSharingStrategy.getCurrentDevice()!!,
+      object: DataSharingStrategy.OperationListener{
+        override fun onSuccess(device: DeviceInfo?) {
+          Timber.e("Manifest successfully received")
+
+        }
+
+        override fun onFailure(device: DeviceInfo?, ex: Exception) {
+          Timber.e("Failed to receive manifest")
+        }
+
+      }
+    )
+    return receivedManifest
   }
 
   override fun getSendingDeviceId(): String {
