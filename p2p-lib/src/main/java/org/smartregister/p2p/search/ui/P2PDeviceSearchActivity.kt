@@ -163,6 +163,9 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
                 Toast.LENGTH_LONG
               )
               .show()
+
+              // TODO: Show the sync complete here for the sender
+            // But use a flag to determine if sync was completed
           }
         }
       }
