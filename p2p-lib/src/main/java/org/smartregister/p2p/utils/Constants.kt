@@ -30,6 +30,7 @@ interface Constants {
     const val DEFAULT_SHARE_BATCH_SIZE = 20
     const val DEFAULT_MIN_DEVICE_CONNECTION_RETRY_DURATION = 2 * 60 * 60
     const val SEND_SYNC_PARAMS = "SEND-SYNC-PARAMS"
+    const val SYNC_COMPLETE = "SYNC-COMPLETE"
   }
 
   interface BasicDeviceDetails {
@@ -40,12 +41,8 @@ interface Constants {
   }
 
   enum class ConnectionLevel {
-    CONNECT_BEFORE_AUTHENTICATE,
     AUTHENTICATED,
-    AUTHORIZED,
-    SENT_HASH_KEY,
-    RECEIVED_HASH_KEY,
-    SENT_RECEIVED_HISTORY,
     RECEIPT_OF_RECEIVED_HISTORY
   }
+
 }

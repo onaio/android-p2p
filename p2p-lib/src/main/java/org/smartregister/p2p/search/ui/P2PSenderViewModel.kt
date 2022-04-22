@@ -19,13 +19,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
 import org.smartregister.p2p.data_sharing.SyncSenderHandler
 import org.smartregister.p2p.model.P2PReceivedHistory
-import org.smartregister.p2p.payload.BytePayload
 import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.payload.StringPayload
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
@@ -121,8 +124,24 @@ class P2PSenderViewModel(
   }
 
   override fun sendSyncComplete() {
-    //TODO Implement this
     Timber.e("P2P sync complete")
+    GlobalScope.launch {
+      withContext(Dispatchers.Main) {
+        context.showTransferCompleteDialog()
+      }
+      dataSharingStrategy.disconnect(getCurrentConnectedDevice()!!,
+      object: DataSharingStrategy.OperationListener{
+        override fun onSuccess(device: DeviceInfo?) {
+          Timber.e("Diconnection successful")
+        }
+
+        override fun onFailure(device: DeviceInfo?, ex: Exception) {
+          Timber.e("Diconnection failed")
+          Timber.e(ex.message)
+        }
+
+      })
+    }
   }
 
   override fun sendChunkData(awaitingPayload : PayloadContract<out Any>) {

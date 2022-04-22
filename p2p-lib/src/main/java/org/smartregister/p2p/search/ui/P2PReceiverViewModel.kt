@@ -21,7 +21,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
@@ -188,12 +190,29 @@ class P2PReceiverViewModel(
     val incomingManifest = listenForIncomingManifest()
 
     // Handle successfully received manifest
-    if (incomingManifest != null) {
-      Timber.e("Subsequent manifest with data successfully received")
-      syncReceiverHandler.processManifest(incomingManifest)
+    if (incomingManifest != null && incomingManifest.dataType.name == Constants.SYNC_COMPLETE) {
+      Timber.e("Data transfer complete")
+      GlobalScope.launch {
+        withContext(Dispatchers.Main) {
+          context.showTransferCompleteDialog()
+        }
+
+        dataSharingStrategy.disconnect(dataSharingStrategy.getCurrentDevice()!!,
+          object: DataSharingStrategy.OperationListener{
+            override fun onSuccess(device: DeviceInfo?) {
+              Timber.e("Diconnection successful")
+            }
+
+            override fun onFailure(device: DeviceInfo?, ex: Exception) {
+              Timber.e("Diconnection failed")
+            }
+
+          })
+      }
+
     } else {
-      // No more manifest signal transfer complete
-      Timber.e("No more incoming manifests")
+      Timber.e("Subsequent manifest with data successfully received")
+      syncReceiverHandler.processManifest(incomingManifest!!)
     }
   }
 

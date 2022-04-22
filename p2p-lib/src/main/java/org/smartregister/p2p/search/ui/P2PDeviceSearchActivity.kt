@@ -581,6 +581,32 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
     // p2PReceiverViewModel.processSyncParamsRequest()
   }
 
+  fun showTransferCompleteDialog() {
+    initInteractiveDialog()
+    interactiveDialog.setContentView(R.layout.data_transfer_bottom_sheet)
+
+    interactiveDialog
+      .findViewById<TextView>(R.id.data_transfer_title)
+      ?.setText(getString(R.string.data_transfer_comlete))
+
+    interactiveDialog
+      .findViewById<TextView>(R.id.data_transfer_description)
+      ?.setText(String.format(getString(R.string.device_data_successfully_sent)))
+
+    interactiveDialog.findViewById<ImageButton>(R.id.data_transfer_dialog_close)
+      ?.setOnClickListener { interactiveDialog.cancel() }
+
+    interactiveDialog.findViewById<Button>(R.id.dataTransferBtn)?.apply {
+      setOnClickListener {
+        // close wifi direct connection
+      }
+      setText(getString(R.string.okay))
+    }
+
+    interactiveDialog.setCancelable(false)
+    interactiveDialog.show()
+  }
+
   private fun initInteractiveDialog() {
     if (!this::interactiveDialog.isInitialized) {
       interactiveDialog = BottomSheetDialog(this)

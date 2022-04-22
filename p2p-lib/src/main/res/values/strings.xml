@@ -46,4 +46,7 @@
     <string name="start_receiving_data">Start receiving data</string>
     <string name="waiting_for_transfer_to_start">Waiting for data transfer to start</string>
     <string name="connect_to_other_device_to_start_transfer">Connect to the other device using wifi-direct to start transfer</string>
+    <string name="data_transfer_comlete">Data transfer complete</string>
+    <string name="device_data_successfully_sent">Device data successfuly sent</string>
+    <string name="okay">OKay</string>
 </resources>
