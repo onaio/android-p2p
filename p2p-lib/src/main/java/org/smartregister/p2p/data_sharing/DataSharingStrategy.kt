@@ -37,7 +37,11 @@ interface DataSharingStrategy {
 
   fun sendManifest(device: DeviceInfo?, manifest: Manifest, operationListener: OperationListener)
 
-  fun receive(device: DeviceInfo?, payloadReceiptListener: PayloadReceiptListener, operationListener: OperationListener)
+  fun receive(
+    device: DeviceInfo?,
+    payloadReceiptListener: PayloadReceiptListener,
+    operationListener: OperationListener
+  )
 
   fun receiveManifest(device: DeviceInfo, operationListener: OperationListener): Manifest?
 
@@ -65,7 +69,6 @@ interface DataSharingStrategy {
 
     fun onFailure(device: DeviceInfo?, ex: Exception)
   }
-
 
   interface PairingListener {
 
