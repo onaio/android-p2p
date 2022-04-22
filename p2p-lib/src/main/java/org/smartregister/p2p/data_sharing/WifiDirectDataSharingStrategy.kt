@@ -71,6 +71,10 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   private var dataInputStream: DataInputStream? = null
   private var dataOutputStream: DataOutputStream? = null
 
+  private var requestedDisconnection = false
+  private var isSearchingDevices = false
+  private var paired = false
+
   override fun setActivity(context: Activity) {
     this.context = context
   }
@@ -80,6 +84,12 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     onConnected: DataSharingStrategy.PairingListener
   ) {
     // Wifi P2p
+
+    // renameWifiDirectName();
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+      requestAccessFineLocationIfNotGranted()
+    }
+
     wifiP2pChannel = wifiP2pManager.initialize(context, context.mainLooper, null)
     wifiP2pChannel?.also { channel ->
       wifiP2pReceiver =
@@ -138,7 +148,19 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
               this@WifiDirectDataSharingStrategy.onConnectionInfoAvailable(info, wifiP2pGroup)
 
               if (info.groupFormed) {
+                paired = true
                 onConnected.onSuccess(null)
+              } else {
+
+                if (paired) {
+                  closeSocketAndStreams()
+                  if (!requestedDisconnection) {
+                    onConnected.onDisconnected()
+                  }
+
+                  paired = false
+                }
+                requestedDisconnection = false
               }
             }
 
@@ -148,11 +170,6 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
           },
           context
         )
-    }
-
-    // renameWifiDirectName();
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      requestAccessFineLocationIfNotGranted()
     }
 
     listenForWifiP2pIntents()
@@ -221,6 +238,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       return handleAccessFineLocationNotGranted()
     }
 
+    isSearchingDevices = true
     wifiP2pManager.discoverPeers(
       wifiP2pChannel,
       object : WifiP2pManager.ActionListener {
@@ -262,6 +280,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
         object : WifiP2pManager.ActionListener {
           override fun onSuccess() {
             currentDevice = wifiDirectDevice
+            paired = true
 
             onConnectionSucceeded(device)
             operationListener.onSuccess(device)
@@ -281,10 +300,12 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     device: DeviceInfo,
     operationListener: DataSharingStrategy.OperationListener
   ) {
+    requestedDisconnection = true
     wifiP2pManager.removeGroup(
       wifiP2pChannel,
       object : WifiP2pManager.ActionListener {
         override fun onSuccess() {
+          paired = false
           onDisconnectSucceeded(device)
           operationListener.onSuccess(device)
         }
@@ -346,6 +367,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
             SyncPayloadType.BYTES -> {
               // TODO: Fix this to take it the [org.smartregister.p2p.payload.BytePayload]
 
+              String("".toByteArray())
               dataOutputStream?.apply {
                 val byteArray = syncPayload.getData() as ByteArray
 
@@ -663,7 +685,27 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     this.onConnectionInfoAvailable(info, null)
   }
 
+  override fun stopSearchingDevices(operationListener: DataSharingStrategy.OperationListener?) {
+    if (isSearchingDevices) {
+      wifiP2pManager.stopPeerDiscovery(wifiP2pChannel, object: WifiP2pManager.ActionListener {
+        override fun onSuccess() {
+          Timber.e("Successfully stopped peer discovery")
+          operationListener?.onSuccess(null)
+        }
+
+        override fun onFailure(reason: Int) {
+          val ex = Exception("Error occurred trying to stop peer discovery ${getWifiP2pReason(reason)}")
+          Timber.e(ex)
+          operationListener?.onFailure(null, ex)
+        }
+      })
+      isSearchingDevices = false
+    }
+  }
+
   fun closeSocketAndStreams() {
+    stopSearchingDevices(null)
+
     dataInputStream?.run { close() }
 
     dataOutputStream?.run {
@@ -705,5 +747,9 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     override fun address(): String {
       return wifiP2pDevice.deviceAddress
     }
+  }
+
+  class Discovery {
+    var isDiscovering = false
   }
 }

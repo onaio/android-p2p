@@ -25,6 +25,8 @@ interface DataSharingStrategy {
 
   fun searchDevices(onDeviceFound: OnDeviceFound, onConnected: PairingListener)
 
+  fun stopSearchingDevices(operationListener: OperationListener?)
+
   fun connect(device: DeviceInfo, operationListener: OperationListener)
 
   fun disconnect(device: DeviceInfo, operationListener: OperationListener)
@@ -73,6 +75,10 @@ interface DataSharingStrategy {
   interface PairingListener {
 
     fun onSuccess(device: DeviceInfo?)
+
+    fun onFailure(device: DeviceInfo?, ex: Exception)
+
+    fun onDisconnected()
   }
 
   interface PayloadReceiptListener {

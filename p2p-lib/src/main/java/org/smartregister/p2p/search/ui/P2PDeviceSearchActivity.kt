@@ -85,6 +85,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
   private val rootView: View by lazy { findViewById(R.id.device_search_root_layout) }
 
   val REQUEST_CHECK_LOCATION_ENABLED = 2398
+  var requestDisconnection = false
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -145,6 +146,24 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
           currentConnectedDevice = device
           val displayName = device?.getDisplayName() ?: "Unknown"
           showP2PSelectPage(getDeviceRole(), displayName)
+        }
+
+        override fun onFailure(device: DeviceInfo?, ex: Exception) {
+          Timber.e("Devices searching failed")
+          Timber.e(ex)
+          removeScanningDialog()
+        }
+
+        override fun onDisconnected() {
+          if (!requestDisconnection) {
+            removeScanningDialog()
+            Toast.makeText(
+                this@P2PDeviceSearchActivity,
+                "Connection was disconnected",
+                Toast.LENGTH_LONG
+              )
+              .show()
+          }
         }
       }
     )
@@ -479,6 +498,12 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
 
     interactiveDialog.setCancelable(false)
     interactiveDialog.show()
+  }
+
+  fun removeScanningDialog() {
+    if (::interactiveDialog.isInitialized) {
+      interactiveDialog.dismiss()
+    }
   }
 
   fun showDevicesList(peerDeviceList: List<DeviceInfo>) {
