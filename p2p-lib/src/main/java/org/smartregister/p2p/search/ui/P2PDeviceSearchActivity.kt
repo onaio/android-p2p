@@ -166,21 +166,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
    * @param activity
    */
   fun checkLocationEnabled() {
-
-    /*val googleApiClient: GoogleApiClient = GoogleApiClient.Builder(activity)
-        .addApi(LocationServices.API).build()
-    googleApiClient.connect()
-    val locationRequest: LocationRequest =
-        LocationRequest.create()
-    locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-    locationRequest.setInterval(10000)
-    locationRequest.setFastestInterval(10000L / 2)
-    val builder: LocationSettingsRequest.Builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
-    builder.setAlwaysShow(true)
-    val result: PendingResult<LocationSettingsResult> =
-        LocationServices.SettingsApi.checkLocationSettings(googleApiClient, builder.build())
-    result.setResultCallback(resultCallback)*/
-
     val builder = LocationSettingsRequest.Builder().addLocationRequest(createLocationRequest())
     val result = LocationServices.getSettingsClient(this).checkLocationSettings(builder.build())
     result.addOnSuccessListener(
@@ -197,8 +182,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
     result.addOnFailureListener(
       this,
       OnFailureListener { e ->
-        Toast.makeText(this@P2PDeviceSearchActivity, "addOnFailureListener", Toast.LENGTH_SHORT)
-          .show()
         if (e is ResolvableApiException) {
           // Location settings are not satisfied, but this can be fixed
           // by showing the user a dialog.
@@ -236,8 +219,8 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
   override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
     super.onActivityResult(requestCode, resultCode, data)
 
-    if (requestCode == REQUEST_CHECK_LOCATION_ENABLED) {
-      startScanning()
+    if (requestCode == REQUEST_CHECK_LOCATION_ENABLED && resultCode == RESULT_OK) {
+      requestLocationPermissionsAndEnableLocation()
     }
   }
 
