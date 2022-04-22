@@ -190,8 +190,8 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
     result.addOnSuccessListener(
       this,
       OnSuccessListener<LocationSettingsResponse?> {
-        Toast.makeText(this@P2PDeviceSearchActivity, "addOnSuccessListener", Toast.LENGTH_SHORT)
-          .show()
+        /*Toast.makeText(this@P2PDeviceSearchActivity, "addOnSuccessListener", Toast.LENGTH_SHORT)
+          .show()*/
         // All location settings are satisfied. The client can initialize
         // location requests here.
         // ...

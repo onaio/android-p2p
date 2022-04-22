@@ -41,6 +41,7 @@ constructor(
 
   private var awaitingManifestTransfer = false
   private lateinit var awaitingPayload : PayloadContract<out Any>
+  private var sendingSyncCompleteManifest = false
 
   fun startSyncProcess() {
     Timber.e("Start sync process")
@@ -75,8 +76,9 @@ constructor(
           payloadSize = 0
         )
 
+      sendingSyncCompleteManifest = true
       p2PSenderViewModel.sendManifest(manifest = manifest)
-      p2PSenderViewModel.sendSyncComplete()
+      //p2PSenderViewModel.sendSyncComplete()
     }
   }
 
@@ -127,6 +129,11 @@ constructor(
   }
 
   fun processManifestSent() {
-    p2PSenderViewModel.sendChunkData(awaitingPayload)
+    if (sendingSyncCompleteManifest) {
+      //p2PSenderViewModel.sendSyncComplete()
+      sendingSyncCompleteManifest = false
+    } else {
+      p2PSenderViewModel.sendChunkData(awaitingPayload)
+    }
   }
 }
