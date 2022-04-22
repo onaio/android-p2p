@@ -86,11 +86,12 @@ constructor(
 
     // send actual manifest
 
-    if (jsonData != null) {
+    if (jsonData != null && (jsonData.getJsonArray()?.length()!! > 0)) {
       Timber.e("Json data is has content")
       val recordsArray = jsonData.getJsonArray()
 
       remainingLastRecordIds[dataType.name] = jsonData.getHighestRecordId()
+      Timber.e("remaining records last updated is ${remainingLastRecordIds[dataType.name]}")
 
       val recordsJsonString = recordsArray.toString()
       awaitingDataTypeName = dataType.name
@@ -115,6 +116,10 @@ constructor(
         dataSyncOrder.remove(dataType)
         sendNextManifest()
       }
+    } else {
+      Timber.e("Json data is null")
+      dataSyncOrder.remove(dataType)
+      sendNextManifest()
     }
   }
 

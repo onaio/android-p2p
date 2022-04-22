@@ -133,6 +133,7 @@ class P2PSenderViewModel(
       object : DataSharingStrategy.OperationListener{
         override fun onSuccess(device: DeviceInfo?) {
           Timber.e("Chunk data sent successfully")
+          syncSenderHandler.sendNextManifest()
         }
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
