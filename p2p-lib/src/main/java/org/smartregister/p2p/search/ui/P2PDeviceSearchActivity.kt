@@ -547,7 +547,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
     interactiveDialog.findViewById<Button>(R.id.dataTransferBtn)?.setOnClickListener {
       // initiate data transfer
       p2PSenderViewModel.sendDeviceDetails(getCurrentConnectedDevice())
-      // p2PSenderViewModel.requestSyncParams(getCurrentConnectedDevice())
+      showTransferProgressDialog()
     }
 
     interactiveDialog.setCancelable(false)
@@ -578,7 +578,35 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
 
     // listen for messages
     p2PReceiverViewModel.processSenderDeviceDetails()
-    // p2PReceiverViewModel.processSyncParamsRequest()
+  }
+
+  fun showTransferProgressDialog() {
+    initInteractiveDialog()
+    interactiveDialog.setContentView(R.layout.data_transfer_bottom_sheet)
+
+    val transferTitle = if (isSender) this.getString(R.string.sending) else this.getString(R.string.receiving)
+    interactiveDialog
+      .findViewById<TextView>(R.id.data_transfer_title)
+      ?.setText(transferTitle)
+
+    val transferDescription = if (isSender) String.format(getString(R.string.sending_data_to),"")
+    else String.format(getString(R.string.receiving_data_from),"")
+    interactiveDialog
+      .findViewById<TextView>(R.id.data_transfer_description)
+      ?.setText(transferDescription)
+
+    interactiveDialog.findViewById<ImageButton>(R.id.data_transfer_dialog_close)
+      ?.setOnClickListener { interactiveDialog.cancel() }
+
+    interactiveDialog.findViewById<Button>(R.id.dataTransferBtn)?.apply {
+      setOnClickListener {
+        // close wifi direct connection
+      }
+      setText(getString(R.string.cancel))
+    }
+
+    interactiveDialog.setCancelable(false)
+    interactiveDialog.show()
   }
 
   fun showTransferCompleteDialog() {

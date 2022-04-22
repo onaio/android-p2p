@@ -49,4 +49,9 @@
     <string name="data_transfer_comlete">Data transfer complete</string>
     <string name="device_data_successfully_sent">Device data successfuly sent</string>
     <string name="okay">OKay</string>
+    <string name="sending">Sending</string>
+    <string name="receiving">Receiving</string>
+    <string name="sending_data_to">Sending data to %s</string>
+    <string name="receiving_data_from">Receiving data from %s</string>
+    <string name="cancel">Cancel</string>
 </resources>

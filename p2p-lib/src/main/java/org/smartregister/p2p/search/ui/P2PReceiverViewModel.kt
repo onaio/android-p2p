@@ -62,6 +62,12 @@ class P2PReceiverViewModel(
           checkIfDeviceKeyHasChanged(
             deviceDetails[Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY]!!
           )
+
+          GlobalScope.launch {
+            withContext(Dispatchers.Main) {
+              context.showTransferProgressDialog()
+            }
+          }
         }
       },
       object : DataSharingStrategy.OperationListener {
