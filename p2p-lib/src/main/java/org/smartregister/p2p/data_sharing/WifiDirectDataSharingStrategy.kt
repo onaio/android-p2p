@@ -281,7 +281,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     device: DeviceInfo,
     operationListener: DataSharingStrategy.OperationListener
   ) {
-    wifiP2pManager.cancelConnect(
+    wifiP2pManager.removeGroup(
       wifiP2pChannel,
       object : WifiP2pManager.ActionListener {
         override fun onSuccess() {
