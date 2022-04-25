@@ -77,6 +77,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
   }
   private var isSender = false
   private var scanning = false
+  private var isSenderSyncComplete = false
   private lateinit var interactiveDialog: BottomSheetDialog
   private var currentConnectedDevice: DeviceInfo? = null
 
@@ -163,6 +164,14 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
                 Toast.LENGTH_LONG
               )
               .show()
+
+              // TODO: Show the sync complete here for the sender
+            if (isSenderSyncComplete) {
+              showTransferCompleteDialog()
+            }
+            Timber.e("Successful on disconnect")
+            Timber.e("isSenderSyncComplete $isSenderSyncComplete")
+            // But use a flag to determine if sync was completed
           }
         }
       }
@@ -190,8 +199,8 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
     result.addOnSuccessListener(
       this,
       OnSuccessListener<LocationSettingsResponse?> {
-        Toast.makeText(this@P2PDeviceSearchActivity, "addOnSuccessListener", Toast.LENGTH_SHORT)
-          .show()
+        /*Toast.makeText(this@P2PDeviceSearchActivity, "addOnSuccessListener", Toast.LENGTH_SHORT)
+          .show()*/
         // All location settings are satisfied. The client can initialize
         // location requests here.
         // ...
@@ -747,5 +756,10 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
 
   fun getCurrentConnectedDevice(): DeviceInfo? {
     return dataSharingStrategy.getCurrentDevice()
+  }
+
+  fun senderSyncComplete(complete: Boolean) {
+    isSenderSyncComplete = complete
+    Timber.e("sender sync complete $isSenderSyncComplete")
   }
 }

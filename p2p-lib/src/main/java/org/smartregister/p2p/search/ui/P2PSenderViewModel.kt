@@ -215,6 +215,14 @@ class P2PSenderViewModel(
     }
   }
 
+  fun updateSenderSyncComplete(senderSyncComplete: Boolean) {
+    GlobalScope.launch {
+      withContext(Dispatchers.Main) {
+        context.senderSyncComplete(senderSyncComplete)
+      }
+    }
+  }
+
   class Factory(
     private val context: P2PDeviceSearchActivity,
     private val dataSharingStrategy: DataSharingStrategy

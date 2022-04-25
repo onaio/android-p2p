@@ -202,7 +202,6 @@ class P2PReceiverViewModel(
         withContext(Dispatchers.Main) {
           context.showTransferCompleteDialog()
         }
-
         dataSharingStrategy.disconnect(dataSharingStrategy.getCurrentDevice()!!,
           object: DataSharingStrategy.OperationListener{
             override fun onSuccess(device: DeviceInfo?) {
