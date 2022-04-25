@@ -78,7 +78,7 @@ constructor(
 
       sendingSyncCompleteManifest = true
       p2PSenderViewModel.sendManifest(manifest = manifest)
-      //p2PSenderViewModel.sendSyncComplete()
+      p2PSenderViewModel.updateSenderSyncComplete(senderSyncComplete = true)
     }
   }
 
