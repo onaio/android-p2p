@@ -257,7 +257,25 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     )
     Timber.d("Peer discovery initiated")
   }
+  private fun requestDeviceInfo() {
+    wifiP2pChannel?.also { wifiP2pChannel ->
+      if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) !=
+        PackageManager.PERMISSION_GRANTED
+      ) {
+        return handleAccessFineLocationNotGranted()
+      }
 
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        wifiP2pManager.requestDeviceInfo(wifiP2pChannel) {
+          if (it != null) {
+            handleWifiP2pDevice(it)
+          }
+        }
+      } else {
+        // TODO: Handle fetching device details
+      }
+    }
+  }
   override fun connect(
     device: DeviceInfo,
     operationListener: DataSharingStrategy.OperationListener
@@ -603,6 +621,19 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     } else {
       return null
     }
+  }
+
+  override fun onResume(isScanning: Boolean) {
+    if (isScanning) {
+      listenForWifiP2pIntents()
+      initiatePeerDiscoveryOnceAccessFineLocationGranted()
+      requestDeviceInfo()
+      requestConnectionInfo()
+    }
+  }
+
+  override fun onPause() {
+    wifiP2pReceiver?.also { context.unregisterReceiver(it) }
   }
 
   private fun logDebug(message: String) {

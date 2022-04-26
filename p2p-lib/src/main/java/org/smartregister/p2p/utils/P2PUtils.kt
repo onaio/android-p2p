@@ -23,7 +23,7 @@ import java.util.Locale
 import org.smartregister.p2p.search.ui.P2PDeviceSearchActivity
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 25-02-2022. */
-fun startP2PScreen(context: Activity) {
+fun startP2PScreen(context: Context) {
   context.startActivity(Intent(context, P2PDeviceSearchActivity::class.java))
 }
 

@@ -85,4 +85,8 @@ interface DataSharingStrategy {
 
     fun onPayloadReceived(payload: PayloadContract<out Any>?)
   }
+
+  fun onResume(isScanning: Boolean = false)
+
+  fun onPause()
 }

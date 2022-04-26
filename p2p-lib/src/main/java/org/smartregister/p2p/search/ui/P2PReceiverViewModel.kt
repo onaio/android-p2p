@@ -53,7 +53,7 @@ class P2PReceiverViewModel(
       dataSharingStrategy.getCurrentDevice(),
       object: DataSharingStrategy.PayloadReceiptListener {
         override fun onPayloadReceived(payload: PayloadContract<out Any>?) {
-          Timber.e("Payload received : ${(payload as StringPayload).string}")
+         // Timber.e("Payload received : ${(payload as StringPayload).string}")
 
           var map: MutableMap<String, String?> = HashMap()
           val deviceDetails = Gson().fromJson((payload as StringPayload).string, map.javaClass)

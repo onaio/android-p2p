@@ -315,69 +315,13 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
       requestConnectionInfo()
     }*/
 
-    // TODO: Add this to the DataSharingStrategy interface
-    // dataSharingStrategy.onResume()
+    dataSharingStrategy.onResume(isScanning = scanning)
   }
-  /*
-  private fun listenForWifiP2pIntents() {
-    wifiP2pReceiver?.also {
-      registerReceiver(
-        it,
-        IntentFilter().apply {
-          addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION)
-          addAction(WifiP2pManager.WIFI_P2P_DISCOVERY_CHANGED_ACTION)
-          addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION)
-          addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION)
-          addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION)
-        }
-      )
-    }
-  }*/
-  /*
-  private fun initiatePeerDiscoveryOnceAccessFineLocationGranted() {
-    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
-        PackageManager.PERMISSION_GRANTED
-    ) {
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        requestAccessFineLocationIfNotGranted()
-      } else {
-        handleMinimumSDKVersionNotMet(Build.VERSION_CODES.M)
-      }
-    } else {
-      initiatePeerDiscovery()
-    }
-  }*/
-  /*
-  private fun requestDeviceInfo() {
-    wifiP2pChannel?.also { wifiP2pChannel ->
-      if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
-          PackageManager.PERMISSION_GRANTED
-      ) {
-        return handleAccessFineLocationNotGranted()
-      }
-
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        wifiP2pManager.requestDeviceInfo(wifiP2pChannel) {
-          if (it != null) {
-            handleWifiP2pDevice(it)
-          }
-        }
-      } else {
-        // TODO: Handle fetching device details
-      }
-    }
-  }
-
-  private fun requestConnectionInfo() {
-    wifiP2pManager.requestConnectionInfo(wifiP2pChannel) { onConnectionInfoAvailable(it) }
-  }*/
 
   override fun onPause() {
     super.onPause()
-    /*wifiP2pReceiver?.also { unregisterReceiver(it) }*/
 
-    // TODO: Fix this onPause
-    // dataSharingStrategy.onPause()
+    dataSharingStrategy.onPause()
   }
 
   override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -762,4 +706,5 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
     isSenderSyncComplete = complete
     Timber.e("sender sync complete $isSenderSyncComplete")
   }
+
 }
