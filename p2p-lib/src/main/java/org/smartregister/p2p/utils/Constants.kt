@@ -44,5 +44,4 @@ interface Constants {
     AUTHENTICATED,
     RECEIPT_OF_RECEIVED_HISTORY
   }
-
 }

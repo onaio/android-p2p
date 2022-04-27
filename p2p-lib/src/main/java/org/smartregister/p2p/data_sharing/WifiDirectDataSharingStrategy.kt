@@ -259,8 +259,10 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   }
   private fun requestDeviceInfo() {
     wifiP2pChannel?.also { wifiP2pChannel ->
-      if (ActivityCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) !=
-        PackageManager.PERMISSION_GRANTED
+      if (ActivityCompat.checkSelfPermission(
+          context,
+          android.Manifest.permission.ACCESS_FINE_LOCATION
+        ) != PackageManager.PERMISSION_GRANTED
       ) {
         return handleAccessFineLocationNotGranted()
       }
@@ -718,18 +720,22 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
   override fun stopSearchingDevices(operationListener: DataSharingStrategy.OperationListener?) {
     if (isSearchingDevices) {
-      wifiP2pManager.stopPeerDiscovery(wifiP2pChannel, object: WifiP2pManager.ActionListener {
-        override fun onSuccess() {
-          Timber.e("Successfully stopped peer discovery")
-          operationListener?.onSuccess(null)
-        }
+      wifiP2pManager.stopPeerDiscovery(
+        wifiP2pChannel,
+        object : WifiP2pManager.ActionListener {
+          override fun onSuccess() {
+            Timber.e("Successfully stopped peer discovery")
+            operationListener?.onSuccess(null)
+          }
 
-        override fun onFailure(reason: Int) {
-          val ex = Exception("Error occurred trying to stop peer discovery ${getWifiP2pReason(reason)}")
-          Timber.e(ex)
-          operationListener?.onFailure(null, ex)
+          override fun onFailure(reason: Int) {
+            val ex =
+              Exception("Error occurred trying to stop peer discovery ${getWifiP2pReason(reason)}")
+            Timber.e(ex)
+            operationListener?.onFailure(null, ex)
+          }
         }
-      })
+      )
       isSearchingDevices = false
     }
   }

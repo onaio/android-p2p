@@ -17,6 +17,7 @@ package org.smartregister.p2p.data_sharing
 
 import androidx.annotation.NonNull
 import androidx.annotation.Nullable
+import java.util.TreeSet
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.model.P2PReceivedHistory
 import org.smartregister.p2p.payload.BytePayload
@@ -25,7 +26,6 @@ import org.smartregister.p2p.search.ui.P2PSenderViewModel
 import org.smartregister.p2p.sync.DataType
 import org.smartregister.p2p.utils.Constants
 import timber.log.Timber
-import java.util.*
 
 class SyncSenderHandler
 constructor(
@@ -40,7 +40,7 @@ constructor(
   private var awaitingDataTypeRecordsBatchSize = 0
 
   private var awaitingManifestTransfer = false
-  private lateinit var awaitingPayload : PayloadContract<out Any>
+  private lateinit var awaitingPayload: PayloadContract<out Any>
   private var sendingSyncCompleteManifest = false
 
   fun startSyncProcess() {
@@ -71,7 +71,7 @@ constructor(
     } else {
       val manifest =
         Manifest(
-          dataType = DataType(Constants.SYNC_COMPLETE, DataType.Filetype.JSON,0),
+          dataType = DataType(Constants.SYNC_COMPLETE, DataType.Filetype.JSON, 0),
           recordsSize = 0,
           payloadSize = 0
         )
@@ -105,7 +105,10 @@ constructor(
       awaitingDataTypeName = dataType.name
       awaitingDataTypeHighestId = jsonData.getHighestRecordId()
       awaitingDataTypeRecordsBatchSize = recordsArray!!.length()
-      awaitingPayload = BytePayload(recordsArray.toString().toByteArray(),)
+      awaitingPayload =
+        BytePayload(
+          recordsArray.toString().toByteArray(),
+        )
 
       if (recordsJsonString.isNotBlank()) {
 
@@ -130,7 +133,7 @@ constructor(
 
   fun processManifestSent() {
     if (sendingSyncCompleteManifest) {
-      //p2PSenderViewModel.sendSyncComplete()
+      // p2PSenderViewModel.sendSyncComplete()
       sendingSyncCompleteManifest = false
     } else {
       p2PSenderViewModel.sendChunkData(awaitingPayload)

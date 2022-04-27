@@ -76,15 +76,14 @@ class P2PSenderViewModel(
               override fun onPayloadReceived(payload: PayloadContract<out Any>?) {
                 // WE are receiving the history
 
-              Timber.e("I have received last history : ${(payload as StringPayload).string}")
+                Timber.e("I have received last history : ${(payload as StringPayload).string}")
 
-              // TODO: Fetch data based on last received history and send it to the receiver
-              processReceivedHistory(payload)
-            }
-          }, object: DataSharingStrategy.OperationListener {
-            override fun onSuccess(device: DeviceInfo?) {
-
-            }
+                // TODO: Fetch data based on last received history and send it to the receiver
+                processReceivedHistory(payload)
+              }
+            },
+            object : DataSharingStrategy.OperationListener {
+              override fun onSuccess(device: DeviceInfo?) {}
 
               override fun onFailure(device: DeviceInfo?, ex: Exception) {}
             }
@@ -126,30 +125,30 @@ class P2PSenderViewModel(
   override fun sendSyncComplete() {
     Timber.e("P2P sync complete")
     GlobalScope.launch {
-      withContext(Dispatchers.Main) {
-        context.showTransferCompleteDialog()
-      }
-      dataSharingStrategy.disconnect(getCurrentConnectedDevice()!!,
-      object: DataSharingStrategy.OperationListener{
-        override fun onSuccess(device: DeviceInfo?) {
-          Timber.e("Diconnection successful")
-        }
+      withContext(Dispatchers.Main) { context.showTransferCompleteDialog() }
+      dataSharingStrategy.disconnect(
+        getCurrentConnectedDevice()!!,
+        object : DataSharingStrategy.OperationListener {
+          override fun onSuccess(device: DeviceInfo?) {
+            Timber.e("Diconnection successful")
+          }
 
-        override fun onFailure(device: DeviceInfo?, ex: Exception) {
-          Timber.e("Diconnection failed")
-          Timber.e(ex.message)
+          override fun onFailure(device: DeviceInfo?, ex: Exception) {
+            Timber.e("Diconnection failed")
+            Timber.e(ex.message)
+          }
         }
-
-      })
+      )
     }
   }
 
-  override fun sendChunkData(awaitingPayload : PayloadContract<out Any>) {
-    //TODO Implement sending of chunk data
+  override fun sendChunkData(awaitingPayload: PayloadContract<out Any>) {
+    // TODO Implement sending of chunk data
     Timber.e("Send chunk data")
-    dataSharingStrategy.send(device = getCurrentConnectedDevice(),
-    syncPayload = awaitingPayload,
-      object : DataSharingStrategy.OperationListener{
+    dataSharingStrategy.send(
+      device = getCurrentConnectedDevice(),
+      syncPayload = awaitingPayload,
+      object : DataSharingStrategy.OperationListener {
         override fun onSuccess(device: DeviceInfo?) {
           Timber.e("Chunk data sent successfully")
           syncSenderHandler.sendNextManifest()
@@ -158,8 +157,8 @@ class P2PSenderViewModel(
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
           Timber.e("Failed to send chunk data")
         }
-
-      } )
+      }
+    )
   }
 
   override fun sendManifest(manifest: Manifest) {
@@ -169,7 +168,9 @@ class P2PSenderViewModel(
         manifest = manifest,
         object : DataSharingStrategy.OperationListener {
           override fun onSuccess(device: DeviceInfo?) {
-            Timber.e("Manifest sent successfully  ${manifest.dataType.name },  ${manifest.dataType.type}, ${manifest.payloadSize}, ${manifest.recordsSize}" )
+            Timber.e(
+              "Manifest sent successfully  ${manifest.dataType.name },  ${manifest.dataType.type}, ${manifest.payloadSize}, ${manifest.recordsSize}"
+            )
             // Start sending the actual data
             syncSenderHandler.processManifestSent()
           }
@@ -217,9 +218,7 @@ class P2PSenderViewModel(
 
   fun updateSenderSyncComplete(senderSyncComplete: Boolean) {
     GlobalScope.launch {
-      withContext(Dispatchers.Main) {
-        context.senderSyncComplete(senderSyncComplete)
-      }
+      withContext(Dispatchers.Main) { context.senderSyncComplete(senderSyncComplete) }
     }
   }
 
