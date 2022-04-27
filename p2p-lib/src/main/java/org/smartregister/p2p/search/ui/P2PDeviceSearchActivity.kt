@@ -133,7 +133,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
         }
 
         override fun failed(ex: Exception) {
-          //TODO implement handling of search for devices failure
+          // TODO implement handling of search for devices failure
         }
       },
       object : DataSharingStrategy.PairingListener {
@@ -165,7 +165,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
               )
               .show()
 
-              // TODO: Show the sync complete here for the sender
+            // TODO: Show the sync complete here for the sender
             if (isSenderSyncComplete) {
               showTransferCompleteDialog()
             }
@@ -200,7 +200,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
       this,
       OnSuccessListener<LocationSettingsResponse?> {
         /*Toast.makeText(this@P2PDeviceSearchActivity, "addOnSuccessListener", Toast.LENGTH_SHORT)
-          .show()*/
+        .show()*/
         // All location settings are satisfied. The client can initialize
         // location requests here.
         // ...
@@ -455,16 +455,18 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
 
   fun stopScanning() {
     if (scanning) {
-      dataSharingStrategy.stopSearchingDevices(object: DataSharingStrategy.OperationListener {
-        override fun onSuccess(device: DeviceInfo?) {
-          scanning = false
-          Timber.e("Searching stopped successfully")
-        }
+      dataSharingStrategy.stopSearchingDevices(
+        object : DataSharingStrategy.OperationListener {
+          override fun onSuccess(device: DeviceInfo?) {
+            scanning = false
+            Timber.e("Searching stopped successfully")
+          }
 
-        override fun onFailure(device: DeviceInfo?, ex: Exception) {
-          Timber.e(ex)
+          override fun onFailure(device: DeviceInfo?, ex: Exception) {
+            Timber.e(ex)
+          }
         }
-      })
+      )
     }
   }
 
@@ -561,13 +563,13 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
     initInteractiveDialog()
     interactiveDialog.setContentView(R.layout.data_transfer_bottom_sheet)
 
-    val transferTitle = if (isSender) this.getString(R.string.sending) else this.getString(R.string.receiving)
-    interactiveDialog
-      .findViewById<TextView>(R.id.data_transfer_title)
-      ?.setText(transferTitle)
+    val transferTitle =
+      if (isSender) this.getString(R.string.sending) else this.getString(R.string.receiving)
+    interactiveDialog.findViewById<TextView>(R.id.data_transfer_title)?.setText(transferTitle)
 
-    val transferDescription = if (isSender) String.format(getString(R.string.sending_data_to),"")
-    else String.format(getString(R.string.receiving_data_from),"")
+    val transferDescription =
+      if (isSender) String.format(getString(R.string.sending_data_to), "")
+      else String.format(getString(R.string.receiving_data_from), "")
     interactiveDialog
       .findViewById<TextView>(R.id.data_transfer_description)
       ?.setText(transferDescription)
@@ -723,5 +725,4 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
     isSenderSyncComplete = complete
     Timber.e("sender sync complete $isSenderSyncComplete")
   }
-
 }
