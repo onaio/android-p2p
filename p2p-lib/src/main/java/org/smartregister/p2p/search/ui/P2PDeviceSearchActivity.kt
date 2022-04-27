@@ -446,11 +446,26 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
 
     interactiveDialog.findViewById<ImageButton>(R.id.dialog_close)?.setOnClickListener {
       interactiveDialog.cancel()
-      // stopScanning()
+      stopScanning()
     }
 
     interactiveDialog.setCancelable(false)
     interactiveDialog.show()
+  }
+
+  fun stopScanning() {
+    if (scanning) {
+      dataSharingStrategy.stopSearchingDevices(object: DataSharingStrategy.OperationListener {
+        override fun onSuccess(device: DeviceInfo?) {
+          scanning = false
+          Timber.e("Searching stopped successfully")
+        }
+
+        override fun onFailure(device: DeviceInfo?, ex: Exception) {
+          Timber.e(ex)
+        }
+      })
+    }
   }
 
   fun removeScanningDialog() {
@@ -479,6 +494,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
       device,
       object : DataSharingStrategy.OperationListener {
         override fun onSuccess(device: DeviceInfo?) {
+          scanning = false
           currentConnectedDevice = device
           showP2PSelectPage(getDeviceRole(), currentConnectedDevice!!.getDisplayName())
         }
