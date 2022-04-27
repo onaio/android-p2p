@@ -16,6 +16,8 @@
 package org.smartregister.p2p.search.ui
 
 import android.Manifest
+import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
@@ -24,6 +26,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.WindowManager
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -57,6 +60,7 @@ import org.smartregister.p2p.utils.getDeviceName
 import org.smartregister.p2p.utils.startP2PScreen
 import timber.log.Timber
 
+
 /**
  * This is the exposed activity that provides access to all P2P operations and steps. It can be
  * called from other apps via [startP2PScreen] function.
@@ -82,6 +86,8 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
   private var currentConnectedDevice: DeviceInfo? = null
 
   private lateinit var dataSharingStrategy: DataSharingStrategy
+
+  private var keepScreenOnCounter = 0
 
   private val rootView: View by lazy { findViewById(R.id.device_search_root_layout) }
 
@@ -126,6 +132,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
     initiatePeerDiscovery()
     */
 
+    keepScreenOn(true)
     dataSharingStrategy.searchDevices(
       object : OnDeviceFound {
         override fun deviceFound(devices: List<DeviceInfo>) {
@@ -150,6 +157,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
         }
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
+          keepScreenOn(false)
           Timber.e("Devices searching failed")
           Timber.e(ex)
           removeScanningDialog()
@@ -507,6 +515,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
 
     interactiveDialog.findViewById<Button>(R.id.dataTransferBtn)?.setOnClickListener {
       // initiate data transfer
+      keepScreenOn(true)
       p2PSenderViewModel.sendDeviceDetails(getCurrentConnectedDevice())
       showTransferProgressDialog()
     }
@@ -538,6 +547,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
     interactiveDialog.show()
 
     // listen for messages
+    keepScreenOn(true)
     p2PReceiverViewModel.processSenderDeviceDetails()
   }
 
@@ -571,6 +581,10 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
   }
 
   fun showTransferCompleteDialog() {
+    while (keepScreenOnCounter > 0) {
+      keepScreenOn(false)
+    }
+
     initInteractiveDialog()
     interactiveDialog.setContentView(R.layout.data_transfer_bottom_sheet)
 
@@ -706,6 +720,27 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
   fun senderSyncComplete(complete: Boolean) {
     isSenderSyncComplete = complete
     Timber.e("sender sync complete $isSenderSyncComplete")
+  }
+
+  /**
+   * Enables or disables the keep screen on flag to avoid the device going to sleep while there
+   * is a sync happening
+   *
+   * @param enable `TRUE` to enable or `FALSE` disable
+   */
+  protected fun keepScreenOn(enable: Boolean) {
+    if (enable) {
+      keepScreenOnCounter++
+      if (keepScreenOnCounter == 1) {
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+      }
+    } else {
+      keepScreenOnCounter--
+      if (keepScreenOnCounter == 0) {
+        getWindow()
+          .clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+      }
+    }
   }
 
 }
