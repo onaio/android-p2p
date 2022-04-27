@@ -28,8 +28,8 @@ import org.json.JSONArray
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
-import org.smartregister.p2p.data_sharing.Manifest
 import org.smartregister.p2p.data_sharing.IReceiverSyncLifecycleCallback
+import org.smartregister.p2p.data_sharing.Manifest
 import org.smartregister.p2p.data_sharing.SyncReceiverHandler
 import org.smartregister.p2p.model.P2PReceivedHistory
 import org.smartregister.p2p.payload.BytePayload
@@ -52,9 +52,9 @@ class P2PReceiverViewModel(
 
     dataSharingStrategy.receive(
       dataSharingStrategy.getCurrentDevice(),
-      object: DataSharingStrategy.PayloadReceiptListener {
+      object : DataSharingStrategy.PayloadReceiptListener {
         override fun onPayloadReceived(payload: PayloadContract<out Any>?) {
-         // Timber.e("Payload received : ${(payload as StringPayload).string}")
+          // Timber.e("Payload received : ${(payload as StringPayload).string}")
 
           var map: MutableMap<String, String?> = HashMap()
           val deviceDetails = Gson().fromJson((payload as StringPayload).string, map.javaClass)
@@ -65,9 +65,7 @@ class P2PReceiverViewModel(
           )
 
           GlobalScope.launch {
-            withContext(Dispatchers.Main) {
-              context.showTransferProgressDialog()
-            }
+            withContext(Dispatchers.Main) { context.showTransferProgressDialog() }
           }
         }
       },
@@ -139,19 +137,19 @@ class P2PReceiverViewModel(
         override fun onSuccess(device: DeviceInfo?) {
           Timber.e("Successfully sent the last received records")
           // Listen for incoming manifest
-          val receivedManifest = dataSharingStrategy.receiveManifest(device = dataSharingStrategy.getCurrentDevice()!!,
-            object: DataSharingStrategy.OperationListener{
-              override fun onSuccess(device: DeviceInfo?) {
-                Timber.e("Manifest successfully received")
+          val receivedManifest =
+            dataSharingStrategy.receiveManifest(
+              device = dataSharingStrategy.getCurrentDevice()!!,
+              object : DataSharingStrategy.OperationListener {
+                override fun onSuccess(device: DeviceInfo?) {
+                  Timber.e("Manifest successfully received")
+                }
 
+                override fun onFailure(device: DeviceInfo?, ex: Exception) {
+                  Timber.e("Failed to receive manifest")
+                }
               }
-
-              override fun onFailure(device: DeviceInfo?, ex: Exception) {
-                Timber.e("Failed to receive manifest")
-              }
-
-            }
-          )
+            )
 
           // Handle successfully received manifest
           if (receivedManifest != null) {
@@ -170,28 +168,29 @@ class P2PReceiverViewModel(
   fun processChunkData() {
     Timber.e("Listen for incoming chunk data")
     // Listen for incoming chunk data
-    dataSharingStrategy.receive(dataSharingStrategy.getCurrentDevice(), object: DataSharingStrategy.PayloadReceiptListener{
-      override fun onPayloadReceived(payload: PayloadContract<out Any>?) {
-        Timber.e("Successfully received chunk data")
-        // Process chunk data
-        val jsonString = String((payload as BytePayload).getData())
-        Timber.e("Received data!!!")
-        Timber.e(jsonString)
-        val chunkData = JSONArray(jsonString)
-        syncReceiverHandler.processData(chunkData)
+    dataSharingStrategy.receive(
+      dataSharingStrategy.getCurrentDevice(),
+      object : DataSharingStrategy.PayloadReceiptListener {
+        override fun onPayloadReceived(payload: PayloadContract<out Any>?) {
+          Timber.e("Successfully received chunk data")
+          // Process chunk data
+          val jsonString = String((payload as BytePayload).getData())
+          Timber.e("Received data!!!")
+          Timber.e(jsonString)
+          val chunkData = JSONArray(jsonString)
+          syncReceiverHandler.processData(chunkData)
+        }
+      },
+      object : DataSharingStrategy.OperationListener {
+        override fun onSuccess(device: DeviceInfo?) {
+          // TODO Handle successful receipt of chunk data
+        }
+
+        override fun onFailure(device: DeviceInfo?, ex: Exception) {
+          // TODO handle failure to receive chunk data
+        }
       }
-
-    }, object: DataSharingStrategy.OperationListener{
-      override fun onSuccess(device: DeviceInfo?) {
-        //TODO Handle successful receipt of chunk data
-      }
-
-      override fun onFailure(device: DeviceInfo?, ex: Exception) {
-        //TODO handle failure to receive chunk data
-      }
-
-    })
-
+    )
   }
 
   fun processIncomingManifest() {
@@ -209,11 +208,10 @@ class P2PReceiverViewModel(
   fun handleDataTransferCompleteManifest() {
     Timber.e("Data transfer complete")
     GlobalScope.launch {
-      withContext(Dispatchers.Main) {
-        context.showTransferCompleteDialog()
-      }
-      dataSharingStrategy.disconnect(dataSharingStrategy.getCurrentDevice()!!,
-        object: DataSharingStrategy.OperationListener{
+      withContext(Dispatchers.Main) { context.showTransferCompleteDialog() }
+      dataSharingStrategy.disconnect(
+        dataSharingStrategy.getCurrentDevice()!!,
+        object : DataSharingStrategy.OperationListener {
           override fun onSuccess(device: DeviceInfo?) {
             Timber.e("Diconnection successful")
           }
@@ -221,27 +219,27 @@ class P2PReceiverViewModel(
           override fun onFailure(device: DeviceInfo?, ex: Exception) {
             Timber.e("Diconnection failed")
           }
-
-        })
+        }
+      )
     }
   }
 
   fun listenForIncomingManifest(): Manifest? {
     Timber.e("Listening for subsequent manifests")
     // Listen for incoming manifest
-    val receivedManifest = dataSharingStrategy.receiveManifest(device = dataSharingStrategy.getCurrentDevice()!!,
-      object: DataSharingStrategy.OperationListener{
-        override fun onSuccess(device: DeviceInfo?) {
-          Timber.e("Manifest successfully received")
+    val receivedManifest =
+      dataSharingStrategy.receiveManifest(
+        device = dataSharingStrategy.getCurrentDevice()!!,
+        object : DataSharingStrategy.OperationListener {
+          override fun onSuccess(device: DeviceInfo?) {
+            Timber.e("Manifest successfully received")
+          }
 
+          override fun onFailure(device: DeviceInfo?, ex: Exception) {
+            Timber.e("Failed to receive manifest")
+          }
         }
-
-        override fun onFailure(device: DeviceInfo?, ex: Exception) {
-          Timber.e("Failed to receive manifest")
-        }
-
-      }
-    )
+      )
     return receivedManifest
   }
 
@@ -250,7 +248,7 @@ class P2PReceiverViewModel(
   }
 
   override fun upDateProgress(msg: String, recordSize: Int) {
-    //TODO Update UI with record size
+    // TODO Update UI with record size
   }
 
   class Factory(

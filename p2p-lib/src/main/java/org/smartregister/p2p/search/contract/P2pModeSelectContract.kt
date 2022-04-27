@@ -35,7 +35,7 @@ interface P2pModeSelectContract {
     fun processReceivedHistory(syncPayload: StringPayload)
     fun requestSyncParams(deviceInfo: DeviceInfo?)
     fun sendSyncComplete()
-    fun sendChunkData(awaitingPayload : PayloadContract<out Any>)
+    fun sendChunkData(awaitingPayload: PayloadContract<out Any>)
   }
 
   interface ReceiverViewModel {

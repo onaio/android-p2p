@@ -28,7 +28,7 @@ import timber.log.Timber
 class SyncReceiverHandler constructor(@NonNull val p2PReceiverViewModel: P2PReceiverViewModel) :
   ViewModel() {
 
-  private lateinit var currentManifest:Manifest
+  private lateinit var currentManifest: Manifest
 
   fun processManifest(manifest: Manifest) {
     currentManifest = manifest
@@ -44,8 +44,8 @@ class SyncReceiverHandler constructor(@NonNull val p2PReceiverViewModel: P2PRece
   fun processData(data: JSONArray) {
     Timber.e("Processing chunk data")
 
-    var lastUpdatedAt = P2PLibrary.getInstance().getReceiverTransferDao()
-      .receiveJson(currentManifest.dataType, data)
+    var lastUpdatedAt =
+      P2PLibrary.getInstance().getReceiverTransferDao().receiveJson(currentManifest.dataType, data)
 
     updateLastRecord(currentManifest.dataType.name, lastUpdatedAt = lastUpdatedAt)
 

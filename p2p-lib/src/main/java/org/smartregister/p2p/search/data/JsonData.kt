@@ -22,7 +22,7 @@ class JsonData {
   private var jsonArray: JSONArray? = null
   private var highestRecordId: Long = 0
 
-  constructor (@NonNull jsonArray: JSONArray?, highestRecordId: Long) {
+  constructor(@NonNull jsonArray: JSONArray?, highestRecordId: Long) {
     this.jsonArray = jsonArray
     this.highestRecordId = highestRecordId
   }
