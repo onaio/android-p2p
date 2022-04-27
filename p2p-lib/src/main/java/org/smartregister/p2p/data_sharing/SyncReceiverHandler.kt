@@ -22,6 +22,7 @@ import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.dao.P2pReceivedHistoryDao
 import org.smartregister.p2p.model.P2PReceivedHistory
 import org.smartregister.p2p.search.ui.P2PReceiverViewModel
+import org.smartregister.p2p.utils.Constants
 import timber.log.Timber
 
 class SyncReceiverHandler constructor(@NonNull val p2PReceiverViewModel: P2PReceiverViewModel) :
@@ -33,7 +34,11 @@ class SyncReceiverHandler constructor(@NonNull val p2PReceiverViewModel: P2PRece
     currentManifest = manifest
     // update UI with number of records to expect
     p2PReceiverViewModel.upDateProgress("Transferring %,d records", manifest.recordsSize)
-    p2PReceiverViewModel.processChunkData()
+    if (manifest != null && manifest.dataType.name == Constants.SYNC_COMPLETE) {
+      p2PReceiverViewModel.handleDataTransferCompleteManifest()
+    } else {
+      p2PReceiverViewModel.processChunkData()
+    }
   }
 
   fun processData(data: JSONArray) {
@@ -49,7 +54,7 @@ class SyncReceiverHandler constructor(@NonNull val p2PReceiverViewModel: P2PRece
 
   fun updateLastRecord(@NonNull entityType: String, lastUpdatedAt: Long) {
     // Retrieve sending device details
-    val sendingDeviceId = p2PReceiverViewModel.getSendingDeviceId()
+    val sendingDeviceId = p2PReceiverViewModel.getSendingDeviceAppLifetimeKey()
 
     if (sendingDeviceId.isNotBlank()) {
       val p2pReceivedHistoryDao: P2pReceivedHistoryDao? =
@@ -63,6 +68,7 @@ class SyncReceiverHandler constructor(@NonNull val p2PReceiverViewModel: P2PRece
         receivedHistory.lastUpdatedAt = lastUpdatedAt
         receivedHistory.entityType = entityType
         receivedHistory.appLifetimeKey = sendingDeviceId
+        p2pReceivedHistoryDao?.addReceivedHistory(receivedHistory)
       } else {
         receivedHistory.lastUpdatedAt = lastUpdatedAt
         p2pReceivedHistoryDao?.updateReceivedHistory(receivedHistory)

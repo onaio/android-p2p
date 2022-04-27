@@ -588,6 +588,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
     interactiveDialog.findViewById<Button>(R.id.dataTransferBtn)?.apply {
       setOnClickListener {
         // close wifi direct connection
+        finish()
       }
       setText(getString(R.string.okay))
     }

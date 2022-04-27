@@ -46,6 +46,7 @@ class P2PReceiverViewModel(
 
   private val connectionLevel: Constants.ConnectionLevel? = null
   private lateinit var syncReceiverHandler: SyncReceiverHandler
+  private var sendingDeviceAppLifetimeKey: String = ""
 
   fun processSenderDeviceDetails() {
 
@@ -107,6 +108,7 @@ class P2PReceiverViewModel(
           ?.p2pReceivedHistoryDao()
           ?.getDeviceReceivedHistory(appLifetimeKey)
 
+      sendingDeviceAppLifetimeKey = appLifetimeKey
       if (receivedHistory != null && !receivedHistory.isEmpty()) {
         sendLastReceivedRecords(receivedHistory)
         Timber.e("Sent received history")
@@ -197,27 +199,30 @@ class P2PReceiverViewModel(
 
     // Handle successfully received manifest
     if (incomingManifest != null && incomingManifest.dataType.name == Constants.SYNC_COMPLETE) {
-      Timber.e("Data transfer complete")
-      GlobalScope.launch {
-        withContext(Dispatchers.Main) {
-          context.showTransferCompleteDialog()
-        }
-        dataSharingStrategy.disconnect(dataSharingStrategy.getCurrentDevice()!!,
-          object: DataSharingStrategy.OperationListener{
-            override fun onSuccess(device: DeviceInfo?) {
-              Timber.e("Diconnection successful")
-            }
-
-            override fun onFailure(device: DeviceInfo?, ex: Exception) {
-              Timber.e("Diconnection failed")
-            }
-
-          })
-      }
-
+      handleDataTransferCompleteManifest()
     } else {
       Timber.e("Subsequent manifest with data successfully received")
       syncReceiverHandler.processManifest(incomingManifest!!)
+    }
+  }
+
+  fun handleDataTransferCompleteManifest() {
+    Timber.e("Data transfer complete")
+    GlobalScope.launch {
+      withContext(Dispatchers.Main) {
+        context.showTransferCompleteDialog()
+      }
+      dataSharingStrategy.disconnect(dataSharingStrategy.getCurrentDevice()!!,
+        object: DataSharingStrategy.OperationListener{
+          override fun onSuccess(device: DeviceInfo?) {
+            Timber.e("Diconnection successful")
+          }
+
+          override fun onFailure(device: DeviceInfo?, ex: Exception) {
+            Timber.e("Diconnection failed")
+          }
+
+        })
     }
   }
 
@@ -240,13 +245,12 @@ class P2PReceiverViewModel(
     return receivedManifest
   }
 
-  override fun getSendingDeviceId(): String {
-    // TODO implement this
-    return ""
+  override fun getSendingDeviceAppLifetimeKey(): String {
+    return sendingDeviceAppLifetimeKey
   }
 
   override fun upDateProgress(msg: String, recordSize: Int) {
-    //TODO Update Contacts.Intents.UI with record size
+    //TODO Update UI with record size
   }
 
   class Factory(

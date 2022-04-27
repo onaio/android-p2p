@@ -39,7 +39,7 @@ interface P2pModeSelectContract {
   }
 
   interface ReceiverViewModel {
-    fun getSendingDeviceId(): String
+    fun getSendingDeviceAppLifetimeKey(): String
     fun upDateProgress(msg: String, recordSize: Int)
   }
 }
