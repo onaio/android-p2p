@@ -5,6 +5,7 @@ plugins {
     id 'jacoco'
     id 'com.github.kt3k.coveralls'
     id 'com.diffplug.spotless'
+    id 'maven-publish'
 }
 apply plugin: 'kotlin-kapt'
 
@@ -177,5 +178,33 @@ spotless {
         ktlint(versions.ktlint).userData(['indent_size': '2', 'continuation_indent_size': '2'])
         ktfmt().googleStyle()
         licenseHeaderFile "${project.rootProject.projectDir}/license-header.txt"
+    }
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            snapshot(MavenPublication) {
+                from(components["release"])
+                artifactId = "p2p-lib"
+                groupId = "org.smartregister"
+                version = "0.0.1-SNAPSHOT"
+                pom {
+                    name.set("Peer to Peer Library")
+                }
+            }
+        }
+        repositories {
+            maven {
+                name = 'sonatype'
+                url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
+                credentials {
+                    //TODO figure out how to load credentials.
+                    username = 'test'
+                    password = 'test'
+                }
+            }
+
+        }
     }
 }
