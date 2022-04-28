@@ -16,8 +16,6 @@
 package org.smartregister.p2p.search.ui
 
 import android.Manifest
-import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
@@ -59,7 +57,6 @@ import org.smartregister.p2p.search.contract.P2pModeSelectContract
 import org.smartregister.p2p.utils.getDeviceName
 import org.smartregister.p2p.utils.startP2PScreen
 import timber.log.Timber
-
 
 /**
  * This is the exposed activity that provides access to all P2P operations and steps. It can be
@@ -741,8 +738,8 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
   }
 
   /**
-   * Enables or disables the keep screen on flag to avoid the device going to sleep while there
-   * is a sync happening
+   * Enables or disables the keep screen on flag to avoid the device going to sleep while there is a
+   * sync happening
    *
    * @param enable `TRUE` to enable or `FALSE` disable
    */
@@ -755,10 +752,8 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
     } else {
       keepScreenOnCounter--
       if (keepScreenOnCounter == 0) {
-        getWindow()
-          .clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
       }
     }
   }
-
 }
