@@ -41,7 +41,8 @@ class OptionsTest {
     dbPassphrase = "some-db-passphrase"
     username = "john-doe"
 
-    options = P2PLibrary.Options(context, dbPassphrase, username, senderTransferDao, receiverTransferDao)
+    options =
+      P2PLibrary.Options(context, dbPassphrase, username, senderTransferDao, receiverTransferDao)
   }
 
   @Test

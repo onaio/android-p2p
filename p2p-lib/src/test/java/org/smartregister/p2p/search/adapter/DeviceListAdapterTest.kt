@@ -15,7 +15,6 @@
  */
 package org.smartregister.p2p.search.adapter
 
-import android.net.wifi.p2p.WifiP2pDevice
 import android.widget.LinearLayout
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert
@@ -46,23 +45,24 @@ internal class DeviceListAdapterTest : RobolectricTest() {
     val deviceAddress = "00:00:5e:00:53:af"
     val deviceName = "Google Pixel"
 
-    val deviceInfo: DeviceInfo = object : DeviceInfo{
-      override var strategySpecificDevice: Any
-        get() = TODO("Not yet implemented")
-        set(value) {}
+    val deviceInfo: DeviceInfo =
+      object : DeviceInfo {
+        override var strategySpecificDevice: Any
+          get() = TODO("Not yet implemented")
+          set(value) {}
 
-      override fun getDisplayName(): String {
-        TODO("Not yet implemented")
-      }
+        override fun getDisplayName(): String {
+          TODO("Not yet implemented")
+        }
 
-      override fun name(): String {
-        return deviceName
-      }
+        override fun name(): String {
+          return deviceName
+        }
 
-      override fun address(): String {
-        return deviceAddress
+        override fun address(): String {
+          return deviceAddress
+        }
       }
-    }
     val deviceInfoList = listOf(deviceInfo)
 
     deviceListAdapter = DeviceListAdapter(deviceInfoList, {})
@@ -82,23 +82,24 @@ internal class DeviceListAdapterTest : RobolectricTest() {
     val deviceName = "Google Pixel"
     Assert.assertEquals(0, deviceListAdapter.itemCount)
 
-    val deviceInfo: DeviceInfo = object : DeviceInfo{
-      override var strategySpecificDevice: Any
-        get() = TODO("Not yet implemented")
-        set(value) {}
+    val deviceInfo: DeviceInfo =
+      object : DeviceInfo {
+        override var strategySpecificDevice: Any
+          get() = TODO("Not yet implemented")
+          set(value) {}
 
-      override fun getDisplayName(): String {
-        TODO("Not yet implemented")
-      }
+        override fun getDisplayName(): String {
+          TODO("Not yet implemented")
+        }
 
-      override fun name(): String {
-        return deviceName
-      }
+        override fun name(): String {
+          return deviceName
+        }
 
-      override fun address(): String {
-        return deviceAddress
+        override fun address(): String {
+          return deviceAddress
+        }
       }
-    }
     val deviceInfoList = listOf(deviceInfo, deviceInfo, deviceInfo)
     deviceListAdapter = DeviceListAdapter(deviceInfoList, {})
 
