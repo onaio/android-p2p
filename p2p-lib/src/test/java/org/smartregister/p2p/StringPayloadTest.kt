@@ -25,6 +25,6 @@ class StringPayloadTest {
   @Test
   fun syncPayloadIsSetCorrectly() {
     val payload = StringPayload("test")
-    Assert.assertEquals("test", payload.message)
+    Assert.assertEquals("test", payload.getData())
   }
 }
