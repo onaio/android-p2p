@@ -42,7 +42,7 @@ class P2PLibrary() {
     @NonNull
     fun getInstance(): P2PLibrary {
       checkNotNull(instance) {
-        ("Instance does not exist!!! Call P2PLibrary.init(P2PLibrary.Options) method" +
+        ("Instance does not exist!!! Call P2PLibrary.init(P2PLibrary.Options) method " +
           "in the onCreate method of " +
           "your Application class ")
       }

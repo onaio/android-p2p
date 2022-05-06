@@ -28,7 +28,7 @@ internal class P2PLibraryTest {
   fun getInstanceShouldThrowExceptionWhenInstanceIsNull() {
     thrown.expect(IllegalStateException::class.java)
     thrown.expectMessage(
-      "Instance does not exist!!! Call P2PLibrary.init method" +
+      "Instance does not exist!!! Call P2PLibrary.init(P2PLibrary.Options) method " +
         "in the onCreate method of " +
         "your Application class "
     )
