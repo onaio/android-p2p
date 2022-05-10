@@ -15,12 +15,13 @@
  */
 package org.smartregister.p2p.search.adapter
 
+import android.net.wifi.p2p.WifiP2pDevice
 import android.widget.LinearLayout
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.smartregister.p2p.data_sharing.DeviceInfo
+import org.smartregister.p2p.data_sharing.WifiDirectDataSharingStrategy
 import org.smartregister.p2p.robolectric.RobolectricTest
 
 internal class DeviceListAdapterTest : RobolectricTest() {
@@ -44,28 +45,14 @@ internal class DeviceListAdapterTest : RobolectricTest() {
   fun onBindViewHolderShouldUpdateViews() {
     val deviceAddress = "00:00:5e:00:53:af"
     val deviceName = "Google Pixel"
-
-    val deviceInfo: DeviceInfo =
-      object : DeviceInfo {
-        override var strategySpecificDevice: Any
-          get() = TODO("Not yet implemented")
-          set(value) {}
-
-        override fun getDisplayName(): String {
-          TODO("Not yet implemented")
-        }
-
-        override fun name(): String {
-          return deviceName
-        }
-
-        override fun address(): String {
-          return deviceAddress
-        }
+    val wifiP2pDevice =
+      WifiP2pDevice().apply {
+        this.deviceName = deviceName
+        this.deviceAddress = deviceAddress
       }
-    val deviceInfoList = listOf(deviceInfo)
-
-    deviceListAdapter = DeviceListAdapter(deviceInfoList, {})
+    val device = WifiDirectDataSharingStrategy.WifiDirectDevice(wifiP2pDevice)
+    val peerDevices = listOf(device)
+    deviceListAdapter = DeviceListAdapter(peerDevices, {})
 
     val layout = LinearLayout(ApplicationProvider.getApplicationContext())
     val viewHolder = deviceListAdapter.onCreateViewHolder(layout, 0)
@@ -78,30 +65,17 @@ internal class DeviceListAdapterTest : RobolectricTest() {
 
   @Test
   fun getItemCountShouldReturnActualCountDevices() {
-    val deviceAddress = "00:00:5e:00:53:af"
-    val deviceName = "Google Pixel"
     Assert.assertEquals(0, deviceListAdapter.itemCount)
 
-    val deviceInfo: DeviceInfo =
-      object : DeviceInfo {
-        override var strategySpecificDevice: Any
-          get() = TODO("Not yet implemented")
-          set(value) {}
-
-        override fun getDisplayName(): String {
-          TODO("Not yet implemented")
-        }
-
-        override fun name(): String {
-          return deviceName
-        }
-
-        override fun address(): String {
-          return deviceAddress
-        }
+    val wifiP2pDevice =
+      WifiP2pDevice().apply {
+        deviceName = "Google Pixel"
+        deviceAddress = "00:00:5e:00:53:af"
       }
-    val deviceInfoList = listOf(deviceInfo, deviceInfo, deviceInfo)
-    deviceListAdapter = DeviceListAdapter(deviceInfoList, {})
+
+    val device = WifiDirectDataSharingStrategy.WifiDirectDevice(wifiP2pDevice)
+    val peerDevices = listOf(device, device, device)
+    deviceListAdapter = DeviceListAdapter(peerDevices, {})
 
     Assert.assertEquals(3, deviceListAdapter.itemCount)
   }
