@@ -16,6 +16,9 @@
 package org.smartregister.p2p.ui
 
 import androidx.test.ext.junit.rules.ActivityScenarioRule
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkObject
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -25,6 +28,7 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.android.controller.ActivityController
 import org.robolectric.util.ReflectionHelpers
+import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.robolectric.RobolectricTest
 import org.smartregister.p2p.search.ui.P2PDeviceSearchActivity
@@ -44,9 +48,14 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
 
   @Before
   fun setUp() {
+    val p2PLibrary = mockk<P2PLibrary>()
+    mockkObject(P2PLibrary.Companion)
+
+    every { P2PLibrary.Companion.getInstance() } answers {p2PLibrary}
     p2PDeviceSearchActivityController =
       Robolectric.buildActivity(P2PDeviceSearchActivity::class.java)
     p2PDeviceSearchActivity = p2PDeviceSearchActivityController.create().resume().get()
+
   }
 
   @After
@@ -55,7 +64,6 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
   }
 
   @Test
-  @Ignore
   fun testGetDeviceRole() {
     // TODO Fix this test
     ReflectionHelpers.setField(p2PDeviceSearchActivity, "isSender", false)

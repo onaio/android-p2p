@@ -28,7 +28,6 @@ import org.json.JSONArray
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
-import org.smartregister.p2p.data_sharing.IReceiverSyncLifecycleCallback
 import org.smartregister.p2p.data_sharing.Manifest
 import org.smartregister.p2p.data_sharing.SyncReceiverHandler
 import org.smartregister.p2p.model.P2PReceivedHistory
@@ -42,9 +41,8 @@ import timber.log.Timber
 class P2PReceiverViewModel(
   private val context: P2PDeviceSearchActivity,
   private val dataSharingStrategy: DataSharingStrategy
-) : ViewModel(), IReceiverSyncLifecycleCallback, P2pModeSelectContract.ReceiverViewModel {
+) : ViewModel(), P2pModeSelectContract.ReceiverViewModel {
 
-  private val connectionLevel: Constants.ConnectionLevel? = null
   private lateinit var syncReceiverHandler: SyncReceiverHandler
   private var sendingDeviceAppLifetimeKey: String = ""
 
