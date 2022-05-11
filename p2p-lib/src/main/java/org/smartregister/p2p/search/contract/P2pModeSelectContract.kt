@@ -19,6 +19,7 @@ import androidx.annotation.NonNull
 import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
+import org.smartregister.p2p.model.P2PReceivedHistory
 import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.payload.StringPayload
 
@@ -51,5 +52,6 @@ interface P2pModeSelectContract {
   interface ReceiverViewModel {
     fun getSendingDeviceAppLifetimeKey(): String
     fun upDateProgress(msg: String, recordSize: Int)
+    fun sendLastReceivedRecords(receivedHistory: List<P2PReceivedHistory?>?)
   }
 }
