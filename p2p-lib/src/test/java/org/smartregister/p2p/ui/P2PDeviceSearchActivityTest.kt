@@ -24,18 +24,19 @@ import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.android.controller.ActivityController
+import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.robolectric.RobolectricTest
 import org.smartregister.p2p.search.ui.P2PDeviceSearchActivity
+import org.smartregister.p2p.shadows.ShadowAppDatabase
 
 /*import org.smartregister.p2p.shadows.ShadowAppDatabase
 import org.smartregister.p2p.shadows.ShadowAppDatabase2*/
 
-@Ignore
 /** Test for class [P2PDeviceSearchActivity] */
-// @Config(shadows = [ShadowAppDatabase2::class])
+@Config(shadows = [ShadowAppDatabase::class])
 class P2PDeviceSearchActivityTest : RobolectricTest() {
 
   // Fixes  Main looper has queued unexecuted runnables. This might be the cause of the test failure
@@ -70,7 +71,6 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
   }
 
   @Test
-  @Ignore
   fun testGetDeviceRole() {
     // TODO Fix this test
     ReflectionHelpers.setField(p2PDeviceSearchActivity, "isSender", false)
@@ -80,8 +80,8 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
     Assert.assertEquals(DeviceRole.SENDER, p2PDeviceSearchActivity.getDeviceRole())
   }
 
-  @Test
   @Ignore
+  @Test
   fun testGetWifiP2pReason() {
     // TODO Fix this test
     var wifiP2pReason =

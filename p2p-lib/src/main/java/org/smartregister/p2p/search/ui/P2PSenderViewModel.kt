@@ -36,7 +36,7 @@ import org.smartregister.p2p.utils.Constants
 import timber.log.Timber
 
 class P2PSenderViewModel(
-  private val context: P2PDeviceSearchActivity,
+  private val view: P2pModeSelectContract.View,
   private val dataSharingStrategy: DataSharingStrategy
 ) : ViewModel(), P2pModeSelectContract.SenderViewModel {
 
@@ -125,7 +125,7 @@ class P2PSenderViewModel(
   override fun sendSyncComplete() {
     Timber.e("P2P sync complete")
     GlobalScope.launch {
-      withContext(Dispatchers.Main) { context.showTransferCompleteDialog() }
+      withContext(Dispatchers.Main) { view.showTransferCompleteDialog() }
       dataSharingStrategy.disconnect(
         getCurrentConnectedDevice()!!,
         object : DataSharingStrategy.OperationListener {
@@ -184,7 +184,7 @@ class P2PSenderViewModel(
   }
 
   override fun getCurrentConnectedDevice(): DeviceInfo? {
-    return context.getCurrentConnectedDevice()
+    return view.getCurrentConnectedDevice()
   }
 
   override fun processReceivedHistory(syncPayload: StringPayload) {
@@ -197,16 +197,16 @@ class P2PSenderViewModel(
         Gson().fromJson(syncPayload.string, receivedHistoryListType)
 
       // TODO run this is background
-      val jsonData = P2PLibrary.getInstance().getSenderTransferDao().getP2PDataTypes()
+      val dataTypes = P2PLibrary.getInstance().getSenderTransferDao().getP2PDataTypes()
 
       syncSenderHandler =
         SyncSenderHandler(
           p2PSenderViewModel = this,
-          dataSyncOrder = jsonData,
+          dataSyncOrder = dataTypes,
           receivedHistory = receivedHistory
         )
 
-      if (jsonData != null) {
+      if (!dataTypes.isEmpty()) {
         Timber.e("Process received history json data not null")
         syncSenderHandler.startSyncProcess()
       } else {
@@ -218,12 +218,12 @@ class P2PSenderViewModel(
 
   fun updateSenderSyncComplete(senderSyncComplete: Boolean) {
     GlobalScope.launch {
-      withContext(Dispatchers.Main) { context.senderSyncComplete(senderSyncComplete) }
+      withContext(Dispatchers.Main) { view.senderSyncComplete(senderSyncComplete) }
     }
   }
 
   class Factory(
-    private val context: P2PDeviceSearchActivity,
+    private val context: P2pModeSelectContract.View,
     private val dataSharingStrategy: DataSharingStrategy
   ) : ViewModelProvider.Factory {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {

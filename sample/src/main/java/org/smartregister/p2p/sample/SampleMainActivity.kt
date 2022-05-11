@@ -44,7 +44,7 @@ class SampleMainActivity : AppCompatActivity() {
                 }
             }
         )
-        P2PLibrary().init(p2POptions)
+        P2PLibrary.init(p2POptions)
 
         findViewById<Button>(R.id.device_sync).setOnClickListener {
             startP2PScreen(this)

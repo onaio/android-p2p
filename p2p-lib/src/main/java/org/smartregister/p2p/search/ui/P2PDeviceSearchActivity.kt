@@ -62,7 +62,7 @@ import timber.log.Timber
  * This is the exposed activity that provides access to all P2P operations and steps. It can be
  * called from other apps via [startP2PScreen] function.
  */
-class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
+class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View {
   /*
   private val wifiP2pManager: WifiP2pManager by lazy(LazyThreadSafetyMode.NONE) {
     getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager
@@ -595,7 +595,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
     interactiveDialog.show()
   }
 
-  fun showTransferCompleteDialog() {
+  override fun showTransferCompleteDialog() {
     while (keepScreenOnCounter > 0) {
       keepScreenOn(false)
     }
@@ -728,11 +728,11 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract {
     // Respond with the acceptable data types each with its lastUpdated timestamp and batch size
   }
 
-  fun getCurrentConnectedDevice(): DeviceInfo? {
+  override fun getCurrentConnectedDevice(): DeviceInfo? {
     return dataSharingStrategy.getCurrentDevice()
   }
 
-  fun senderSyncComplete(complete: Boolean) {
+  override fun senderSyncComplete(complete: Boolean) {
     isSenderSyncComplete = complete
     Timber.e("sender sync complete $isSenderSyncComplete")
   }

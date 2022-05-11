@@ -25,9 +25,19 @@ import org.smartregister.p2p.payload.StringPayload
 /** Interface for functions used to make changes to the data transfer page UI */
 interface P2pModeSelectContract {
 
-  fun showP2PSelectPage(deviceRole: DeviceRole, deviceName: String)
+  interface View {
 
-  fun getDeviceRole(): DeviceRole
+    fun showP2PSelectPage(deviceRole: DeviceRole, deviceName: String)
+
+    fun getDeviceRole(): DeviceRole
+
+    fun showTransferCompleteDialog()
+
+    fun getCurrentConnectedDevice() : DeviceInfo?
+
+    fun senderSyncComplete(complete: Boolean)
+
+  }
 
   interface SenderViewModel {
     fun sendManifest(@NonNull manifest: Manifest)
