@@ -112,6 +112,12 @@ class P2PReceiverViewModelTest : RobolectricTest() {
     p2PReceiverViewModel.handleDataTransferCompleteManifest()
 
     coVerify(exactly = 1) { context.showTransferCompleteDialog() }
+    verify(exactly = 1) { dataSharingStrategy.disconnect(any(), any()) }
+  }
+
+  @Test
+  fun `handleDataTransferCompleteManifest() calls dataSharingStrategy#disconnect`() {
+    // TODO implement this
   }
 
   private fun populateDeviceInfo(): DeviceInfo {
