@@ -68,7 +68,6 @@ class P2PReceiverViewModelTest : RobolectricTest() {
     val appLifetimeKey = "ecd51f4c-ad4f-46a5-bda0-df38c5196aa8"
     ReflectionHelpers.setField(p2PReceiverViewModel, "sendingDeviceAppLifetimeKey", appLifetimeKey)
     val sendingDeviceAppLifeTimeKey = p2PReceiverViewModel.getSendingDeviceAppLifetimeKey()
-    Assert.assertNotNull(sendingDeviceAppLifeTimeKey)
     Assert.assertEquals(appLifetimeKey, sendingDeviceAppLifeTimeKey)
   }
 
