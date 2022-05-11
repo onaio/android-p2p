@@ -17,14 +17,17 @@ package org.smartregister.p2p.ui
 
 import android.net.wifi.p2p.WifiP2pDevice
 import io.mockk.clearAllMocks
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
+import org.smartregister.p2p.CoroutineTestRule
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
@@ -37,6 +40,9 @@ import org.smartregister.p2p.sync.DataType
 import org.smartregister.p2p.utils.Constants
 
 class P2PReceiverViewModelTest : RobolectricTest() {
+
+  @get:Rule var coroutinesTestRule = CoroutineTestRule()
+
   private lateinit var context: P2PDeviceSearchActivity
   private lateinit var dataSharingStrategy: DataSharingStrategy
   private lateinit var p2PReceiverViewModel: P2PReceiverViewModel
@@ -98,6 +104,14 @@ class P2PReceiverViewModelTest : RobolectricTest() {
     Assert.assertEquals(expectedManifest.recordsSize, actualManifest!!.recordsSize)
     Assert.assertEquals(expectedManifest.payloadSize, actualManifest!!.payloadSize)
     Assert.assertEquals(expectedManifest.dataType, actualManifest!!.dataType)
+  }
+
+  @Test
+  fun `handleDataTransferCompleteManifest() calls showTransferCompleteDialog()`() {
+
+    p2PReceiverViewModel.handleDataTransferCompleteManifest()
+
+    coVerify(exactly = 1) { context.showTransferCompleteDialog() }
   }
 
   private fun populateDeviceInfo(): DeviceInfo {

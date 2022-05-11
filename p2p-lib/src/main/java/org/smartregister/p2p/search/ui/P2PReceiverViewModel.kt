@@ -20,6 +20,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -45,6 +47,8 @@ class P2PReceiverViewModel(
 
   private lateinit var syncReceiverHandler: SyncReceiverHandler
   private var sendingDeviceAppLifetimeKey: String = ""
+  private val externalScope: CoroutineScope = GlobalScope
+  private val mainDispatcher: CoroutineDispatcher = Dispatchers.Main
 
   fun processSenderDeviceDetails() {
 
@@ -62,8 +66,8 @@ class P2PReceiverViewModel(
             deviceDetails[Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY]!!
           )
 
-          GlobalScope.launch {
-            withContext(Dispatchers.Main) { context.showTransferProgressDialog() }
+          externalScope.launch {
+            withContext(mainDispatcher) { context.showTransferProgressDialog() }
           }
         }
       },
@@ -205,8 +209,8 @@ class P2PReceiverViewModel(
 
   fun handleDataTransferCompleteManifest() {
     Timber.e("Data transfer complete")
-    GlobalScope.launch {
-      withContext(Dispatchers.Main) { context.showTransferCompleteDialog() }
+    externalScope.launch {
+      withContext(mainDispatcher) { context.showTransferCompleteDialog() }
       dataSharingStrategy.disconnect(
         dataSharingStrategy.getCurrentDevice()!!,
         object : DataSharingStrategy.OperationListener {
