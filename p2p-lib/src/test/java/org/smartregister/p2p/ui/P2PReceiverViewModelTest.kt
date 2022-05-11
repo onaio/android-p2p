@@ -17,6 +17,7 @@ package org.smartregister.p2p.ui
 
 import android.net.wifi.p2p.WifiP2pDevice
 import io.mockk.clearAllMocks
+import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
@@ -43,7 +44,7 @@ class P2PReceiverViewModelTest : RobolectricTest() {
 
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
 
-  private lateinit var context: P2PDeviceSearchActivity
+  private lateinit var view: P2PDeviceSearchActivity
   private lateinit var dataSharingStrategy: DataSharingStrategy
   private lateinit var p2PReceiverViewModel: P2PReceiverViewModel
   private lateinit var syncReceiverHandler: SyncReceiverHandler
@@ -53,13 +54,13 @@ class P2PReceiverViewModelTest : RobolectricTest() {
   @Before
   fun setUp() {
     clearAllMocks()
-    context = mockk()
+    view = mockk()
     dataSharingStrategy = mockk(relaxed = false)
     syncReceiverHandler = mockk(relaxed = true)
 
     expectedDeviceInfo = populateDeviceInfo()
     every { dataSharingStrategy.getCurrentDevice() } answers { expectedDeviceInfo }
-    p2PReceiverViewModel = spyk(P2PReceiverViewModel(context, dataSharingStrategy))
+    p2PReceiverViewModel = spyk(P2PReceiverViewModel(view, dataSharingStrategy))
     ReflectionHelpers.setField(p2PReceiverViewModel, "syncReceiverHandler", syncReceiverHandler)
   }
 
@@ -111,12 +112,14 @@ class P2PReceiverViewModelTest : RobolectricTest() {
 
     p2PReceiverViewModel.handleDataTransferCompleteManifest()
 
-    coVerify(exactly = 1) { context.showTransferCompleteDialog() }
+    coVerify(exactly = 1) { view.showTransferCompleteDialog() }
   }
 
   @Test
   fun `handleDataTransferCompleteManifest() calls dataSharingStrategy#disconnect`() {
-    // TODO implement this
+    coEvery { view.showTransferCompleteDialog() } answers { null }
+    p2PReceiverViewModel.handleDataTransferCompleteManifest()
+    verify(exactly = 1) { dataSharingStrategy.disconnect(device = expectedDeviceInfo, any()) }
   }
 
   private fun populateDeviceInfo(): DeviceInfo {
