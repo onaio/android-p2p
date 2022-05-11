@@ -100,10 +100,11 @@ class P2PReceiverViewModelTest : RobolectricTest() {
         expectedManifest
       }
     val actualManifest = p2PReceiverViewModel.listenForIncomingManifest()
-    Assert.assertNotNull(actualManifest)
     Assert.assertEquals(expectedManifest.recordsSize, actualManifest!!.recordsSize)
     Assert.assertEquals(expectedManifest.payloadSize, actualManifest!!.payloadSize)
-    Assert.assertEquals(expectedManifest.dataType, actualManifest!!.dataType)
+    Assert.assertEquals(expectedManifest.dataType.name, actualManifest!!.dataType.name)
+    Assert.assertEquals(expectedManifest.dataType.type, actualManifest!!.dataType.type)
+    Assert.assertEquals(expectedManifest.dataType.position, actualManifest!!.dataType.position)
   }
 
   @Test

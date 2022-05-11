@@ -42,6 +42,6 @@ interface P2pModeSelectContract {
   interface ReceiverViewModel {
     fun getSendingDeviceAppLifetimeKey(): String
     fun upDateProgress(msg: String, recordSize: Int)
-    fun sendLastReceivedRecords(@NonNull receivedHistory: List<P2PReceivedHistory?>?)
+    fun sendLastReceivedRecords(receivedHistory: List<P2PReceivedHistory?>?)
   }
 }

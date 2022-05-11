@@ -47,8 +47,6 @@ class P2PReceiverViewModel(
 
   private lateinit var syncReceiverHandler: SyncReceiverHandler
   private var sendingDeviceAppLifetimeKey: String = ""
-  private val externalScope: CoroutineScope = GlobalScope
-  private val mainDispatcher: CoroutineDispatcher = Dispatchers.Main
 
   fun processSenderDeviceDetails() {
 
@@ -66,8 +64,8 @@ class P2PReceiverViewModel(
             deviceDetails[Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY]!!
           )
 
-          externalScope.launch {
-            withContext(mainDispatcher) { context.showTransferProgressDialog() }
+          viewModelScope.launch {
+            withContext(Dispatchers.Main) { context.showTransferProgressDialog() }
           }
         }
       },
@@ -209,8 +207,8 @@ class P2PReceiverViewModel(
 
   fun handleDataTransferCompleteManifest() {
     Timber.e("Data transfer complete")
-    externalScope.launch {
-      withContext(mainDispatcher) { context.showTransferCompleteDialog() }
+    viewModelScope.launch {
+      withContext(Dispatchers.Main) { context.showTransferCompleteDialog() }
       dataSharingStrategy.disconnect(
         dataSharingStrategy.getCurrentDevice()!!,
         object : DataSharingStrategy.OperationListener {
