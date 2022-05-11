@@ -16,7 +16,6 @@
 package org.smartregister.p2p.model
 
 import android.content.Context
-import androidx.annotation.NonNull
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -35,7 +34,7 @@ abstract class AppDatabase : RoomDatabase() {
   companion object {
     private var instance: AppDatabase? = null
     var dbName = "p2p"
-    fun getInstance(@NonNull context: Context, @NonNull passphrase: String): AppDatabase? {
+    fun getInstance(context: Context, passphrase: String): AppDatabase? {
       if (instance == null) {
         val safeHelperFactory = SupportFactory(SQLiteDatabase.getBytes(passphrase.toCharArray()))
         instance =

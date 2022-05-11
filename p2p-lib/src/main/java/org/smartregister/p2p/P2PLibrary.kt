@@ -29,7 +29,7 @@ import org.smartregister.p2p.utils.Settings
 import timber.log.Timber
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 14-03-2022. */
-class P2PLibrary() {
+class P2PLibrary private constructor() {
 
   private lateinit var options: Options
   private var hashKey: String? = null
@@ -48,10 +48,10 @@ class P2PLibrary() {
       }
       return instance!!
     }
-  }
 
-  fun init(@NonNull options: Options) {
-    instance = P2PLibrary(options)
+    fun init(@NonNull options: Options) {
+      instance = P2PLibrary(options)
+    }
   }
 
   private constructor(@NonNull options: Options) : this() {
