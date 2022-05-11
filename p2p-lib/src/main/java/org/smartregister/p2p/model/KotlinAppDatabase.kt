@@ -23,10 +23,10 @@ import net.sqlcipher.database.SupportFactory
 import org.smartregister.p2p.dao.P2pReceivedHistoryDao
 
 /**
- * Provides [KotlinAppDatabase.getInstance] to access database instance. The instance gives access to the
- * [P2pReceivedHistoryDao]
+ * Provides [KotlinAppDatabase.getInstance] to access database instance. The instance gives access
+ * to the [P2pReceivedHistoryDao]
  */
-//@Database(entities = [P2PReceivedHistory::class], version = 1)
+// @Database(entities = [P2PReceivedHistory::class], version = 1)
 abstract class KotlinAppDatabase : RoomDatabase() {
   abstract fun p2pReceivedHistoryDao(): P2pReceivedHistoryDao?
 
@@ -39,7 +39,11 @@ abstract class KotlinAppDatabase : RoomDatabase() {
       if (instance == null) {
         val safeHelperFactory = SupportFactory(SQLiteDatabase.getBytes(passphrase.toCharArray()))
         instance =
-          Room.databaseBuilder(context.getApplicationContext(), KotlinAppDatabase::class.java, dbName)
+          Room.databaseBuilder(
+              context.getApplicationContext(),
+              KotlinAppDatabase::class.java,
+              dbName
+            )
             .openHelperFactory(safeHelperFactory)
             .build()
       }

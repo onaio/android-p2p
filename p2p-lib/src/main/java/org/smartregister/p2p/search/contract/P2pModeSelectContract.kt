@@ -34,10 +34,9 @@ interface P2pModeSelectContract {
 
     fun showTransferCompleteDialog()
 
-    fun getCurrentConnectedDevice() : DeviceInfo?
+    fun getCurrentConnectedDevice(): DeviceInfo?
 
     fun senderSyncComplete(complete: Boolean)
-
   }
 
   interface SenderViewModel {
