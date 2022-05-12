@@ -32,6 +32,7 @@ import org.robolectric.util.ReflectionHelpers
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.dao.SenderTransferDao
 import org.smartregister.p2p.model.P2PReceivedHistory
+import org.smartregister.p2p.payload.BytePayload
 import org.smartregister.p2p.robolectric.RobolectricTest
 import org.smartregister.p2p.search.data.JsonData
 import org.smartregister.p2p.search.ui.P2PSenderViewModel
@@ -213,6 +214,29 @@ class SyncSenderHandlerTest : RobolectricTest() {
     Assert.assertEquals(Constants.SYNC_COMPLETE, capturedManifest.dataType.name)
     Assert.assertEquals(0, capturedManifest.dataType.position)
     Assert.assertEquals(DataType.Filetype.JSON, capturedManifest.dataType.type)
+  }
+
+  @Test
+  fun `processManifestSent() calls p2PSenderViewModel#sendChunkData() when sendingSyncCompleteManifest is false`() {
+    val awaitingPayload = BytePayload(groupResourceString.toByteArray())
+    ReflectionHelpers.setField(syncSenderHandler, "awaitingPayload", awaitingPayload)
+    every { p2PSenderViewModel.sendChunkData(any()) } answers { null }
+    syncSenderHandler.processManifestSent()
+    verify(exactly = 1) { p2PSenderViewModel.sendChunkData(awaitingPayload) }
+  }
+
+  @Test
+  fun `processManifestSent() updates sendingSyncCompleteManifest to false when sendingSyncCompleteManifest is true`() {
+    ReflectionHelpers.setField(syncSenderHandler, "sendingSyncCompleteManifest", true)
+    val awaitingPayload = BytePayload(groupResourceString.toByteArray())
+    ReflectionHelpers.setField(syncSenderHandler, "awaitingPayload", awaitingPayload)
+    every { p2PSenderViewModel.sendChunkData(any()) } answers { null }
+    syncSenderHandler.processManifestSent()
+    verify(exactly = 0) { p2PSenderViewModel.sendChunkData(awaitingPayload) }
+
+    val sendingSyncCompleteManifest =
+      ReflectionHelpers.getField<Boolean>(syncSenderHandler, "sendingSyncCompleteManifest")
+    Assert.assertFalse(sendingSyncCompleteManifest)
   }
 
   fun getDataTypes(): TreeSet<DataType> =
