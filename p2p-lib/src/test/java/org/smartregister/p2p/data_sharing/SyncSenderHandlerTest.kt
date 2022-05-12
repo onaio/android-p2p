@@ -22,6 +22,7 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
 import java.util.TreeSet
+import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
 import org.junit.Assert
 import org.junit.Before
@@ -134,9 +135,11 @@ class SyncSenderHandlerTest : RobolectricTest() {
       ReflectionHelpers.getField<Int>(syncSenderHandler, "awaitingDataTypeRecordsBatchSize")
     Assert.assertEquals(0, originalAwaitingDataTypeRecordsBatchSize)
 
-    syncSenderHandler.sendJsonDataManifest(
-      DataType(name = entity, type = DataType.Filetype.JSON, position = 0)
-    )
+    runBlocking {
+      syncSenderHandler.sendJsonDataManifest(
+        DataType(name = entity, type = DataType.Filetype.JSON, position = 0)
+      )
+    }
 
     val updatedRemainingLastRecordIds =
       ReflectionHelpers.getField<HashMap<String, Long>>(syncSenderHandler, "remainingLastRecordIds")
@@ -173,9 +176,11 @@ class SyncSenderHandlerTest : RobolectricTest() {
       ReflectionHelpers.getField<TreeSet<DataType>>(syncSenderHandler, "dataSyncOrder")
     Assert.assertTrue(originalDataSyncOrder.contains(groupDataType))
 
-    syncSenderHandler.sendJsonDataManifest(
-      DataType(name = entity, type = DataType.Filetype.JSON, position = 0)
-    )
+    runBlocking {
+      syncSenderHandler.sendJsonDataManifest(
+        DataType(name = entity, type = DataType.Filetype.JSON, position = 0)
+      )
+    }
 
     val updatedRemainingLastRecordIds =
       ReflectionHelpers.getField<HashMap<String, Long>>(syncSenderHandler, "remainingLastRecordIds")
@@ -193,7 +198,9 @@ class SyncSenderHandlerTest : RobolectricTest() {
   @Test
   fun `sendNextManifest() calls sendJsonDataManifest() when dataSyncOrder is not empty`() {
     syncSenderHandler.sendNextManifest()
-    verify(exactly = 1) { syncSenderHandler.sendJsonDataManifest(dataSyncOrder.first()) }
+    verify(exactly = 1) {
+      runBlocking { syncSenderHandler.sendJsonDataManifest(dataSyncOrder.first()) }
+    }
   }
 
   @Test

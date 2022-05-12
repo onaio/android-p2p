@@ -18,6 +18,9 @@ package org.smartregister.p2p.data_sharing
 import androidx.annotation.NonNull
 import androidx.annotation.Nullable
 import java.util.TreeSet
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.model.P2PReceivedHistory
 import org.smartregister.p2p.payload.BytePayload
@@ -41,7 +44,7 @@ constructor(
   private var sendingSyncCompleteManifest = false
 
   fun startSyncProcess() {
-    Timber.e("Start sync process")
+    Timber.i("Start sync process")
     generateRecordsToSend()
     sendNextManifest()
   }
@@ -62,9 +65,9 @@ constructor(
   }
 
   fun sendNextManifest() {
-    Timber.e("in send next manifest")
+    Timber.i("in send next manifest")
     if (!dataSyncOrder.isEmpty()) {
-      sendJsonDataManifest(dataSyncOrder.first())
+      runBlocking { sendJsonDataManifest(dataSyncOrder.first()) }
     } else {
       val manifest =
         Manifest(
@@ -79,48 +82,50 @@ constructor(
     }
   }
 
-  fun sendJsonDataManifest(@NonNull dataType: DataType) {
-    Timber.e("Sending json manifest")
+  suspend fun sendJsonDataManifest(@NonNull dataType: DataType) {
+    Timber.i("Sending json manifest")
     val nullableRecordId = remainingLastRecordIds[dataType.name]
     val lastRecordId = nullableRecordId ?: 0L
-    // TODO run this is background
-    val jsonData =
-      P2PLibrary.getInstance()
-        .getSenderTransferDao()
-        ?.getJsonData(dataType, lastRecordId, batchSize)!!
 
-    // send actual manifest
+    withContext(Dispatchers.IO) {
+      val jsonData =
+        P2PLibrary.getInstance()
+          .getSenderTransferDao()
+          ?.getJsonData(dataType, lastRecordId, batchSize)!!
 
-    if (jsonData != null && (jsonData.getJsonArray()?.length()!! > 0)) {
-      Timber.e("Json data is has content")
-      val recordsArray = jsonData.getJsonArray()
+      // send actual manifest
 
-      remainingLastRecordIds[dataType.name] = jsonData.getHighestRecordId()
-      Timber.e("remaining records last updated is ${remainingLastRecordIds[dataType.name]}")
+      if (jsonData != null && (jsonData.getJsonArray()?.length()!! > 0)) {
+        Timber.i("Json data is has content")
+        val recordsArray = jsonData.getJsonArray()
 
-      val recordsJsonString = recordsArray.toString()
-      awaitingDataTypeRecordsBatchSize = recordsArray!!.length()
-      awaitingPayload =
-        BytePayload(
-          recordsArray.toString().toByteArray(),
-        )
+        remainingLastRecordIds[dataType.name] = jsonData.getHighestRecordId()
+        Timber.i("remaining records last updated is ${remainingLastRecordIds[dataType.name]}")
 
-      if (recordsJsonString.isNotBlank()) {
-
-        val manifest =
-          Manifest(
-            dataType = dataType,
-            recordsSize = awaitingDataTypeRecordsBatchSize,
-            payloadSize = recordsJsonString.length
+        val recordsJsonString = recordsArray.toString()
+        awaitingDataTypeRecordsBatchSize = recordsArray!!.length()
+        awaitingPayload =
+          BytePayload(
+            recordsArray.toString().toByteArray(),
           )
 
-        p2PSenderViewModel.sendManifest(manifest = manifest)
+        if (recordsJsonString.isNotBlank()) {
+
+          val manifest =
+            Manifest(
+              dataType = dataType,
+              recordsSize = awaitingDataTypeRecordsBatchSize,
+              payloadSize = recordsJsonString.length
+            )
+
+          p2PSenderViewModel.sendManifest(manifest = manifest)
+        }
+      } else {
+        // signifies all data has been sent
+        Timber.i("Json data is null")
+        dataSyncOrder.remove(dataType)
+        sendNextManifest()
       }
-    } else {
-      // signifies all data has been sent
-      Timber.e("Json data is null")
-      dataSyncOrder.remove(dataType)
-      sendNextManifest()
     }
   }
 
