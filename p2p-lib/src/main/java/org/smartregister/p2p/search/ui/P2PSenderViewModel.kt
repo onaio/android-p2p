@@ -149,7 +149,7 @@ class P2PSenderViewModel(
       object : DataSharingStrategy.OperationListener {
         override fun onSuccess(device: DeviceInfo?) {
           Timber.e("Chunk data sent successfully")
-          syncSenderHandler.sendNextManifest()
+          viewModelScope.launch(Dispatchers.IO) { syncSenderHandler.sendNextManifest() }
         }
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
@@ -205,7 +205,7 @@ class P2PSenderViewModel(
 
     if (!dataTypes.isEmpty()) {
       Timber.e("Process received history json data not null")
-      syncSenderHandler.startSyncProcess()
+      viewModelScope.launch(Dispatchers.IO) { syncSenderHandler.startSyncProcess() }
     } else {
       Timber.e("Process received history json data null")
       sendSyncComplete()
