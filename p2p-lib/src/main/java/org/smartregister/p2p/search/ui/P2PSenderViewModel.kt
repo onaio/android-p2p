@@ -17,6 +17,7 @@ package org.smartregister.p2p.search.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
@@ -151,7 +152,7 @@ class P2PSenderViewModel(
       object : DataSharingStrategy.OperationListener {
         override fun onSuccess(device: DeviceInfo?) {
           Timber.e("Chunk data sent successfully")
-          syncSenderHandler.sendNextManifest()
+          viewModelScope.launch(Dispatchers.IO) { syncSenderHandler.sendNextManifest() }
         }
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
@@ -208,7 +209,7 @@ class P2PSenderViewModel(
 
       if (!dataTypes.isEmpty()) {
         Timber.e("Process received history json data not null")
-        syncSenderHandler.startSyncProcess()
+        viewModelScope.launch(Dispatchers.IO) { syncSenderHandler.startSyncProcess() }
       } else {
         Timber.e("Process received history json data null")
         sendSyncComplete()
