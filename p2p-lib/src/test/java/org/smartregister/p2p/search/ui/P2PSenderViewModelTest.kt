@@ -124,6 +124,31 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun `sendDeviceDetails() should call processReceivedHistory() when device details map is sent successfully and received history is received`() {
+    every { dataSharingStrategy.send(deviceInfo, any(), any()) } just runs
+    every { dataSharingStrategy.receive(deviceInfo, any(), any()) } just runs
+    every { p2PSenderViewModel.processReceivedHistory(any()) } just runs
+    p2PSenderViewModel.sendDeviceDetails(deviceInfo)
+
+    val payloadSlot = slot<PayloadContract<out Any>>()
+    val operationListenerSlot = slot<DataSharingStrategy.OperationListener>()
+    verify {
+      dataSharingStrategy.send(deviceInfo, capture(payloadSlot), capture(operationListenerSlot))
+    }
+
+    operationListenerSlot.captured.onSuccess(deviceInfo)
+
+    val payloadReceiptListenerSlot = slot<DataSharingStrategy.PayloadReceiptListener>()
+
+    verify { dataSharingStrategy.receive(deviceInfo, capture(payloadReceiptListenerSlot), any()) }
+
+    val receivedHistoryPayload = StringPayload("")
+    payloadReceiptListenerSlot.captured.onPayloadReceived(receivedHistoryPayload)
+
+    verify { p2PSenderViewModel.processReceivedHistory(receivedHistoryPayload) }
+  }
+
+  @Test
   fun `requestSyncParams() should call dataSharingStrategy#send() with SEND_SYNC_PARAMS payload`() {
     every { dataSharingStrategy.send(any(), any(), any()) } just runs
     p2PSenderViewModel.requestSyncParams(deviceInfo)
