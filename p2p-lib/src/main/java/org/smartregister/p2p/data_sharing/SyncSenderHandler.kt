@@ -35,11 +35,8 @@ constructor(
 ) {
   private val remainingLastRecordIds = HashMap<String, Long>()
   private val batchSize = 25
-  private var awaitingDataTypeName: String? = null
-  private var awaitingDataTypeHighestId: Long = 0
   private var awaitingDataTypeRecordsBatchSize = 0
 
-  private var awaitingManifestTransfer = false
   private lateinit var awaitingPayload: PayloadContract<out Any>
   private var sendingSyncCompleteManifest = false
 
@@ -49,12 +46,12 @@ constructor(
     sendNextManifest()
   }
 
-  private fun generateRecordsToSend() {
+  fun generateRecordsToSend() {
     for (dataType in dataSyncOrder) {
       remainingLastRecordIds[dataType.name] = 0L
     }
 
-    if (receivedHistory != null && receivedHistory.size > 0) {
+    if (receivedHistory != null && receivedHistory.isNotEmpty()) {
       for (dataTypeHistory in receivedHistory) {
         if (dataTypeHistory.lastUpdatedAt == 0L) {
           continue
@@ -102,8 +99,6 @@ constructor(
       Timber.e("remaining records last updated is ${remainingLastRecordIds[dataType.name]}")
 
       val recordsJsonString = recordsArray.toString()
-      awaitingDataTypeName = dataType.name
-      awaitingDataTypeHighestId = jsonData.getHighestRecordId()
       awaitingDataTypeRecordsBatchSize = recordsArray!!.length()
       awaitingPayload =
         BytePayload(
@@ -119,8 +114,6 @@ constructor(
             payloadSize = recordsJsonString.length
           )
 
-        awaitingManifestTransfer = true
-
         p2PSenderViewModel.sendManifest(manifest = manifest)
       }
     } else {
@@ -133,7 +126,6 @@ constructor(
 
   fun processManifestSent() {
     if (sendingSyncCompleteManifest) {
-      // p2PSenderViewModel.sendSyncComplete()
       sendingSyncCompleteManifest = false
     } else {
       p2PSenderViewModel.sendChunkData(awaitingPayload)
