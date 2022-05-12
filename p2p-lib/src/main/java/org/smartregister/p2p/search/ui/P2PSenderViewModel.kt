@@ -17,10 +17,10 @@ package org.smartregister.p2p.search.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.smartregister.p2p.P2PLibrary
@@ -100,12 +100,6 @@ class P2PSenderViewModel(
     // and their last update times which can be sent using a simple string command,
     // 'SEND_SYNC_PARAMS', and the **app_lifetime_key**
 
-    /*   val deviceInfo: MutableMap<String, String?> = HashMap()
-    deviceInfo[Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY] =
-      P2PLibrary.getInstance()!!.getHashKey()
-    deviceInfo[Constants.BasicDeviceDetails.KEY_DEVICE_ID] =
-      P2PLibrary.getInstance()!!.getDeviceUniqueIdentifier()*/
-
     dataSharingStrategy.send(
       device = dataSharingStrategy.getCurrentDevice()
       /** Find out how to get this */
@@ -115,16 +109,20 @@ class P2PSenderViewModel(
           Gson().toJson(Constants.SEND_SYNC_PARAMS),
         ),
       object : DataSharingStrategy.OperationListener {
-        override fun onSuccess(device: DeviceInfo?) {}
+        override fun onSuccess(device: DeviceInfo?) {
+          Timber.i("Send sync params request sent successfully")
+        }
 
-        override fun onFailure(device: DeviceInfo?, ex: Exception) {}
+        override fun onFailure(device: DeviceInfo?, ex: Exception) {
+          Timber.e(ex)
+        }
       }
     )
   }
 
   override fun sendSyncComplete() {
     Timber.e("P2P sync complete")
-    GlobalScope.launch {
+    viewModelScope.launch {
       withContext(Dispatchers.Main) { view.showTransferCompleteDialog() }
       dataSharingStrategy.disconnect(
         getCurrentConnectedDevice()!!,
@@ -191,33 +189,31 @@ class P2PSenderViewModel(
     connectionLevel = Constants.ConnectionLevel.RECEIPT_OF_RECEIVED_HISTORY
 
     // Handle non empty payload
-    if (syncPayload != null) {
-      val receivedHistoryListType = object : TypeToken<List<P2PReceivedHistory?>?>() {}.type
-      val receivedHistory: List<P2PReceivedHistory> =
-        Gson().fromJson(syncPayload.string, receivedHistoryListType)
+    val receivedHistoryListType = object : TypeToken<List<P2PReceivedHistory?>?>() {}.type
+    val receivedHistory: List<P2PReceivedHistory> =
+      Gson().fromJson(syncPayload.string, receivedHistoryListType)
 
-      // TODO run this is background
-      val dataTypes = P2PLibrary.getInstance().getSenderTransferDao().getP2PDataTypes()
+    // TODO run this is background
+    val dataTypes = P2PLibrary.getInstance().getSenderTransferDao().getP2PDataTypes()
 
-      syncSenderHandler =
-        SyncSenderHandler(
-          p2PSenderViewModel = this,
-          dataSyncOrder = dataTypes,
-          receivedHistory = receivedHistory
-        )
+    syncSenderHandler =
+      SyncSenderHandler(
+        p2PSenderViewModel = this,
+        dataSyncOrder = dataTypes,
+        receivedHistory = receivedHistory
+      )
 
-      if (!dataTypes.isEmpty()) {
-        Timber.e("Process received history json data not null")
-        syncSenderHandler.startSyncProcess()
-      } else {
-        Timber.e("Process received history json data null")
-        sendSyncComplete()
-      }
+    if (!dataTypes.isEmpty()) {
+      Timber.e("Process received history json data not null")
+      syncSenderHandler.startSyncProcess()
+    } else {
+      Timber.e("Process received history json data null")
+      sendSyncComplete()
     }
   }
 
   fun updateSenderSyncComplete(senderSyncComplete: Boolean) {
-    GlobalScope.launch {
+    viewModelScope.launch {
       withContext(Dispatchers.Main) { view.senderSyncComplete(senderSyncComplete) }
     }
   }
