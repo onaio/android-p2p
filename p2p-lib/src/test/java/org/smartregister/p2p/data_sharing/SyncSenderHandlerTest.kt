@@ -16,8 +16,11 @@
 package org.smartregister.p2p.data_sharing
 
 import io.mockk.clearAllMocks
+import io.mockk.coVerify
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
@@ -107,7 +110,7 @@ class SyncSenderHandlerTest : RobolectricTest() {
     every { history.lastUpdatedAt } answers { lastUpdatedAt }
     receivedHistory = listOf(history)
     dataSyncOrder = getDataTypes()
-    every { p2PSenderViewModel.sendManifest(any()) } answers { null }
+    every { p2PSenderViewModel.sendManifest(any()) } just runs
     syncSenderHandler =
       spyk(
         SyncSenderHandler(
@@ -164,7 +167,7 @@ class SyncSenderHandlerTest : RobolectricTest() {
     val jsonData = JsonData(jsonArray = jsonArray, highestRecordId = lastUpdatedAt)
     val groupDataType = DataType(name = entity, DataType.Filetype.JSON, 0)
     every { senderTransferDao.getJsonData(any(), any(), any()) } answers { jsonData }
-    every { syncSenderHandler.sendNextManifest() } answers { null }
+    every { syncSenderHandler.sendNextManifest() } just runs
 
     val originalRemainingLastRecordIds =
       ReflectionHelpers.getField<HashMap<String, Long>>(syncSenderHandler, "remainingLastRecordIds")
@@ -198,17 +201,15 @@ class SyncSenderHandlerTest : RobolectricTest() {
   @Test
   fun `sendNextManifest() calls sendJsonDataManifest() when dataSyncOrder is not empty`() {
     syncSenderHandler.sendNextManifest()
-    verify(exactly = 1) {
-      runBlocking { syncSenderHandler.sendJsonDataManifest(dataSyncOrder.first()) }
-    }
+    coVerify(exactly = 1) { syncSenderHandler.sendJsonDataManifest(dataSyncOrder.first()) }
   }
 
   @Test
   fun `sendNextManifest() calls p2PSenderViewModel#sendManifest() and p2PSenderViewModel#updateSenderSyncComplete() when dataSyncOrder is empty`() {
     dataSyncOrder.clear()
     ReflectionHelpers.setField(syncSenderHandler, "dataSyncOrder", dataSyncOrder)
-    every { p2PSenderViewModel.updateSenderSyncComplete(any()) } answers { null }
-    every { p2PSenderViewModel.sendManifest(any()) } answers { null }
+    every { p2PSenderViewModel.updateSenderSyncComplete(any()) } just runs
+    every { p2PSenderViewModel.sendManifest(any()) } just runs
 
     syncSenderHandler.sendNextManifest()
     val saveBooleanSlot = slot<Boolean>()
@@ -227,7 +228,7 @@ class SyncSenderHandlerTest : RobolectricTest() {
   fun `processManifestSent() calls p2PSenderViewModel#sendChunkData() when sendingSyncCompleteManifest is false`() {
     val awaitingPayload = BytePayload(groupResourceString.toByteArray())
     ReflectionHelpers.setField(syncSenderHandler, "awaitingPayload", awaitingPayload)
-    every { p2PSenderViewModel.sendChunkData(any()) } answers { null }
+    every { p2PSenderViewModel.sendChunkData(any()) } just runs
     syncSenderHandler.processManifestSent()
     verify(exactly = 1) { p2PSenderViewModel.sendChunkData(awaitingPayload) }
   }
@@ -237,7 +238,7 @@ class SyncSenderHandlerTest : RobolectricTest() {
     ReflectionHelpers.setField(syncSenderHandler, "sendingSyncCompleteManifest", true)
     val awaitingPayload = BytePayload(groupResourceString.toByteArray())
     ReflectionHelpers.setField(syncSenderHandler, "awaitingPayload", awaitingPayload)
-    every { p2PSenderViewModel.sendChunkData(any()) } answers { null }
+    every { p2PSenderViewModel.sendChunkData(any()) } just runs
     syncSenderHandler.processManifestSent()
     verify(exactly = 0) { p2PSenderViewModel.sendChunkData(awaitingPayload) }
 

@@ -82,7 +82,7 @@ constructor(
     }
   }
 
-  suspend fun sendJsonDataManifest(@NonNull dataType: DataType) {
+  suspend fun sendJsonDataManifest(dataType: DataType) {
     Timber.i("Sending json manifest")
     val nullableRecordId = remainingLastRecordIds[dataType.name]
     val lastRecordId = nullableRecordId ?: 0L
