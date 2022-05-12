@@ -19,7 +19,6 @@ import androidx.annotation.NonNull
 import androidx.annotation.Nullable
 import java.util.TreeSet
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.model.P2PReceivedHistory
@@ -43,7 +42,7 @@ constructor(
   private lateinit var awaitingPayload: PayloadContract<out Any>
   private var sendingSyncCompleteManifest = false
 
-  fun startSyncProcess() {
+  suspend fun startSyncProcess() {
     Timber.i("Start sync process")
     generateRecordsToSend()
     sendNextManifest()
@@ -64,10 +63,10 @@ constructor(
     }
   }
 
-  fun sendNextManifest() {
+  suspend fun sendNextManifest() {
     Timber.i("in send next manifest")
     if (!dataSyncOrder.isEmpty()) {
-      runBlocking { sendJsonDataManifest(dataSyncOrder.first()) }
+      sendJsonDataManifest(dataSyncOrder.first())
     } else {
       val manifest =
         Manifest(

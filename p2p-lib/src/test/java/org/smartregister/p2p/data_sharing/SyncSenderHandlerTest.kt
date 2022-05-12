@@ -16,6 +16,7 @@
 package org.smartregister.p2p.data_sharing
 
 import io.mockk.clearAllMocks
+import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
@@ -123,9 +124,9 @@ class SyncSenderHandlerTest : RobolectricTest() {
 
   @Test
   fun `startSyncProcess() calls generateRecordsToSend() and sendNextManifest()`() {
-    syncSenderHandler.startSyncProcess()
+    runBlocking { syncSenderHandler.startSyncProcess() }
     verify(exactly = 1) { syncSenderHandler.generateRecordsToSend() }
-    verify(exactly = 1) { syncSenderHandler.sendNextManifest() }
+    coVerify(exactly = 1) { syncSenderHandler.sendNextManifest() }
   }
 
   @Test
@@ -167,7 +168,7 @@ class SyncSenderHandlerTest : RobolectricTest() {
     val jsonData = JsonData(jsonArray = jsonArray, highestRecordId = lastUpdatedAt)
     val groupDataType = DataType(name = entity, DataType.Filetype.JSON, 0)
     every { senderTransferDao.getJsonData(any(), any(), any()) } answers { jsonData }
-    every { syncSenderHandler.sendNextManifest() } just runs
+    coEvery { syncSenderHandler.sendNextManifest() } just runs
 
     val originalRemainingLastRecordIds =
       ReflectionHelpers.getField<HashMap<String, Long>>(syncSenderHandler, "remainingLastRecordIds")
@@ -195,12 +196,12 @@ class SyncSenderHandlerTest : RobolectricTest() {
       ReflectionHelpers.getField<TreeSet<DataType>>(syncSenderHandler, "dataSyncOrder")
     Assert.assertFalse(updatedDataSyncOrder.contains(groupDataType))
 
-    verify(exactly = 1) { syncSenderHandler.sendNextManifest() }
+    coVerify(exactly = 1) { syncSenderHandler.sendNextManifest() }
   }
 
   @Test
   fun `sendNextManifest() calls sendJsonDataManifest() when dataSyncOrder is not empty`() {
-    syncSenderHandler.sendNextManifest()
+    runBlocking { syncSenderHandler.sendNextManifest() }
     coVerify(exactly = 1) { syncSenderHandler.sendJsonDataManifest(dataSyncOrder.first()) }
   }
 
@@ -211,7 +212,7 @@ class SyncSenderHandlerTest : RobolectricTest() {
     every { p2PSenderViewModel.updateSenderSyncComplete(any()) } just runs
     every { p2PSenderViewModel.sendManifest(any()) } just runs
 
-    syncSenderHandler.sendNextManifest()
+    runBlocking { syncSenderHandler.sendNextManifest() }
     val saveBooleanSlot = slot<Boolean>()
     verify(exactly = 1) { p2PSenderViewModel.updateSenderSyncComplete(capture(saveBooleanSlot)) }
     Assert.assertTrue(saveBooleanSlot.captured)
