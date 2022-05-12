@@ -19,6 +19,8 @@ import android.net.wifi.p2p.WifiP2pDevice
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
 import com.google.gson.Gson
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -192,7 +194,7 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
     ReflectionHelpers.setField(p2PSenderViewModel, "syncSenderHandler", syncSenderHandler)
     val payload = StringPayload("[]")
     every { dataSharingStrategy.send(any(), any(), any()) } just runs
-    every { syncSenderHandler.sendNextManifest() } just runs
+    coEvery { syncSenderHandler.sendNextManifest() } just runs
 
     p2PSenderViewModel.sendChunkData(payload)
 
@@ -201,7 +203,7 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
     verify { dataSharingStrategy.send(deviceInfo, payload, capture(operationListener)) }
     operationListener.captured.onSuccess(deviceInfo)
 
-    verify { syncSenderHandler.sendNextManifest() }
+    coVerify { syncSenderHandler.sendNextManifest() }
   }
 
   @Test
@@ -231,7 +233,7 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
 
     every { p2pSenderTransferDao.getJsonData(any(), any(), any()) } returns JsonData(JSONArray(), 0)
     every { p2pSenderTransferDao.getP2PDataTypes() } returns dataTypes
-    every { syncSenderHandler.startSyncProcess() } just runs
+    coEvery { syncSenderHandler.startSyncProcess() } just runs
     every { dataSharingStrategy.sendManifest(any(), any(), any()) } just runs
     every { view.senderSyncComplete(any()) } just runs
 
