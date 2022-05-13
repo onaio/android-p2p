@@ -42,7 +42,7 @@ class SyncReceiverHandler constructor(@NonNull val p2PReceiverViewModel: P2PRece
   }
 
   fun processData(data: JSONArray) {
-    Timber.e("Processing chunk data")
+    Timber.i("Processing chunk data")
 
     var lastUpdatedAt =
       P2PLibrary.getInstance().getReceiverTransferDao().receiveJson(currentManifest.dataType, data)
@@ -54,20 +54,20 @@ class SyncReceiverHandler constructor(@NonNull val p2PReceiverViewModel: P2PRece
 
   fun updateLastRecord(@NonNull entityType: String, lastUpdatedAt: Long) {
     // Retrieve sending device details
-    val sendingDeviceId = p2PReceiverViewModel.getSendingDeviceAppLifetimeKey()
+    val sendingDeviceAppLifetimeKey = p2PReceiverViewModel.getSendingDeviceAppLifetimeKey()
 
-    if (sendingDeviceId.isNotBlank()) {
+    if (sendingDeviceAppLifetimeKey.isNotBlank()) {
       val p2pReceivedHistoryDao: P2pReceivedHistoryDao? =
         P2PLibrary.getInstance()!!.getDb()?.p2pReceivedHistoryDao()
 
       var receivedHistory: P2PReceivedHistory? =
-        p2pReceivedHistoryDao?.getHistory(sendingDeviceId, entityType)
+        p2pReceivedHistoryDao?.getHistory(sendingDeviceAppLifetimeKey, entityType)
 
       if (receivedHistory == null) {
         receivedHistory = P2PReceivedHistory()
         receivedHistory.lastUpdatedAt = lastUpdatedAt
         receivedHistory.entityType = entityType
-        receivedHistory.appLifetimeKey = sendingDeviceId
+        receivedHistory.appLifetimeKey = sendingDeviceAppLifetimeKey
         p2pReceivedHistoryDao?.addReceivedHistory(receivedHistory)
       } else {
         receivedHistory.lastUpdatedAt = lastUpdatedAt
