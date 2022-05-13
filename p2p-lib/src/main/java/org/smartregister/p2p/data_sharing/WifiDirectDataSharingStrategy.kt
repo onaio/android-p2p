@@ -83,9 +83,6 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     onDeviceFound: OnDeviceFound,
     onConnected: DataSharingStrategy.PairingListener
   ) {
-    // Wifi P2p
-
-    // renameWifiDirectName();
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       requestAccessFineLocationIfNotGranted()
     }
@@ -355,11 +352,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
         Exception("Error sending to ${p2pDevice.deviceName}(${p2pDevice.deviceAddress}): $errorMsg")
       )
       return
-    } /*
-
-      val sendingLogic = fun() {
-        send(device, syncPayload, operationListener)
-      }*/
+    }
 
     GlobalScope.launch {
       makeSocketConnections(wifiP2pInfo!!.groupOwnerAddress.hostAddress) { socket ->
@@ -450,9 +443,6 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   private suspend fun acceptConnectionsToServerSocket(): Socket? =
     withContext(Dispatchers.IO) {
       try {
-        /*ServerSocket(PORT).use { server ->
-          server.accept().use { socket -> transmit(sender, socket) }
-        }*/
         val serverSocket = ServerSocket(PORT)
         serverSocket.accept().apply { constructStreamsFromSocket(this) }
       } catch (e: Exception) {
@@ -514,11 +504,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
         device,
         Exception("Error sending to ${p2pDevice.deviceName}(${p2pDevice.deviceAddress}): $errorMsg")
       )
-    } /*
-
-      val sendingLogic = fun() {
-        send(device, syncPayload, operationListener)
-      }*/
+    }
 
     GlobalScope.launch {
       makeSocketConnections(wifiP2pInfo!!.groupOwnerAddress.hostAddress) { socket ->
@@ -694,10 +680,6 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       "Connection info available: groupFormed = ${info.groupFormed}, isGroupOwner = ${info.isGroupOwner}"
     Timber.d(message)
     wifiP2pInfo = info
-    /*if (info.groupFormed && !isSender) {
-      // Start syncing given the ip addresses
-      showReceiverDialog()
-    }*/
 
     if (info.groupFormed && wifiP2pGroup != null) {
       this.wifiP2pGroup = wifiP2pGroup
