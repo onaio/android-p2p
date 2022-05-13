@@ -33,10 +33,12 @@ import org.json.JSONArray
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Ignore
+import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
+import org.smartregister.p2p.CoroutineTestRule
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.dao.ReceiverTransferDao
 import org.smartregister.p2p.dao.SenderTransferDao
@@ -57,6 +59,8 @@ import org.smartregister.p2p.utils.Constants
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 10-05-2022. */
 @Config(shadows = [ShadowAppDatabase::class])
 internal class P2PSenderViewModelTest : RobolectricTest() {
+
+  @get:Rule var coroutinesTestRule = CoroutineTestRule()
 
   lateinit var p2PSenderViewModel: P2PSenderViewModel
   lateinit var view: P2pModeSelectContract.View
