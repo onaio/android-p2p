@@ -63,12 +63,7 @@ import timber.log.Timber
  * called from other apps via [startP2PScreen] function.
  */
 class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View {
-  /*
-  private val wifiP2pManager: WifiP2pManager by lazy(LazyThreadSafetyMode.NONE) {
-    getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager
-  }
-  private var wifiP2pChannel: WifiP2pManager.Channel? = null
-  private var wifiP2pReceiver: BroadcastReceiver? = null*/
+
   private val accessFineLocationPermissionRequestInt: Int = 12345
   private val p2PReceiverViewModel by viewModels<P2PReceiverViewModel> {
     P2PReceiverViewModel.Factory(context = this, dataSharingStrategy = dataSharingStrategy)
@@ -113,22 +108,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
   }
 
   fun startScanning() {
-    // Wifi P2p
-    /*wifiP2pChannel = wifiP2pManager.initialize(this, mainLooper, null)
-    wifiP2pChannel?.also { channel ->
-      wifiP2pReceiver = WifiP2pBroadcastReceiver(wifiP2pManager, channel, this, this)
-    }
-
-    // renameWifiDirectName();
-
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      requestAccessFineLocationIfNotGranted()
-    }
-
-    listenForWifiP2pIntents()
-    initiatePeerDiscovery()
-    */
-
     keepScreenOn(true)
     dataSharingStrategy.searchDevices(
       object : OnDeviceFound {
@@ -204,11 +183,8 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     result.addOnSuccessListener(
       this,
       OnSuccessListener<LocationSettingsResponse?> {
-        /*Toast.makeText(this@P2PDeviceSearchActivity, "addOnSuccessListener", Toast.LENGTH_SHORT)
-        .show()*/
         // All location settings are satisfied. The client can initialize
         // location requests here.
-        // ...
         startScanning()
       }
     )
@@ -233,12 +209,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
         }
       }
     )
-
-    /*val locationEnabled = LocationManagerCompat.isLocationEnabled()
-
-    if (!locationEnabled) {
-
-    }*/
   }
 
   fun createLocationRequest(): LocationRequest {
@@ -257,7 +227,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     }
   }
 
-  /*
+  /* DO NOT DELETE THIS ->> FOR USE LATER
   fun renameWifiDirectName() {
     val deviceName = getDeviceName(this)
 
@@ -313,13 +283,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
   override fun onResume() {
     super.onResume()
 
-    /*if (scanning) {
-      listenForWifiP2pIntents()
-      initiatePeerDiscoveryOnceAccessFineLocationGranted()
-      requestDeviceInfo()
-      requestConnectionInfo()
-    }*/
-
     dataSharingStrategy.onResume(isScanning = scanning)
   }
 
@@ -348,95 +311,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
       }
     }
   }
-  /*
-  override fun onRequestPermissionsResult(
-    requestCode: Int,
-    permissions: Array<String>,
-    grantResults: IntArray
-  ) {
-    if (requestCode == accessFineLocationPermissionRequestInt) {
-      val accessFineLocationPermissionIndex =
-        permissions.indexOfFirst { it == Manifest.permission.ACCESS_FINE_LOCATION }
-      if (grantResults[accessFineLocationPermissionIndex] == PackageManager.PERMISSION_GRANTED) {
-        return logDebug("Wifi P2P: Access fine location granted")
-      }
-    }
-  }
-
-  override fun handleWifiP2pDisabled() {
-    val message = "Wifi P2P: Disabled"
-    Snackbar.make(rootView, message, Snackbar.LENGTH_LONG).show()
-    Timber.d(message)
-  }
-
-  override fun handleWifiP2pEnabled() {
-    val message = "Wifi P2P: Enabled"
-    Timber.d(message)
-  }
-
-  override fun handleUnexpectedWifiP2pState(wifiState: Int) {
-    val message = "Wifi P2P: Unexpected state: $wifiState"
-    Timber.d(message)
-  }
-
-  override fun handleWifiP2pDevice(device: WifiP2pDevice) {
-    if (device.deviceName != getDeviceName(this)) {
-      // renameWifiDirectName()
-    }
-
-    Timber.d("Wifi P2P: Device: ${device.deviceAddress}")
-  }
-
-  private fun initiatePeerDiscovery() {
-    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
-        PackageManager.PERMISSION_GRANTED
-    ) {
-      return handleAccessFineLocationNotGranted()
-    }
-
-    wifiP2pManager.discoverPeers(
-      wifiP2pChannel,
-      object : WifiP2pManager.ActionListener {
-        override fun onSuccess() {
-          handleP2pDiscoverySuccess()
-        }
-
-        override fun onFailure(reason: Int) {
-          handleP2pDiscoveryFailure(reason)
-        }
-      }
-    )
-    Timber.d("Peer discovery initiated")
-  }
-
-  private fun handleP2pDiscoverySuccess() {
-    val message = "Wifi P2P: Peer discovery succeeded"
-    Timber.d(message)
-  }
-
-  private fun handleP2pDiscoveryFailure(reasonInt: Int) {
-    val reason = getWifiP2pReason(reasonInt)
-    val message = "Wifi P2P: Peer discovery failed: $reason"
-    Snackbar.make(rootView, message, Snackbar.LENGTH_LONG).show()
-    Timber.d(message)
-  }
-
-  override fun handleP2pDiscoveryStarted() {
-    Timber.d("Wifi P2P: Peer discovery started")
-  }
-
-  override fun handleP2pDiscoveryStopped() {
-    Timber.d("Wifi P2P: Peer discovery stopped")
-  }
-
-  override fun handleUnexpectedWifiP2pDiscoveryState(discoveryState: Int) {
-    Timber.d("Wifi P2P: Unexpected discovery state: $discoveryState")
-  }
-
-  override fun handleP2pPeersChanged(peerDeviceList: WifiP2pDeviceList) {
-    Timber.d("Wifi P2P: Peers x ${peerDeviceList.deviceList.size}")
-    showDevicesList(peerDeviceList)
-  }*/
 
   fun showScanningDialog() {
     interactiveDialog = BottomSheetDialog(this)
@@ -631,63 +505,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
       interactiveDialog = BottomSheetDialog(this)
     }
   }
-  /*
-  private fun connectToDevice(device: WifiP2pDevice) {
-    Timber.d("Wifi P2P: Initiating connection to device: ${device.deviceName}")
-    isSender = true
-    val wifiP2pConfig = WifiP2pConfig().apply { deviceAddress = device.deviceAddress }
-    wifiP2pChannel?.also { wifiP2pChannel ->
-      if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
-          PackageManager.PERMISSION_GRANTED
-      ) {
-        return handleAccessFineLocationNotGranted()
-      }
-      wifiP2pManager.connect(
-        wifiP2pChannel,
-        wifiP2pConfig,
-        object : WifiP2pManager.ActionListener {
-          override fun onSuccess() {
-            handleDeviceConnectionSuccess(device)
-          }
-
-          override fun onFailure(reason: Int) {
-            handleDeviceConnectionFailure(device, reason)
-          }
-        }
-      )
-    }
-  }
-
-  private fun handleDeviceConnectionSuccess(device: WifiP2pDevice) {
-    Timber.d("Wifi P2P: Successfully connected to device: ${device.deviceAddress}")
-    currentConnectedDevice = DeviceInfo(device)
-    showP2PSelectPage(getDeviceRole(), device.deviceName)
-  }
-
-  private fun handleDeviceConnectionFailure(device: WifiP2pDevice, reasonInt: Int) {
-    val reason = getWifiP2pReason(reasonInt)
-    Timber.d("Wifi P2P: Failed to connect to device: ${device.deviceAddress} due to: $reason")
-  }
-
-  override fun handleAccessFineLocationNotGranted() {
-    val message = "Wifi P2P: Access fine location permission not granted"
-    Snackbar.make(rootView, message, Snackbar.LENGTH_LONG).show()
-    Timber.d(message)
-  }
-
-  override fun handleMinimumSDKVersionNotMet(minimumSdkVersion: Int) {
-    logDebug("Wifi P2P: Minimum SDK Version not met: $minimumSdkVersion")
-  }
-
-  override fun onConnectionInfoAvailable(info: WifiP2pInfo, wifiP2pGroup: WifiP2pGroup?) {
-    val message =
-      "Connection info available: groupFormed = ${info.groupFormed}, isGroupOwner = ${info.isGroupOwner}"
-    Timber.d(message)
-    if (info.groupFormed && !isSender) {
-      // Start syncing given the ip addresses
-      showReceiverDialog()
-    }
-  }*/
 
   override fun showP2PSelectPage(deviceRole: DeviceRole, deviceName: String) {
     rootView
@@ -704,20 +521,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
   override fun getDeviceRole(): DeviceRole {
     return if (isSender) DeviceRole.SENDER else DeviceRole.RECEIVER
   }
-  /*
-
-    override fun onConnectionInfoAvailable(info: WifiP2pInfo) {
-      onConnectionInfoAvailable(info, null)
-    }
-
-    private fun getWifiP2pReason(reasonInt: Int): String =
-      when (reasonInt) {
-        0 -> "Error"
-        1 -> "Unsupported"
-        2 -> "Busy"
-        else -> "Unknown"
-      }
-  */
 
   private fun logDebug(message: String) {
     Snackbar.make(rootView, message, Snackbar.LENGTH_SHORT).show()

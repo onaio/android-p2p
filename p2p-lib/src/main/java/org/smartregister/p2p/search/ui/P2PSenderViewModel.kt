@@ -101,12 +101,6 @@ class P2PSenderViewModel(
     // and their last update times which can be sent using a simple string command,
     // 'SEND_SYNC_PARAMS', and the **app_lifetime_key**
 
-    /*   val deviceInfo: MutableMap<String, String?> = HashMap()
-    deviceInfo[Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY] =
-      P2PLibrary.getInstance()!!.getHashKey()
-    deviceInfo[Constants.BasicDeviceDetails.KEY_DEVICE_ID] =
-      P2PLibrary.getInstance()!!.getDeviceUniqueIdentifier()*/
-
     dataSharingStrategy.send(
       device = dataSharingStrategy.getCurrentDevice()
       /** Find out how to get this */

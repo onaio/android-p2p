@@ -32,27 +32,18 @@ import org.smartregister.p2p.robolectric.RobolectricTest
 import org.smartregister.p2p.search.ui.P2PDeviceSearchActivity
 import org.smartregister.p2p.shadows.ShadowAppDatabase
 
-/*import org.smartregister.p2p.shadows.ShadowAppDatabase
-import org.smartregister.p2p.shadows.ShadowAppDatabase2*/
-
 /** Test for class [P2PDeviceSearchActivity] */
 @Config(shadows = [ShadowAppDatabase::class])
 class P2PDeviceSearchActivityTest : RobolectricTest() {
 
   // Fixes  Main looper has queued unexecuted runnables. This might be the cause of the test failure
   // error
-  // @get:Rule val activityRule = ActivityScenarioRule(P2PDeviceSearchActivity::class.java)
 
   private lateinit var p2PDeviceSearchActivity: P2PDeviceSearchActivity
   private lateinit var p2PDeviceSearchActivityController:
     ActivityController<P2PDeviceSearchActivity>
 
   private val GET_WIFI_P2P_REASON = "getWifiP2pReason"
-
-  /*@BeforeClass
-  fun setupBeforeClass() {
-    P2PLibrary.init(P2PLibrary.Options(RuntimeEnvironment.application, "password", "demo", mockk(), mockk()))
-  }*/
 
   @Before
   fun setUp() {
@@ -80,6 +71,7 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
     Assert.assertEquals(DeviceRole.SENDER, p2PDeviceSearchActivity.getDeviceRole())
   }
 
+  // TODO: Move this to WifiDirectDataSharingStrategyTest
   @Ignore
   @Test
   fun testGetWifiP2pReason() {
