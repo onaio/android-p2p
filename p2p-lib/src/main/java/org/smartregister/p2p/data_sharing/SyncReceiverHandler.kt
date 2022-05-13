@@ -16,7 +16,8 @@
 package org.smartregister.p2p.data_sharing
 
 import androidx.annotation.NonNull
-import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.dao.P2pReceivedHistoryDao
@@ -25,8 +26,7 @@ import org.smartregister.p2p.search.ui.P2PReceiverViewModel
 import org.smartregister.p2p.utils.Constants
 import timber.log.Timber
 
-class SyncReceiverHandler constructor(@NonNull val p2PReceiverViewModel: P2PReceiverViewModel) :
-  ViewModel() {
+class SyncReceiverHandler constructor(@NonNull val p2PReceiverViewModel: P2PReceiverViewModel) {
 
   private lateinit var currentManifest: Manifest
 
@@ -41,8 +41,8 @@ class SyncReceiverHandler constructor(@NonNull val p2PReceiverViewModel: P2PRece
     }
   }
 
-  fun processData(data: JSONArray) {
-    Timber.e("Processing chunk data")
+  suspend fun processData(data: JSONArray) {
+    Timber.i("Processing chunk data")
 
     var lastUpdatedAt =
       P2PLibrary.getInstance().getReceiverTransferDao().receiveJson(currentManifest.dataType, data)
@@ -52,26 +52,28 @@ class SyncReceiverHandler constructor(@NonNull val p2PReceiverViewModel: P2PRece
     p2PReceiverViewModel.processIncomingManifest()
   }
 
-  fun updateLastRecord(@NonNull entityType: String, lastUpdatedAt: Long) {
+  suspend fun updateLastRecord(@NonNull entityType: String, lastUpdatedAt: Long) {
     // Retrieve sending device details
-    val sendingDeviceId = p2PReceiverViewModel.getSendingDeviceAppLifetimeKey()
+    val sendingDeviceAppLifetimeKey = p2PReceiverViewModel.getSendingDeviceAppLifetimeKey()
 
-    if (sendingDeviceId.isNotBlank()) {
-      val p2pReceivedHistoryDao: P2pReceivedHistoryDao? =
-        P2PLibrary.getInstance()!!.getDb()?.p2pReceivedHistoryDao()
+    withContext(Dispatchers.IO) {
+      if (sendingDeviceAppLifetimeKey.isNotBlank()) {
+        val p2pReceivedHistoryDao: P2pReceivedHistoryDao? =
+          P2PLibrary.getInstance()!!.getDb()?.p2pReceivedHistoryDao()
 
-      var receivedHistory: P2PReceivedHistory? =
-        p2pReceivedHistoryDao?.getHistory(sendingDeviceId, entityType)
+        var receivedHistory: P2PReceivedHistory? =
+          p2pReceivedHistoryDao?.getHistory(sendingDeviceAppLifetimeKey, entityType)
 
-      if (receivedHistory == null) {
-        receivedHistory = P2PReceivedHistory()
-        receivedHistory.lastUpdatedAt = lastUpdatedAt
-        receivedHistory.entityType = entityType
-        receivedHistory.appLifetimeKey = sendingDeviceId
-        p2pReceivedHistoryDao?.addReceivedHistory(receivedHistory)
-      } else {
-        receivedHistory.lastUpdatedAt = lastUpdatedAt
-        p2pReceivedHistoryDao?.updateReceivedHistory(receivedHistory)
+        if (receivedHistory == null) {
+          receivedHistory = P2PReceivedHistory()
+          receivedHistory.lastUpdatedAt = lastUpdatedAt
+          receivedHistory.entityType = entityType
+          receivedHistory.appLifetimeKey = sendingDeviceAppLifetimeKey
+          p2pReceivedHistoryDao?.addReceivedHistory(receivedHistory)
+        } else {
+          receivedHistory.lastUpdatedAt = lastUpdatedAt
+          p2pReceivedHistoryDao?.updateReceivedHistory(receivedHistory)
+        }
       }
     }
   }
