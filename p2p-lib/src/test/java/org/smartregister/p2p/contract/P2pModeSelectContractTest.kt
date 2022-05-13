@@ -16,10 +16,7 @@
 package org.smartregister.p2p.contract
 
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
-import io.mockk.verify
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -41,17 +38,4 @@ class P2pModeSelectContractTest {
     Assert.assertEquals(DeviceRole.RECEIVER, view.getDeviceRole())
   }
 
-  @Test
-  fun `view#showP2PSelectPage accepts correct values`() {
-    every { view.showP2PSelectPage(DeviceRole.RECEIVER, "receiver") } just runs
-    view.showP2PSelectPage(DeviceRole.RECEIVER, "receiver")
-    verify(exactly = 1) { view.showP2PSelectPage(DeviceRole.RECEIVER, "receiver") }
-  }
-
-  @Test
-  fun `view#senderSyncComplete accepts correct values`() {
-    every { view.senderSyncComplete(true) } just runs
-    view.senderSyncComplete(true)
-    verify(exactly = 1) { view.senderSyncComplete(true) }
-  }
 }
