@@ -16,7 +16,6 @@
 package org.smartregister.p2p.data_sharing
 
 import androidx.annotation.NonNull
-import androidx.lifecycle.ViewModel
 import org.json.JSONArray
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.dao.P2pReceivedHistoryDao
@@ -25,8 +24,7 @@ import org.smartregister.p2p.search.ui.P2PReceiverViewModel
 import org.smartregister.p2p.utils.Constants
 import timber.log.Timber
 
-class SyncReceiverHandler constructor(@NonNull val p2PReceiverViewModel: P2PReceiverViewModel) :
-  ViewModel() {
+class SyncReceiverHandler constructor(@NonNull val p2PReceiverViewModel: P2PReceiverViewModel) {
 
   private lateinit var currentManifest: Manifest
 

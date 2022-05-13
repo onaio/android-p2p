@@ -20,10 +20,13 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
 import org.json.JSONArray
+import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
@@ -31,6 +34,7 @@ import org.robolectric.util.ReflectionHelpers
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.dao.P2pReceivedHistoryDao
 import org.smartregister.p2p.dao.ReceiverTransferDao
+import org.smartregister.p2p.model.P2PReceivedHistory
 import org.smartregister.p2p.robolectric.RobolectricTest
 import org.smartregister.p2p.search.ui.P2PReceiverViewModel
 import org.smartregister.p2p.shadows.ShadowAppDatabase
@@ -49,6 +53,8 @@ class SyncReceiverHandlerTest : RobolectricTest() {
   private lateinit var p2pReceivedHistoryDao: P2pReceivedHistoryDao
   private val lastUpdatedAt = 12345L
   private val groupResourceString = "group resource string"
+  private val appLifetimeKey = "31986b0b-7cb6-4c6b-93c5-9c9da0ace19a"
+  private val entityType = "Group"
 
   @Before
   fun setUp() {
@@ -79,7 +85,7 @@ class SyncReceiverHandlerTest : RobolectricTest() {
 
   @Test
   fun `processManifest() calls p2PReceiverViewModel#handleDataTransferCompleteManifest() when data type name is sync complete`() {
-    dataType.name = Constants.SYNC_COMPLETE
+    dataType = DataType(name = Constants.SYNC_COMPLETE, type = DataType.Filetype.JSON, position = 0)
     val manifest = Manifest(dataType = dataType, recordsSize = 25, payloadSize = 50)
     every { p2PReceiverViewModel.upDateProgress(any(), any()) } just runs
     every { p2PReceiverViewModel.handleDataTransferCompleteManifest() } just runs
@@ -113,5 +119,41 @@ class SyncReceiverHandlerTest : RobolectricTest() {
 
     verify(exactly = 1) { p2PReceiverViewModel.processIncomingManifest() }
     verify(exactly = 1) { syncReceiverHandler.updateLastRecord(any(), any()) }
+  }
+
+  @Test
+  @Ignore("Fix mocking of P2pReceivedHistoryDao")
+  fun `updateLastRecord() updates existing received history record for entity`() {
+    val receivedHistory: P2PReceivedHistory = mockk()
+    every { receivedHistory.entityType } answers { entityType }
+    every { receivedHistory.lastUpdatedAt } answers { 0L }
+    every { receivedHistory.appLifetimeKey } answers { appLifetimeKey }
+    every { p2pReceivedHistoryDao.getHistory(any(), any()) } answers { receivedHistory }
+    ReflectionHelpers.setField(syncReceiverHandler, "p2pReceivedHistoryDao", p2pReceivedHistoryDao)
+    every { p2PReceiverViewModel.getSendingDeviceAppLifetimeKey() } answers { appLifetimeKey }
+
+    syncReceiverHandler.updateLastRecord(entityType, lastUpdatedAt)
+
+    val receivedHistorySlot = slot<P2PReceivedHistory>()
+    verify(exactly = 1) {
+      p2pReceivedHistoryDao.updateReceivedHistory(capture(receivedHistorySlot))
+    }
+    Assert.assertEquals(lastUpdatedAt, receivedHistorySlot.captured.lastUpdatedAt)
+  }
+
+  @Test
+  @Ignore("Fix mocking of P2pReceivedHistoryDao")
+  fun `updateLastRecord() creates new received history record for entity`() {
+    every { p2pReceivedHistoryDao.getHistory(any(), any()) } answers { null }
+    ReflectionHelpers.setField(syncReceiverHandler, "p2pReceivedHistoryDao", p2pReceivedHistoryDao)
+    every { p2PReceiverViewModel.getSendingDeviceAppLifetimeKey() } answers { appLifetimeKey }
+
+    syncReceiverHandler.updateLastRecord(entityType, lastUpdatedAt)
+
+    val receivedHistorySlot = slot<P2PReceivedHistory>()
+    verify(exactly = 1) { p2pReceivedHistoryDao.addReceivedHistory(capture(receivedHistorySlot)) }
+    Assert.assertEquals(lastUpdatedAt, receivedHistorySlot.captured.lastUpdatedAt)
+    Assert.assertEquals(entityType, receivedHistorySlot.captured.entityType)
+    Assert.assertEquals(appLifetimeKey, receivedHistorySlot.captured.appLifetimeKey)
   }
 }
