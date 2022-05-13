@@ -16,6 +16,8 @@
 package org.smartregister.p2p.data_sharing
 
 import io.mockk.clearAllMocks
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -23,6 +25,7 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
+import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
 import org.junit.Assert
 import org.junit.Before
@@ -114,11 +117,11 @@ class SyncReceiverHandlerTest : RobolectricTest() {
   @Test
   fun `processData() calls updateLastRecord() and p2PReceiverViewModel#processIncomingManifest()`() {
     every { p2PReceiverViewModel.processIncomingManifest() } just runs
-    every { syncReceiverHandler.updateLastRecord(any(), any()) } just runs
-    syncReceiverHandler.processData(jsonArray)
+    coEvery { syncReceiverHandler.updateLastRecord(any(), any()) } just runs
+    runBlocking { syncReceiverHandler.processData(jsonArray) }
 
     verify(exactly = 1) { p2PReceiverViewModel.processIncomingManifest() }
-    verify(exactly = 1) { syncReceiverHandler.updateLastRecord(any(), any()) }
+    coVerify(exactly = 1) { syncReceiverHandler.updateLastRecord(any(), any()) }
   }
 
   @Test
@@ -132,7 +135,7 @@ class SyncReceiverHandlerTest : RobolectricTest() {
     ReflectionHelpers.setField(syncReceiverHandler, "p2pReceivedHistoryDao", p2pReceivedHistoryDao)
     every { p2PReceiverViewModel.getSendingDeviceAppLifetimeKey() } answers { appLifetimeKey }
 
-    syncReceiverHandler.updateLastRecord(entityType, lastUpdatedAt)
+    runBlocking { syncReceiverHandler.updateLastRecord(entityType, lastUpdatedAt) }
 
     val receivedHistorySlot = slot<P2PReceivedHistory>()
     verify(exactly = 1) {
@@ -148,7 +151,7 @@ class SyncReceiverHandlerTest : RobolectricTest() {
     ReflectionHelpers.setField(syncReceiverHandler, "p2pReceivedHistoryDao", p2pReceivedHistoryDao)
     every { p2PReceiverViewModel.getSendingDeviceAppLifetimeKey() } answers { appLifetimeKey }
 
-    syncReceiverHandler.updateLastRecord(entityType, lastUpdatedAt)
+    runBlocking { syncReceiverHandler.updateLastRecord(entityType, lastUpdatedAt) }
 
     val receivedHistorySlot = slot<P2PReceivedHistory>()
     verify(exactly = 1) { p2pReceivedHistoryDao.addReceivedHistory(capture(receivedHistorySlot)) }

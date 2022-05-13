@@ -175,7 +175,7 @@ class P2PReceiverViewModel(
           Timber.e("Received data!!!")
           Timber.e(jsonString)
           val chunkData = JSONArray(jsonString)
-          syncReceiverHandler.processData(chunkData)
+          viewModelScope.launch(Dispatchers.IO) { syncReceiverHandler.processData(chunkData) }
         }
       },
       object : DataSharingStrategy.OperationListener {
