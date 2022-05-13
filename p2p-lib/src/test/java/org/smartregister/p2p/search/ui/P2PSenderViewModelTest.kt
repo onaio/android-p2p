@@ -32,6 +32,7 @@ import java.util.TreeSet
 import org.json.JSONArray
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import org.robolectric.Shadows
 import org.robolectric.annotation.Config
@@ -224,6 +225,7 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
     verify { view.getCurrentConnectedDevice() }
   }
 
+  @Ignore
   @Test
   fun `processReceivedHistory() should call #startSyncProcess() and #sendManifest when syncPayload and JsonData are not empty`() {
     val syncPayload = StringPayload("[]")
