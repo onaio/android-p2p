@@ -37,5 +37,4 @@ class P2pModeSelectContractTest {
 
     Assert.assertEquals(DeviceRole.RECEIVER, view.getDeviceRole())
   }
-
 }
