@@ -36,8 +36,8 @@ import java.io.IOException
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.smartregister.p2p.WifiP2pBroadcastReceiver
@@ -75,8 +75,14 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   private var isSearchingDevices = false
   private var paired = false
 
+  private lateinit var coroutineScope: CoroutineScope
+
   override fun setActivity(context: Activity) {
     this.context = context
+  }
+
+  override fun setCoroutineScope(coroutineScope: CoroutineScope) {
+    this.coroutineScope = coroutineScope
   }
 
   override fun searchDevices(
@@ -354,7 +360,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       return
     }
 
-    GlobalScope.launch {
+    coroutineScope.launch {
       makeSocketConnections(wifiP2pInfo!!.groupOwnerAddress.hostAddress) { socket ->
         if (socket != null) {
 
@@ -506,7 +512,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       )
     }
 
-    GlobalScope.launch {
+    coroutineScope.launch {
       makeSocketConnections(wifiP2pInfo!!.groupOwnerAddress.hostAddress) { socket ->
         if (socket != null) {
 
