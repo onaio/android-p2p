@@ -20,7 +20,9 @@ import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.spyk
 import io.mockk.verify
 import org.junit.Assert
@@ -127,5 +129,21 @@ class P2PReceiverViewModelTest : RobolectricTest() {
         this.deviceAddress = deviceAddress
       }
     return WifiDirectDataSharingStrategy.WifiDirectDevice(wifiP2pDevice)
+  }
+
+  @Test
+  fun `Factory#constructor() should return instance of P2PReceiverViewModel`() {
+    val wifiDirectDataSharingStrategy: WifiDirectDataSharingStrategy = mockk()
+    every { wifiDirectDataSharingStrategy.setCoroutineScope(any()) } just runs
+
+    Assert.assertNotNull(
+      P2PReceiverViewModel.Factory(mockk(), wifiDirectDataSharingStrategy)
+        .create(P2PReceiverViewModel::class.java)
+    )
+    Assert.assertTrue(
+      P2PReceiverViewModel.Factory(mockk(), wifiDirectDataSharingStrategy)
+        .create(P2PReceiverViewModel::class.java) is
+        P2PReceiverViewModel
+    )
   }
 }
