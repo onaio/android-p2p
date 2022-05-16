@@ -16,12 +16,15 @@
 package org.smartregister.p2p.data_sharing
 
 import android.app.Activity
+import kotlinx.coroutines.CoroutineScope
 import org.smartregister.p2p.payload.PayloadContract
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 21-03-2022. */
 interface DataSharingStrategy {
 
   fun setActivity(context: Activity)
+
+  fun setCoroutineScope(coroutineScope: CoroutineScope)
 
   fun searchDevices(onDeviceFound: OnDeviceFound, onConnected: PairingListener)
 
