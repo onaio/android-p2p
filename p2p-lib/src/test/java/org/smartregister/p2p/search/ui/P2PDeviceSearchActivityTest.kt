@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartregister.p2p.ui
+package org.smartregister.p2p.search.ui
 
 import io.mockk.mockk
 import org.junit.After
@@ -29,7 +29,6 @@ import org.robolectric.util.ReflectionHelpers
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.robolectric.RobolectricTest
-import org.smartregister.p2p.search.ui.P2PDeviceSearchActivity
 import org.smartregister.p2p.shadows.ShadowAppDatabase
 
 /** Test for class [P2PDeviceSearchActivity] */
