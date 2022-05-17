@@ -176,8 +176,6 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
 
     verify(exactly = 1) { dataSharingStrategy.disconnect(deviceInfo, any()) }
     verify(exactly = 1) { view.showTransferCompleteDialog() }
-
-    Shadows.shadowOf(Looper.getMainLooper()).idle()
   }
 
   @Test
@@ -257,5 +255,30 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
     verify { p2PSenderViewModel.sendSyncComplete() }
   }
 
-  @Test fun updateSenderSyncComplete() {}
+  @Test
+  fun `updateSenderSyncComplete() should call view#senderSyncComplete`() {
+    val syncComplete = true
+
+    p2PSenderViewModel.updateSenderSyncComplete(syncComplete)
+
+    Shadows.shadowOf(Looper.getMainLooper()).idle()
+
+    verify { view.senderSyncComplete(syncComplete) }
+  }
+
+  @Test
+  fun `Factory#constructor() should return instance of P2PSenderViewModel`() {
+    val wifiDirectDataSharingStrategy: WifiDirectDataSharingStrategy = mockk()
+    every { wifiDirectDataSharingStrategy.setCoroutineScope(any()) } just runs
+
+    Assert.assertNotNull(
+      P2PSenderViewModel.Factory(mockk(), wifiDirectDataSharingStrategy)
+        .create(P2PSenderViewModel::class.java)
+    )
+    Assert.assertTrue(
+      P2PSenderViewModel.Factory(mockk(), wifiDirectDataSharingStrategy)
+        .create(P2PSenderViewModel::class.java) is
+        P2PSenderViewModel
+    )
+  }
 }

@@ -34,7 +34,7 @@ class SyncReceiverHandler constructor(@NonNull val p2PReceiverViewModel: P2PRece
     currentManifest = manifest
     // update UI with number of records to expect
     p2PReceiverViewModel.upDateProgress("Transferring %,d records", manifest.recordsSize)
-    if (manifest != null && manifest.dataType.name == Constants.SYNC_COMPLETE) {
+    if (manifest.dataType.name == Constants.SYNC_COMPLETE) {
       p2PReceiverViewModel.handleDataTransferCompleteManifest()
     } else {
       p2PReceiverViewModel.processChunkData()

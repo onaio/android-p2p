@@ -220,7 +220,10 @@ class P2PSenderViewModel(
     private val dataSharingStrategy: DataSharingStrategy
   ) : ViewModelProvider.Factory {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-      return P2PSenderViewModel(context, dataSharingStrategy) as T
+      return P2PSenderViewModel(context, dataSharingStrategy).apply {
+        dataSharingStrategy.setCoroutineScope(viewModelScope)
+      } as
+        T
     }
   }
 }
