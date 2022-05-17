@@ -180,11 +180,11 @@ class P2PReceiverViewModel(
       },
       object : DataSharingStrategy.OperationListener {
         override fun onSuccess(device: DeviceInfo?) {
-          // TODO Handle successful receipt of chunk data
+          Timber.i("Successfully received chunk data")
         }
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
-          // TODO handle failure to receive chunk data
+          Timber.i("Failed to receive chunk data")
         }
       }
     )

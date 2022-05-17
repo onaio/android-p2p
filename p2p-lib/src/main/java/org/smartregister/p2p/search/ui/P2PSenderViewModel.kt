@@ -58,17 +58,13 @@ class P2PSenderViewModel(
       P2PLibrary.getInstance()!!.getDeviceUniqueIdentifier()
 
     dataSharingStrategy.send(
-      device = dataSharingStrategy.getCurrentDevice()
-      /** Find out how to get this */
-      ,
+      device = dataSharingStrategy.getCurrentDevice(),
       syncPayload =
         StringPayload(
           Gson().toJson(deviceDetailsMap),
         ),
       object : DataSharingStrategy.OperationListener {
         override fun onSuccess(device: DeviceInfo?) {
-          // TODO: Return this step but we can skip it for now
-          // requestSyncParams(device)
           Timber.i("Successfully sent the device details map")
 
           dataSharingStrategy.receive(
