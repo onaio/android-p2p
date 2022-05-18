@@ -148,7 +148,9 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest'/*, 'cr
                     '**/*$Result.*',
                     '**/*$Result$*.*',
                     // Data Binding
-                    '**/databinding/*'
+                    '**/databinding/*',
+                    // Generated room DAO implementation classes
+                    '**/*_Impl*.*'
             ]
 
     def javaDebugTree = fileTree(dir: "$project.buildDir/intermediates/javac/debug/classes/", excludes: fileFilter)
