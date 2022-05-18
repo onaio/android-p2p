@@ -81,7 +81,7 @@ class P2PReceiverViewModel(
       if (receivedHistory != null && receivedHistory.isNotEmpty()) {
         sendLastReceivedRecords(receivedHistory)
       } else {
-        sendLastReceivedRecords(listOf(P2PReceivedHistory()))
+        sendLastReceivedRecords(emptyList())
       }
     }
   }

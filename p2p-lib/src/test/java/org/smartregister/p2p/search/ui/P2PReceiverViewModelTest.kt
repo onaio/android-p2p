@@ -156,7 +156,7 @@ class P2PReceiverViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun `processChunkData() calls syncReceiverHandler#processData() when data is received`() {
+  fun `processChunkData() calls dataSharingStrategy#receive()`() {
     every { dataSharingStrategy.receive(any(), any(), any()) } just runs
     coEvery { syncReceiverHandler.processData(any()) } just runs
 
@@ -206,18 +206,18 @@ class P2PReceiverViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun `checkIfDeviceKeyHasChanged() calls p2pReceiverViewModel#sendLastReceivedRecords() with retrieved received history values`() {
+  fun `checkIfDeviceKeyHasChanged() calls p2pReceiverViewModel#sendLastReceivedRecords() with empty list when received history is null`() {
     coEvery { p2PReceiverViewModel.sendLastReceivedRecords(any()) } just runs
     every { p2PReceiverViewModel.getReceivedHistory(appLifetimeKey) } returns null
 
     p2PReceiverViewModel.checkIfDeviceKeyHasChanged(appLifetimeKey)
     val receivedHistorySlot = slot<List<P2PReceivedHistory>>()
     coVerify { p2PReceiverViewModel.sendLastReceivedRecords(capture(receivedHistorySlot)) }
-    Assert.assertEquals(0L, receivedHistorySlot.captured[0].lastUpdatedAt)
+    Assert.assertTrue(receivedHistorySlot.captured.isEmpty())
   }
 
   @Test
-  fun `checkIfDeviceKeyHasChanged() calls p2pReceiverViewModel#sendLastReceivedRecords() with empty list when received history is null`() {
+  fun `checkIfDeviceKeyHasChanged() calls p2pReceiverViewModel#sendLastReceivedRecords() with retrieved received history values`() {
     coEvery { p2PReceiverViewModel.sendLastReceivedRecords(any()) } just runs
     every { p2PReceiverViewModel.getReceivedHistory(appLifetimeKey) } returns receivedHistory
 
@@ -231,7 +231,7 @@ class P2PReceiverViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun `sendLastReceivedRecords() `() {
+  fun `sendLastReceivedRecords() sends correct received history data`() {
     every { dataSharingStrategy.send(any(), any(), any()) } just runs
 
     p2PReceiverViewModel.sendLastReceivedRecords(receivedHistory)
