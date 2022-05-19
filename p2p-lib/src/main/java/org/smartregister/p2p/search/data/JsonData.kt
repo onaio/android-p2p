@@ -27,6 +27,8 @@ class JsonData {
     this.highestRecordId = highestRecordId
   }
 
+  constructor()
+
   @NonNull
   fun getJsonArray(): JSONArray? {
     return jsonArray

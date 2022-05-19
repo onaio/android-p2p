@@ -20,6 +20,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import java.util.TreeSet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -32,6 +33,7 @@ import org.smartregister.p2p.model.P2PReceivedHistory
 import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.payload.StringPayload
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
+import org.smartregister.p2p.sync.DataType
 import org.smartregister.p2p.utils.Constants
 import timber.log.Timber
 
@@ -56,18 +58,14 @@ class P2PSenderViewModel(
       P2PLibrary.getInstance()!!.getDeviceUniqueIdentifier()
 
     dataSharingStrategy.send(
-      device = dataSharingStrategy.getCurrentDevice()
-      /** Find out how to get this */
-      ,
+      device = dataSharingStrategy.getCurrentDevice(),
       syncPayload =
         StringPayload(
           Gson().toJson(deviceDetailsMap),
         ),
       object : DataSharingStrategy.OperationListener {
         override fun onSuccess(device: DeviceInfo?) {
-          // TODO: Return this step but we can skip it for now
-          // requestSyncParams(device)
-          Timber.e("Successfully sent the device details map")
+          Timber.i("Successfully sent the device details map")
 
           dataSharingStrategy.receive(
             device,
@@ -76,9 +74,8 @@ class P2PSenderViewModel(
               override fun onPayloadReceived(payload: PayloadContract<out Any>?) {
                 // WE are receiving the history
 
-                Timber.e("I have received last history : ${(payload as StringPayload).string}")
+                Timber.i("I have received last history : ${(payload as StringPayload).string}")
 
-                // TODO: Fetch data based on last received history and send it to the receiver
                 processReceivedHistory(payload)
               }
             },
@@ -121,18 +118,18 @@ class P2PSenderViewModel(
   }
 
   override fun sendSyncComplete() {
-    Timber.e("P2P sync complete")
+    Timber.i("P2P sync complete")
     viewModelScope.launch {
       withContext(Dispatchers.Main) { view.showTransferCompleteDialog() }
       dataSharingStrategy.disconnect(
         getCurrentConnectedDevice()!!,
         object : DataSharingStrategy.OperationListener {
           override fun onSuccess(device: DeviceInfo?) {
-            Timber.e("Diconnection successful")
+            Timber.i("Diconnection successful")
           }
 
           override fun onFailure(device: DeviceInfo?, ex: Exception) {
-            Timber.e("Diconnection failed")
+            Timber.i("Diconnection failed")
             Timber.e(ex.message)
           }
         }
@@ -141,19 +138,18 @@ class P2PSenderViewModel(
   }
 
   override fun sendChunkData(awaitingPayload: PayloadContract<out Any>) {
-    // TODO Implement sending of chunk data
-    Timber.e("Send chunk data")
+    Timber.i("Send chunk data")
     dataSharingStrategy.send(
       device = getCurrentConnectedDevice(),
       syncPayload = awaitingPayload,
       object : DataSharingStrategy.OperationListener {
         override fun onSuccess(device: DeviceInfo?) {
-          Timber.e("Chunk data sent successfully")
+          Timber.i("Chunk data sent successfully")
           viewModelScope.launch(Dispatchers.IO) { syncSenderHandler.sendNextManifest() }
         }
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
-          Timber.e("Failed to send chunk data")
+          Timber.i("Failed to send chunk data")
         }
       }
     )
@@ -166,7 +162,7 @@ class P2PSenderViewModel(
         manifest = manifest,
         object : DataSharingStrategy.OperationListener {
           override fun onSuccess(device: DeviceInfo?) {
-            Timber.e(
+            Timber.i(
               "Manifest sent successfully  ${manifest.dataType.name },  ${manifest.dataType.type}, ${manifest.payloadSize}, ${manifest.recordsSize}"
             )
             // Start sending the actual data
@@ -174,7 +170,7 @@ class P2PSenderViewModel(
           }
 
           override fun onFailure(device: DeviceInfo?, ex: Exception) {
-            Timber.e("manifest failed to send")
+            Timber.i("manifest failed to send")
           }
         }
       )
@@ -193,9 +189,10 @@ class P2PSenderViewModel(
     val receivedHistory: List<P2PReceivedHistory> =
       Gson().fromJson(syncPayload.string, receivedHistoryListType)
 
-    // TODO run this is background
-    val dataTypes = P2PLibrary.getInstance().getSenderTransferDao().getP2PDataTypes()
-
+    var dataTypes = TreeSet<DataType>()
+    viewModelScope.launch(Dispatchers.IO) {
+      dataTypes = P2PLibrary.getInstance().getSenderTransferDao().getP2PDataTypes()
+    }
     syncSenderHandler =
       SyncSenderHandler(
         p2PSenderViewModel = this,
@@ -204,10 +201,10 @@ class P2PSenderViewModel(
       )
 
     if (!dataTypes.isEmpty()) {
-      Timber.e("Process received history json data not null")
+      Timber.i("Process received history json data not null")
       viewModelScope.launch(Dispatchers.IO) { syncSenderHandler.startSyncProcess() }
     } else {
-      Timber.e("Process received history json data null")
+      Timber.i("Process received history json data null")
       sendSyncComplete()
     }
   }

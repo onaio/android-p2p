@@ -149,7 +149,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
               )
               .show()
 
-            // TODO: Show the sync complete here for the sender
             if (isSenderSyncComplete) {
               showTransferCompleteDialog()
             }
@@ -381,7 +380,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
         }
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
-          TODO("Not yet implemented")
+          // TODO: Not yet implemented
         }
       }
     )

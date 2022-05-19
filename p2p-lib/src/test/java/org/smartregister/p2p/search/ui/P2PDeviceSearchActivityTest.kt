@@ -62,7 +62,6 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
 
   @Test
   fun testGetDeviceRole() {
-    // TODO Fix this test
     ReflectionHelpers.setField(p2PDeviceSearchActivity, "isSender", false)
     Assert.assertEquals(DeviceRole.RECEIVER, p2PDeviceSearchActivity.getDeviceRole())
 
