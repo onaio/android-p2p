@@ -43,6 +43,7 @@ import org.smartregister.p2p.data_sharing.Manifest
 import org.smartregister.p2p.data_sharing.SyncReceiverHandler
 import org.smartregister.p2p.data_sharing.WifiDirectDataSharingStrategy
 import org.smartregister.p2p.model.P2PReceivedHistory
+import org.smartregister.p2p.payload.BytePayload
 import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.payload.StringPayload
 import org.smartregister.p2p.robolectric.RobolectricTest
@@ -71,7 +72,7 @@ class P2PReceiverViewModelTest : RobolectricTest() {
     clearAllMocks()
     view = mockk()
     dataSharingStrategy = mockk(relaxed = false)
-    syncReceiverHandler = mockk(relaxed = true)
+    syncReceiverHandler = mockk()
     val p2pLibraryOptions =
       P2PLibrary.Options(RuntimeEnvironment.application, "", "username", mockk(), mockk())
 
@@ -100,6 +101,7 @@ class P2PReceiverViewModelTest : RobolectricTest() {
   fun `processIncomingManifest() with manifest  calls syncReceiver#processManifest()`() {
     val dataType = DataType(name = "Patient", type = DataType.Filetype.JSON, position = 1)
     expectedManifest = Manifest(dataType = dataType, recordsSize = 25, payloadSize = 50)
+    every { syncReceiverHandler.processManifest(manifest = expectedManifest) } just runs
     every { p2PReceiverViewModel.listenForIncomingManifest() } answers { expectedManifest }
     p2PReceiverViewModel.processIncomingManifest()
     verify(exactly = 1) { syncReceiverHandler.processManifest(manifest = expectedManifest) }
@@ -172,6 +174,41 @@ class P2PReceiverViewModelTest : RobolectricTest() {
         capture(operationListenerSlot)
       )
     }
+  }
+
+  @Test
+  fun `processChunkData() calls syncReceiverHandler#processData() when chunk data is received`() {
+    ReflectionHelpers.setField(p2PReceiverViewModel, "syncReceiverHandler", syncReceiverHandler)
+    every { dataSharingStrategy.receive(any(), any(), any()) } just runs
+
+    val operationListenerSlot = slot<DataSharingStrategy.OperationListener>()
+    val payloadReceiptListener = slot<DataSharingStrategy.PayloadReceiptListener>()
+
+    p2PReceiverViewModel.processChunkData()
+
+    verify {
+      dataSharingStrategy.receive(
+        expectedDeviceInfo,
+        capture(payloadReceiptListener),
+        capture(operationListenerSlot)
+      )
+    }
+
+    val data =
+      "[\n" +
+        "    {\n" +
+        "      \"use\": \"official\",\n" +
+        "      \"value\": \"32343254\"\n" +
+        "    },\n" +
+        "    {\n" +
+        "      \"use\": \"secondary\",\n" +
+        "      \"value\": \"a05ff632-9b8d-45f7-81df-1f5a7191d69d\"\n" +
+        "    }\n" +
+        "  ]"
+    val chunkData = BytePayload(data.toByteArray())
+    payloadReceiptListener.captured.onPayloadReceived(chunkData)
+
+    coVerify(exactly = 1) { syncReceiverHandler.processData(any()) }
   }
 
   @Test
