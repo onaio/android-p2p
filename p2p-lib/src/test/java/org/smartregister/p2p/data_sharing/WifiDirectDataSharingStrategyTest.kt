@@ -19,6 +19,7 @@ import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.net.wifi.p2p.WifiP2pDevice
 import android.net.wifi.p2p.WifiP2pGroup
 import android.net.wifi.p2p.WifiP2pInfo
@@ -47,6 +48,9 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   private lateinit var wifiP2pChannel: WifiP2pManager.Channel
   private lateinit var wifiP2pReceiver: BroadcastReceiver
 
+  private lateinit var onDeviceFound: OnDeviceFound
+  private lateinit var pairingListener: DataSharingStrategy.PairingListener
+
   private lateinit var wifiP2pInfo: WifiP2pInfo
   private lateinit var onConnectionInfo: (() -> Unit)
   private lateinit var wifiP2pGroup: WifiP2pGroup
@@ -62,13 +66,26 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     wifiP2pChannel = mockk()
     wifiP2pReceiver = mockk()
     context = spyk(Activity())
-    wifiDirectDataSharingStrategy = spyk(WifiDirectDataSharingStrategy())
+    onDeviceFound = mockk()
+    pairingListener = mockk()
+    wifiDirectDataSharingStrategy = spyk(recordPrivateCalls = true)
     wifiDirectDataSharingStrategy.setActivity(context)
     every { context.getSystemService(Context.WIFI_P2P_SERVICE) } returns wifiP2pManager
 
     every { wifiDirectDataSharingStrategy getProperty "wifiP2pManager" } returns wifiP2pManager
     ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "wifiP2pReceiver", wifiP2pReceiver)
     ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "wifiP2pChannel", wifiP2pChannel)
+  }
+
+  @Test
+  fun `searchDevices() calls wifiP2pManager#initialize()`() {
+    every { context.checkPermission(any(), any(), any()) } returns PackageManager.PERMISSION_GRANTED
+    every { wifiP2pManager.initialize(context, context.mainLooper, null) } returns wifiP2pChannel
+    every { context.registerReceiver(any(), any()) } returns null
+    every { wifiP2pManager.discoverPeers(any(), any()) } just runs
+    wifiDirectDataSharingStrategy.searchDevices(onDeviceFound, pairingListener)
+
+    verify { wifiP2pManager.initialize(context, context.mainLooper, null) }
   }
 
   @Test
@@ -107,5 +124,62 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     Assert.assertTrue(
       intentFilterSlot.captured.hasAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION)
     )
+  }
+
+  @Test
+  fun `initiatePeerDiscovery() calls wifiP2pManager#discoverPeers()`() {
+    every { context.checkPermission(any(), any(), any()) } returns PackageManager.PERMISSION_GRANTED
+    every { wifiP2pManager.discoverPeers(any(), any()) } just runs
+    ReflectionHelpers.callInstanceMethod<WifiDirectDataSharingStrategy>(
+      wifiDirectDataSharingStrategy,
+      "initiatePeerDiscovery",
+      ReflectionHelpers.ClassParameter.from(OnDeviceFound::class.java, onDeviceFound)
+    )
+
+    val actionListenerSlot = slot<WifiP2pManager.ActionListener>()
+    verify { wifiP2pManager.discoverPeers(wifiP2pChannel, capture(actionListenerSlot)) }
+  }
+
+  @Test
+  fun `initiatePeerDiscovery() calls onSearchingFailed() and onDeviceFound#failed() when WifiP2pManager#ActionListener() returns failure`() {
+    every { context.checkPermission(any(), any(), any()) } returns PackageManager.PERMISSION_GRANTED
+    every { wifiP2pManager.discoverPeers(any(), any()) } just runs
+    every { onDeviceFound.failed(any()) } just runs
+    ReflectionHelpers.callInstanceMethod<WifiDirectDataSharingStrategy>(
+      wifiDirectDataSharingStrategy,
+      "initiatePeerDiscovery",
+      ReflectionHelpers.ClassParameter.from(OnDeviceFound::class.java, onDeviceFound)
+    )
+
+    val actionListenerSlot = slot<WifiP2pManager.ActionListener>()
+    verify { wifiP2pManager.discoverPeers(wifiP2pChannel, capture(actionListenerSlot)) }
+
+    val exceptionSlot = slot<Exception>()
+    actionListenerSlot.captured.onFailure(0)
+    verify { onDeviceFound.failed(capture(exceptionSlot)) }
+    Assert.assertEquals("0: Error", exceptionSlot.captured.message)
+    verify { wifiDirectDataSharingStrategy.onSearchingFailed(capture(exceptionSlot)) }
+    Assert.assertEquals("0: Error", exceptionSlot.captured.message)
+  }
+
+  @Test
+  fun `initiatePeerDiscovery() calls logDebug() when WifiP2pManager#ActionListener() returns success`() {
+    every { context.checkPermission(any(), any(), any()) } returns PackageManager.PERMISSION_GRANTED
+    every { wifiP2pManager.discoverPeers(any(), any()) } just runs
+    ReflectionHelpers.callInstanceMethod<WifiDirectDataSharingStrategy>(
+      wifiDirectDataSharingStrategy,
+      "initiatePeerDiscovery",
+      ReflectionHelpers.ClassParameter.from(OnDeviceFound::class.java, onDeviceFound)
+    )
+
+    val actionListenerSlot = slot<WifiP2pManager.ActionListener>()
+    verify { wifiP2pManager.discoverPeers(wifiP2pChannel, capture(actionListenerSlot)) }
+
+    actionListenerSlot.captured.onSuccess()
+    verify {
+      wifiDirectDataSharingStrategy invoke
+        "logDebug" withArguments
+        listOf("Discovering peers successful")
+    }
   }
 }
