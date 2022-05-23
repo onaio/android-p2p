@@ -284,6 +284,7 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     every { wifiP2pManager.removeGroup(any(), any()) } just runs
     every { operationListener.onSuccess(any()) } just runs
     every { operationListener.onFailure(any(), any()) } just runs
+    every { wifiDirectDataSharingStrategy invokeNoArgs "closeSocketAndStreams" } returns null
 
     ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "paired", true)
     Assert.assertTrue(ReflectionHelpers.getField(wifiDirectDataSharingStrategy, "paired"))
