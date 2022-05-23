@@ -25,6 +25,9 @@ import android.net.wifi.p2p.WifiP2pDevice
 import android.net.wifi.p2p.WifiP2pGroup
 import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
+import com.google.gson.Gson
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -35,12 +38,18 @@ import io.mockk.verify
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.net.Socket
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.p2p.payload.PayloadContract
+import org.smartregister.p2p.payload.SyncPayloadType
 import org.smartregister.p2p.robolectric.RobolectricTest
+import org.smartregister.p2p.sync.DataType
 
 class WifiDirectDataSharingStrategyTest : RobolectricTest() {
 
@@ -53,6 +62,7 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   private lateinit var onDeviceFound: OnDeviceFound
   private lateinit var pairingListener: DataSharingStrategy.PairingListener
   private lateinit var operationListener: DataSharingStrategy.OperationListener
+  private lateinit var coroutineScope: CoroutineScope
 
   private lateinit var wifiP2pInfo: WifiP2pInfo
   private lateinit var onConnectionInfo: (() -> Unit)
@@ -65,20 +75,29 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   private lateinit var device: DeviceInfo
   private lateinit var wifiP2pDevice: WifiP2pDevice
   private lateinit var syncPayload: PayloadContract<out Any>
+  private val groupOwnerAddress: String = "00:00:5e:00:53:af"
+  private lateinit var onSocketConnectionMade: (socket: Socket?) -> Unit
+  private lateinit var expectedManifest: Manifest
 
   @Before
   fun setUp() {
     wifiP2pManager = mockk()
     wifiP2pChannel = mockk()
     wifiP2pReceiver = mockk()
+    wifiP2pInfo = mockk()
     context = spyk(Activity())
     onDeviceFound = mockk()
     pairingListener = mockk()
     operationListener = mockk()
     device = mockk()
     syncPayload = mockk()
+    coroutineScope = CoroutineScope(Dispatchers.IO)
+    onSocketConnectionMade = mockk()
+    expectedManifest = populateManifest()
+    dataOutputStream = mockk()
     wifiDirectDataSharingStrategy = spyk(recordPrivateCalls = true)
     wifiDirectDataSharingStrategy.setActivity(context)
+    wifiDirectDataSharingStrategy.setCoroutineScope(coroutineScope = coroutineScope)
     every { context.getSystemService(Context.WIFI_P2P_SERVICE) } returns wifiP2pManager
 
     wifiP2pDevice =
@@ -91,6 +110,8 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     every { wifiDirectDataSharingStrategy getProperty "wifiP2pManager" } returns wifiP2pManager
     ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "wifiP2pReceiver", wifiP2pReceiver)
     ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "wifiP2pChannel", wifiP2pChannel)
+    ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "wifiP2pInfo", wifiP2pInfo)
+    ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "dataOutputStream", dataOutputStream)
   }
 
   @Test
@@ -310,5 +331,93 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
       "Error sending to Google Pixel(00:00:5e:00:53:af): WifiP2PInfo is not available",
       exceptionSlot.captured.message
     )
+  }
+
+  @Ignore
+  @Test
+  fun `send() calls makeSocketConnections() when wifiP2pInfo() is not  null`() {
+    coEvery { wifiDirectDataSharingStrategy.makeSocketConnections(any(), any()) } just runs
+    wifiDirectDataSharingStrategy.send(
+      device = device,
+      operationListener = operationListener,
+      syncPayload = syncPayload
+    )
+
+    coVerify { wifiDirectDataSharingStrategy.makeSocketConnections(any(), any()) }
+  }
+
+  @Test
+  fun `makeSocketConnections() calls requestConnectionInfo() when wifiP2pInfo is null`() {
+    ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "wifiP2pInfo", null)
+    every { onSocketConnectionMade.invoke(any()) } just runs
+    every { wifiDirectDataSharingStrategy invokeNoArgs "requestConnectionInfo" } returns null
+
+    runBlocking {
+      wifiDirectDataSharingStrategy.makeSocketConnections(groupOwnerAddress, onSocketConnectionMade)
+    }
+
+    verify { wifiDirectDataSharingStrategy invokeNoArgs "requestConnectionInfo" }
+
+    verify { onSocketConnectionMade.invoke(any()) }
+  }
+
+  @Test
+  fun `makeSocketConnections() calls acceptConnectionsToServerSocket() when socket is null and wifiP2pInfo#isGroupOwner is true`() {
+    wifiP2pInfo.isGroupOwner = true
+    every { onSocketConnectionMade.invoke(any()) } just runs
+    every { wifiDirectDataSharingStrategy invokeNoArgs "acceptConnectionsToServerSocket" } returns
+      null
+
+    runBlocking {
+      wifiDirectDataSharingStrategy.makeSocketConnections(groupOwnerAddress, onSocketConnectionMade)
+    }
+
+    verify { wifiDirectDataSharingStrategy invokeNoArgs "acceptConnectionsToServerSocket" }
+
+    verify { onSocketConnectionMade.invoke(any()) }
+  }
+
+  @Test
+  fun `makeSocketConnections() calls connectToServerSocket() when socket is null, wifiP2pInfo is not null and  wifiP2pInfo#isGroupOwner is false`() {
+    wifiP2pInfo.isGroupOwner = false
+    every { onSocketConnectionMade.invoke(any()) } just runs
+    every {
+      wifiDirectDataSharingStrategy invoke
+        "connectToServerSocket" withArguments
+        listOf(groupOwnerAddress)
+    } returns null
+
+    runBlocking {
+      wifiDirectDataSharingStrategy.makeSocketConnections(groupOwnerAddress, onSocketConnectionMade)
+    }
+
+    verify {
+      wifiDirectDataSharingStrategy invoke
+        "connectToServerSocket" withArguments
+        listOf(groupOwnerAddress)
+    }
+
+    verify { onSocketConnectionMade.invoke(any()) }
+  }
+
+  @Test
+  fun `sendManifest() call dataOutputStream#writeUTF() and dataOutputStream#flush`() {
+    val manifestString = Gson().toJson(expectedManifest)
+    every { dataOutputStream.writeUTF(SyncPayloadType.MANIFEST.name) } just runs
+    every { dataOutputStream.writeUTF(manifestString) } just runs
+    every { dataOutputStream.flush() } just runs
+    every { operationListener.onSuccess(device) } just runs
+
+    wifiDirectDataSharingStrategy.sendManifest(device, expectedManifest, operationListener)
+
+    verify { dataOutputStream.writeUTF(SyncPayloadType.MANIFEST.name) }
+    verify { dataOutputStream.writeUTF(manifestString) }
+    verify { dataOutputStream.flush() }
+    verify { operationListener.onSuccess(device) }
+  }
+
+  private fun populateManifest(): Manifest {
+    val dataType = DataType(name = "Patient", type = DataType.Filetype.JSON, position = 1)
+    return Manifest(dataType = dataType, recordsSize = 25, payloadSize = 50)
   }
 }
