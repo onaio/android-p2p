@@ -20,6 +20,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.net.wifi.p2p.WifiP2pConfig
 import android.net.wifi.p2p.WifiP2pDevice
 import android.net.wifi.p2p.WifiP2pGroup
 import android.net.wifi.p2p.WifiP2pInfo
@@ -38,6 +39,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
+import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.robolectric.RobolectricTest
 
 class WifiDirectDataSharingStrategyTest : RobolectricTest() {
@@ -50,6 +52,7 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
 
   private lateinit var onDeviceFound: OnDeviceFound
   private lateinit var pairingListener: DataSharingStrategy.PairingListener
+  private lateinit var operationListener: DataSharingStrategy.OperationListener
 
   private lateinit var wifiP2pInfo: WifiP2pInfo
   private lateinit var onConnectionInfo: (() -> Unit)
@@ -59,6 +62,9 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   private lateinit var socket: Socket
   private lateinit var dataInputStream: DataInputStream
   private lateinit var dataOutputStream: DataOutputStream
+  private lateinit var device: DeviceInfo
+  private lateinit var wifiP2pDevice: WifiP2pDevice
+  private lateinit var syncPayload: PayloadContract<out Any>
 
   @Before
   fun setUp() {
@@ -68,10 +74,20 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     context = spyk(Activity())
     onDeviceFound = mockk()
     pairingListener = mockk()
+    operationListener = mockk()
+    device = mockk()
+    syncPayload = mockk()
     wifiDirectDataSharingStrategy = spyk(recordPrivateCalls = true)
     wifiDirectDataSharingStrategy.setActivity(context)
     every { context.getSystemService(Context.WIFI_P2P_SERVICE) } returns wifiP2pManager
 
+    wifiP2pDevice =
+      WifiP2pDevice().apply {
+        deviceName = "Google Pixel"
+        deviceAddress = "00:00:5e:00:53:af"
+      }
+
+    every { device.strategySpecificDevice } returns wifiP2pDevice
     every { wifiDirectDataSharingStrategy getProperty "wifiP2pManager" } returns wifiP2pManager
     ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "wifiP2pReceiver", wifiP2pReceiver)
     ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "wifiP2pChannel", wifiP2pChannel)
@@ -181,5 +197,118 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
         "logDebug" withArguments
         listOf("Discovering peers successful")
     }
+  }
+
+  @Test
+  fun `requestDeviceInfo() calls handleAccessFineLocationNotGranted() when ACCESS_FINE_LOCATION permission is denied`() {
+    every { context.checkPermission(any(), any(), any()) } returns PackageManager.PERMISSION_DENIED
+
+    ReflectionHelpers.callInstanceMethod<WifiDirectDataSharingStrategy>(
+      wifiDirectDataSharingStrategy,
+      "requestDeviceInfo"
+    )
+
+    verify { wifiDirectDataSharingStrategy invokeNoArgs "handleAccessFineLocationNotGranted" }
+  }
+
+  @Test
+  fun `connect() calls handleAccessFineLocationNotGranted() when ACCESS_FINE_LOCATION permission is denied`() {
+    every { context.checkPermission(any(), any(), any()) } returns PackageManager.PERMISSION_DENIED
+
+    wifiDirectDataSharingStrategy.connect(device = device, operationListener = operationListener)
+
+    verify { wifiDirectDataSharingStrategy invokeNoArgs "handleAccessFineLocationNotGranted" }
+  }
+
+  @Test
+  fun `connect() calls wifiP2pManager#connect() when ACCESS_FINE_LOCATION permission is granted`() {
+    every { context.checkPermission(any(), any(), any()) } returns PackageManager.PERMISSION_GRANTED
+    every { wifiP2pManager.connect(any(), any(), any()) } just runs
+    every { operationListener.onSuccess(any()) } just runs
+
+    Assert.assertFalse(ReflectionHelpers.getField(wifiDirectDataSharingStrategy, "paired"))
+    Assert.assertNull(ReflectionHelpers.getField(wifiDirectDataSharingStrategy, "currentDevice"))
+
+    wifiDirectDataSharingStrategy.connect(device = device, operationListener = operationListener)
+
+    verify(exactly = 0) {
+      wifiDirectDataSharingStrategy invokeNoArgs "handleAccessFineLocationNotGranted"
+    }
+
+    val wifiP2pConfigSlot = slot<WifiP2pConfig>()
+    val actionListenerSlot = slot<WifiP2pManager.ActionListener>()
+    verify {
+      wifiP2pManager.connect(
+        wifiP2pChannel,
+        capture(wifiP2pConfigSlot),
+        capture(actionListenerSlot)
+      )
+    }
+
+    actionListenerSlot.captured.onSuccess()
+
+    Assert.assertTrue(ReflectionHelpers.getField(wifiDirectDataSharingStrategy, "paired"))
+    val actualCurrentDevice =
+      ReflectionHelpers.getField(wifiDirectDataSharingStrategy, "currentDevice") as WifiP2pDevice
+    Assert.assertEquals(wifiP2pDevice.deviceName, actualCurrentDevice.deviceName)
+    Assert.assertEquals(wifiP2pDevice.deviceAddress, actualCurrentDevice.deviceAddress)
+    verify {
+      wifiDirectDataSharingStrategy invoke "onConnectionSucceeded" withArguments listOf(device)
+    }
+    verify { operationListener.onSuccess(device) }
+  }
+
+  @Test
+  fun `disconnect() calls wifiP2pManager#removeGroup()`() {
+    every { wifiP2pManager.removeGroup(any(), any()) } just runs
+    every { operationListener.onSuccess(any()) } just runs
+    every { operationListener.onFailure(any(), any()) } just runs
+
+    ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "paired", true)
+    Assert.assertTrue(ReflectionHelpers.getField(wifiDirectDataSharingStrategy, "paired"))
+
+    wifiDirectDataSharingStrategy.disconnect(device = device, operationListener = operationListener)
+
+    val actionListenerSlot = slot<WifiP2pManager.ActionListener>()
+    Assert.assertTrue(
+      ReflectionHelpers.getField(wifiDirectDataSharingStrategy, "requestedDisconnection")
+    )
+    verify { wifiP2pManager.removeGroup(wifiP2pChannel, capture(actionListenerSlot)) }
+
+    actionListenerSlot.captured.onSuccess()
+    Assert.assertFalse(ReflectionHelpers.getField(wifiDirectDataSharingStrategy, "paired"))
+    verify { operationListener.onSuccess(device) }
+    verify {
+      wifiDirectDataSharingStrategy invoke "onDisconnectSucceeded" withArguments listOf(device)
+    }
+
+    actionListenerSlot.captured.onFailure(0)
+    val exceptionSlot = slot<Exception>()
+    verify {
+      wifiDirectDataSharingStrategy invoke
+        "onDisconnectFailed" withArguments
+        listOf(device, capture(exceptionSlot))
+    }
+    Assert.assertEquals("Error #0: Error", exceptionSlot.captured.message)
+    verify { operationListener.onFailure(device, capture(exceptionSlot)) }
+    Assert.assertEquals("Error #0: Error", exceptionSlot.captured.message)
+  }
+
+  @Test
+  fun `send() calls operationListener#onFailure() when wifiP2pInfo() is null`() {
+    ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "wifiP2pInfo", null)
+    every { operationListener.onFailure(any(), any()) } just runs
+    wifiDirectDataSharingStrategy.send(
+      device = device,
+      operationListener = operationListener,
+      syncPayload = syncPayload
+    )
+
+    val exceptionSlot = slot<Exception>()
+    verify { operationListener.onFailure(device, capture(exceptionSlot)) }
+    Assert.assertEquals(
+      "Error sending to Google Pixel(00:00:5e:00:53:af): WifiP2PInfo is not available",
+      exceptionSlot.captured.message
+    )
   }
 }
