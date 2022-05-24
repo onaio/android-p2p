@@ -62,12 +62,12 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   private lateinit var onDeviceFound: OnDeviceFound
   private lateinit var pairingListener: DataSharingStrategy.PairingListener
   private lateinit var operationListener: DataSharingStrategy.OperationListener
+  private lateinit var payloadReceiptListener: DataSharingStrategy.PayloadReceiptListener
   private lateinit var coroutineScope: CoroutineScope
 
   private lateinit var wifiP2pInfo: WifiP2pInfo
   private lateinit var onConnectionInfo: (() -> Unit)
   private lateinit var wifiP2pGroup: WifiP2pGroup
-  private lateinit var currentDevice: WifiP2pDevice
 
   private lateinit var socket: Socket
   private lateinit var dataInputStream: DataInputStream
@@ -78,6 +78,7 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   private val groupOwnerAddress: String = "00:00:5e:00:53:af"
   private lateinit var onSocketConnectionMade: (socket: Socket?) -> Unit
   private lateinit var expectedManifest: Manifest
+  private var exception = Exception("Error #0: Error")
 
   @Before
   fun setUp() {
@@ -85,16 +86,19 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     wifiP2pChannel = mockk()
     wifiP2pReceiver = mockk()
     wifiP2pInfo = mockk()
+    wifiP2pGroup = mockk()
     context = spyk(Activity())
     onDeviceFound = mockk()
     pairingListener = mockk()
     operationListener = mockk()
+    payloadReceiptListener = mockk()
     device = mockk()
     syncPayload = mockk()
     coroutineScope = CoroutineScope(Dispatchers.IO)
     onSocketConnectionMade = mockk()
     expectedManifest = populateManifest()
     dataOutputStream = mockk()
+    dataInputStream = mockk()
     wifiDirectDataSharingStrategy = spyk(recordPrivateCalls = true)
     wifiDirectDataSharingStrategy.setActivity(context)
     wifiDirectDataSharingStrategy.setCoroutineScope(coroutineScope = coroutineScope)
@@ -112,6 +116,7 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "wifiP2pChannel", wifiP2pChannel)
     ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "wifiP2pInfo", wifiP2pInfo)
     ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "dataOutputStream", dataOutputStream)
+    ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "dataInputStream", dataInputStream)
   }
 
   @Test
@@ -415,6 +420,105 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     verify { dataOutputStream.writeUTF(manifestString) }
     verify { dataOutputStream.flush() }
     verify { operationListener.onSuccess(device) }
+  }
+
+  @Test
+  fun `receive() calls operationListener#onFailure() when wifiP2pInfo() is null`() {
+    ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "wifiP2pInfo", null)
+    every { operationListener.onFailure(any(), any()) } just runs
+    wifiDirectDataSharingStrategy.receive(
+      device = device,
+      payloadReceiptListener = payloadReceiptListener,
+      operationListener = operationListener
+    )
+
+    val exceptionSlot = slot<Exception>()
+    verify { operationListener.onFailure(device, capture(exceptionSlot)) }
+    Assert.assertEquals(
+      "Error receiving from Google Pixel(00:00:5e:00:53:af): WifiP2PInfo is not available",
+      exceptionSlot.captured.message
+    )
+  }
+
+  @Test
+  fun `receiveManifest() call dataOutputStream#readUTF()`() {
+    val manifestString = Gson().toJson(expectedManifest)
+    every { dataInputStream.readUTF() } returnsMany
+      (listOf(SyncPayloadType.MANIFEST.name, manifestString))
+
+    val actualManifest = wifiDirectDataSharingStrategy.receiveManifest(device, operationListener)
+
+    verify(exactly = 2) { dataInputStream.readUTF() }
+    Assert.assertEquals(expectedManifest.dataType.type, actualManifest!!.dataType.type)
+    Assert.assertEquals(expectedManifest.dataType.name, actualManifest!!.dataType.name)
+    Assert.assertEquals(expectedManifest.dataType.position, actualManifest!!.dataType.position)
+    Assert.assertEquals(expectedManifest.payloadSize, actualManifest!!.payloadSize)
+    Assert.assertEquals(expectedManifest.recordsSize, actualManifest!!.recordsSize)
+  }
+
+  @Test
+  fun `onErrorOccurred() calls closeSocketAndStreams()`() {
+    every { wifiDirectDataSharingStrategy.closeSocketAndStreams() } just runs
+    wifiDirectDataSharingStrategy.onErrorOccurred(exception)
+    verify { wifiDirectDataSharingStrategy.closeSocketAndStreams() }
+  }
+
+  @Test
+  fun `onConnectionFailed() calls closeSocketAndStreams()`() {
+    every { wifiDirectDataSharingStrategy.closeSocketAndStreams() } just runs
+    wifiDirectDataSharingStrategy.onConnectionFailed(device, exception)
+    verify { wifiDirectDataSharingStrategy.closeSocketAndStreams() }
+  }
+
+  @Test
+  fun `onDisconnectSucceeded() calls closeSocketAndStreams()`() {
+    every { wifiDirectDataSharingStrategy.closeSocketAndStreams() } just runs
+    wifiDirectDataSharingStrategy.onDisconnectSucceeded(device)
+    verify { wifiDirectDataSharingStrategy.closeSocketAndStreams() }
+  }
+
+  @Test
+  fun `getCurrentDevice() returns correct WifiDirectDevice`() {
+    ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "currentDevice", wifiP2pDevice)
+    val actualCurrentDevice = wifiDirectDataSharingStrategy.getCurrentDevice()
+    Assert.assertTrue(actualCurrentDevice is WifiDirectDataSharingStrategy.WifiDirectDevice)
+    Assert.assertEquals(actualCurrentDevice!!.strategySpecificDevice, wifiP2pDevice)
+  }
+
+  @Test
+  fun `getCurrentDevice() returns null when currentDevice is null`() {
+    val actualCurrentDevice = wifiDirectDataSharingStrategy.getCurrentDevice()
+    Assert.assertNull(actualCurrentDevice)
+  }
+
+  @Test
+  fun `onResume() calls listenForWifiP2pIntents(), initiatePeerDiscoveryOnceAccessFineLocationGranted(), requestDeviceInfo() and requestConnectionInfo() when isScanning is true`() {
+    every { wifiDirectDataSharingStrategy invokeNoArgs "listenForWifiP2pIntents" } returns null
+    every {
+      wifiDirectDataSharingStrategy invokeNoArgs
+        "initiatePeerDiscoveryOnceAccessFineLocationGranted"
+    } returns null
+    every { wifiDirectDataSharingStrategy invokeNoArgs "requestDeviceInfo" } returns null
+    every { wifiDirectDataSharingStrategy invokeNoArgs "requestConnectionInfo" } returns null
+
+    wifiDirectDataSharingStrategy.onResume(isScanning = true)
+
+    verify { wifiDirectDataSharingStrategy invokeNoArgs "listenForWifiP2pIntents" }
+    verify {
+      wifiDirectDataSharingStrategy invokeNoArgs
+        "initiatePeerDiscoveryOnceAccessFineLocationGranted"
+    }
+    verify { wifiDirectDataSharingStrategy invokeNoArgs "requestDeviceInfo" }
+    verify { wifiDirectDataSharingStrategy invokeNoArgs "requestConnectionInfo" }
+  }
+
+  @Test
+  fun `onPause() calls context#unregisterReceiver()`() {
+    every { context.unregisterReceiver(wifiP2pReceiver) } just runs
+
+    wifiDirectDataSharingStrategy.onPause()
+
+    verify { context.unregisterReceiver(wifiP2pReceiver) }
   }
 
   private fun populateManifest(): Manifest {
