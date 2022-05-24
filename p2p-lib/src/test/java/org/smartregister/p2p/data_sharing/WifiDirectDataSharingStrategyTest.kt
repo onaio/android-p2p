@@ -39,8 +39,9 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.net.Socket
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestCoroutineDispatcher
+import kotlinx.coroutines.test.TestCoroutineScope
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Ignore
@@ -95,7 +96,7 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     payloadReceiptListener = mockk()
     device = mockk()
     syncPayload = mockk()
-    coroutineScope = CoroutineScope(Dispatchers.IO)
+    coroutineScope = TestCoroutineScope(TestCoroutineDispatcher())
     onSocketConnectionMade = mockk()
     expectedManifest = populateManifest()
     dataOutputStream = mockk()
@@ -564,6 +565,7 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     )
     every { wifiP2pManager.stopPeerDiscovery(any(), any()) } just runs
     every { operationListener.onSuccess(null) } just runs
+    every { operationListener.onFailure(any(), any()) } just runs
 
     wifiDirectDataSharingStrategy.stopSearchingDevices(operationListener)
 
@@ -576,6 +578,14 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
         "logDebug" withArguments
         listOf("Successfully stopped peer discovery")
     }
+
+    actionListenerSlot.captured.onFailure(0)
+    val exceptionSlot = slot<Exception>()
+    verify { operationListener.onFailure(null, capture(exceptionSlot)) }
+    Assert.assertEquals(
+      "Error occurred trying to stop peer discovery Error",
+      exceptionSlot.captured.message
+    )
 
     Assert.assertFalse(
       ReflectionHelpers.getField(wifiDirectDataSharingStrategy, "isSearchingDevices")
@@ -597,6 +607,50 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     verify { dataOutputStream.flush() }
     verify { dataOutputStream.close() }
     verify { socket.close() }
+  }
+
+  @Test
+  fun `getWifiP2pReason() returns correct reason for error code 0`() {
+    val response =
+      ReflectionHelpers.callInstanceMethod<String>(
+        wifiDirectDataSharingStrategy,
+        "getWifiP2pReason",
+        ReflectionHelpers.ClassParameter.from(Int::class.java, 0)
+      )
+    Assert.assertEquals("Error", response)
+  }
+
+  @Test
+  fun `getWifiP2pReason() returns correct reason for error code 1`() {
+    val response =
+      ReflectionHelpers.callInstanceMethod<String>(
+        wifiDirectDataSharingStrategy,
+        "getWifiP2pReason",
+        ReflectionHelpers.ClassParameter.from(Int::class.java, 1)
+      )
+    Assert.assertEquals("Unsupported", response)
+  }
+
+  @Test
+  fun `getWifiP2pReason() returns correct reason for error code 2`() {
+    val response =
+      ReflectionHelpers.callInstanceMethod<String>(
+        wifiDirectDataSharingStrategy,
+        "getWifiP2pReason",
+        ReflectionHelpers.ClassParameter.from(Int::class.java, 2)
+      )
+    Assert.assertEquals("Busy", response)
+  }
+
+  @Test
+  fun `getWifiP2pReason() returns correct reason for error code not in (0,1,2)`() {
+    val response =
+      ReflectionHelpers.callInstanceMethod<String>(
+        wifiDirectDataSharingStrategy,
+        "getWifiP2pReason",
+        ReflectionHelpers.ClassParameter.from(Int::class.java, 7)
+      )
+    Assert.assertEquals("Unknown", response)
   }
 
   private fun populateManifest(): Manifest {
