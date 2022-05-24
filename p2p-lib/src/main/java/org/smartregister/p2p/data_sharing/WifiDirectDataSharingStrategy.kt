@@ -718,7 +718,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
         wifiP2pChannel,
         object : WifiP2pManager.ActionListener {
           override fun onSuccess() {
-            logError("Successfully stopped peer discovery")
+            logDebug("Successfully stopped peer discovery")
             operationListener?.onSuccess(null)
           }
 

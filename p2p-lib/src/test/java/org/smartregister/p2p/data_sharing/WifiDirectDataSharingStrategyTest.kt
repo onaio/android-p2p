@@ -87,6 +87,7 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     wifiP2pReceiver = mockk()
     wifiP2pInfo = mockk()
     wifiP2pGroup = mockk()
+    socket = mockk()
     context = spyk(Activity())
     onDeviceFound = mockk()
     pairingListener = mockk()
@@ -519,6 +520,83 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     wifiDirectDataSharingStrategy.onPause()
 
     verify { context.unregisterReceiver(wifiP2pReceiver) }
+  }
+
+  @Test
+  fun `onConnectionInfoAvailable() sets wifiP2pGroup and currentDevice`() {
+    ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "wifiP2pInfo", null)
+    Assert.assertNull(ReflectionHelpers.getField(wifiDirectDataSharingStrategy, "currentDevice"))
+    Assert.assertNull(ReflectionHelpers.getField(wifiDirectDataSharingStrategy, "wifiP2pInfo"))
+    Assert.assertNull(ReflectionHelpers.getField(wifiDirectDataSharingStrategy, "wifiP2pGroup"))
+    every { wifiP2pGroup.isGroupOwner } returns true
+    every { wifiP2pGroup.clientList } returns listOf(wifiP2pDevice)
+
+    wifiP2pInfo.groupFormed = true
+    wifiP2pInfo.isGroupOwner = true
+    wifiDirectDataSharingStrategy.onConnectionInfoAvailable(wifiP2pInfo, wifiP2pGroup)
+
+    verify {
+      wifiDirectDataSharingStrategy invoke
+        "logDebug" withArguments
+        listOf("Connection info available: groupFormed = true, isGroupOwner = true")
+    }
+    Assert.assertEquals(
+      wifiP2pGroup,
+      ReflectionHelpers.getField(wifiDirectDataSharingStrategy, "wifiP2pGroup")
+    )
+    Assert.assertEquals(
+      wifiP2pDevice,
+      ReflectionHelpers.getField(wifiDirectDataSharingStrategy, "currentDevice")
+    )
+  }
+
+  @Test
+  fun `onConnectionInfoAvailable() calls onConnectionInfoAvailable() with provided wifiP2pInfo and null wifiP2pGroup`() {
+    wifiDirectDataSharingStrategy.onConnectionInfoAvailable(wifiP2pInfo)
+    verify { wifiDirectDataSharingStrategy.onConnectionInfoAvailable(wifiP2pInfo, null) }
+  }
+
+  @Test
+  fun `stopSearchingDevices() calls wifiP2pManager#stopPeerDiscovery()`() {
+    ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "isSearchingDevices", true)
+    Assert.assertTrue(
+      ReflectionHelpers.getField(wifiDirectDataSharingStrategy, "isSearchingDevices")
+    )
+    every { wifiP2pManager.stopPeerDiscovery(any(), any()) } just runs
+    every { operationListener.onSuccess(null) } just runs
+
+    wifiDirectDataSharingStrategy.stopSearchingDevices(operationListener)
+
+    val actionListenerSlot = slot<WifiP2pManager.ActionListener>()
+    verify { wifiP2pManager.stopPeerDiscovery(wifiP2pChannel, capture(actionListenerSlot)) }
+    actionListenerSlot.captured.onSuccess()
+    verify { operationListener.onSuccess(null) }
+    verify {
+      wifiDirectDataSharingStrategy invoke
+        "logDebug" withArguments
+        listOf("Successfully stopped peer discovery")
+    }
+
+    Assert.assertFalse(
+      ReflectionHelpers.getField(wifiDirectDataSharingStrategy, "isSearchingDevices")
+    )
+  }
+
+  @Test
+  fun `closeSocketAndStreams() calls stopSearchingDevices(), dataInputStream#close(), dataOutputStream#close, dataOutputStream#flush and socket#close`() {
+    ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "socket", socket)
+    every { wifiDirectDataSharingStrategy.stopSearchingDevices(null) } just runs
+    every { dataInputStream.close() } just runs
+    every { dataOutputStream.flush() } just runs
+    every { dataOutputStream.close() } just runs
+    every { socket.close() } just runs
+
+    wifiDirectDataSharingStrategy.closeSocketAndStreams()
+    verify { wifiDirectDataSharingStrategy.stopSearchingDevices(null) }
+    verify { dataInputStream.close() }
+    verify { dataOutputStream.flush() }
+    verify { dataOutputStream.close() }
+    verify { socket.close() }
   }
 
   private fun populateManifest(): Manifest {
