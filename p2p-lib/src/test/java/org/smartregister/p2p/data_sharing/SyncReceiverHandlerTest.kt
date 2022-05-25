@@ -29,7 +29,6 @@ import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
@@ -125,14 +124,15 @@ class SyncReceiverHandlerTest : RobolectricTest() {
   }
 
   @Test
-  @Ignore("Fix mocking of P2pReceivedHistoryDao")
   fun `updateLastRecord() updates existing received history record for entity`() {
-    val receivedHistory: P2PReceivedHistory = mockk()
-    every { receivedHistory.entityType } answers { entityType }
-    every { receivedHistory.lastUpdatedAt } answers { 0L }
-    every { receivedHistory.appLifetimeKey } answers { appLifetimeKey }
+    val receivedHistory = P2PReceivedHistory()
+    receivedHistory.entityType = entityType
+    receivedHistory.appLifetimeKey = appLifetimeKey
+    receivedHistory.lastUpdatedAt = 0
+    every { p2pReceivedHistoryDao.updateReceivedHistory(any()) } just runs
     every { p2pReceivedHistoryDao.getHistory(any(), any()) } answers { receivedHistory }
-    ReflectionHelpers.setField(syncReceiverHandler, "p2pReceivedHistoryDao", p2pReceivedHistoryDao)
+    every { syncReceiverHandler invokeNoArgs "getP2pReceivedHistoryDao" } returns
+      p2pReceivedHistoryDao
     every { p2PReceiverViewModel.getSendingDeviceAppLifetimeKey() } answers { appLifetimeKey }
 
     runBlocking { syncReceiverHandler.updateLastRecord(entityType, lastUpdatedAt) }
@@ -145,11 +145,12 @@ class SyncReceiverHandlerTest : RobolectricTest() {
   }
 
   @Test
-  @Ignore("Fix mocking of P2pReceivedHistoryDao")
-  fun `updateLastRecord() creates new received history record for entity`() {
+  fun `addReceivedHistory() creates new received history record for entity`() {
     every { p2pReceivedHistoryDao.getHistory(any(), any()) } answers { null }
-    ReflectionHelpers.setField(syncReceiverHandler, "p2pReceivedHistoryDao", p2pReceivedHistoryDao)
+    every { syncReceiverHandler invokeNoArgs "getP2pReceivedHistoryDao" } returns
+      p2pReceivedHistoryDao
     every { p2PReceiverViewModel.getSendingDeviceAppLifetimeKey() } answers { appLifetimeKey }
+    every { p2pReceivedHistoryDao.addReceivedHistory(any()) } just runs
 
     runBlocking { syncReceiverHandler.updateLastRecord(entityType, lastUpdatedAt) }
 

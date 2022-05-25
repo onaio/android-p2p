@@ -58,8 +58,7 @@ class SyncReceiverHandler constructor(@NonNull val p2PReceiverViewModel: P2PRece
 
     withContext(Dispatchers.IO) {
       if (sendingDeviceAppLifetimeKey.isNotBlank()) {
-        val p2pReceivedHistoryDao: P2pReceivedHistoryDao? =
-          P2PLibrary.getInstance()!!.getDb()?.p2pReceivedHistoryDao()
+        val p2pReceivedHistoryDao: P2pReceivedHistoryDao? = getP2pReceivedHistoryDao()
 
         var receivedHistory: P2PReceivedHistory? =
           p2pReceivedHistoryDao?.getHistory(sendingDeviceAppLifetimeKey, entityType)
@@ -76,5 +75,9 @@ class SyncReceiverHandler constructor(@NonNull val p2PReceiverViewModel: P2PRece
         }
       }
     }
+  }
+
+  private fun getP2pReceivedHistoryDao(): P2pReceivedHistoryDao? {
+    return P2PLibrary.getInstance()!!.getDb()?.p2pReceivedHistoryDao()
   }
 }
