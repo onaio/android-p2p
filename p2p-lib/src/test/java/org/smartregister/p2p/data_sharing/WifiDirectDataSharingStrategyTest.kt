@@ -25,6 +25,7 @@ import android.net.wifi.p2p.WifiP2pDevice
 import android.net.wifi.p2p.WifiP2pGroup
 import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
+import android.os.Build
 import com.google.gson.Gson
 import io.mockk.CapturingSlotMatcher
 import io.mockk.EqMatcher
@@ -194,6 +195,51 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     Assert.assertTrue(
       intentFilterSlot.captured.hasAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION)
     )
+  }
+
+  @Test
+  fun `initiatePeerDiscoveryOnceAccessFineLocationGranted() calls initiatePeerDiscovery() when ACCESS_FINE_LOCATION permission is granted`() {
+    every { context.checkPermission(any(), any(), any()) } returns PackageManager.PERMISSION_GRANTED
+    every { wifiP2pManager.discoverPeers(any(), any()) } just runs
+    ReflectionHelpers.callInstanceMethod<WifiDirectDataSharingStrategy>(
+      wifiDirectDataSharingStrategy,
+      "initiatePeerDiscoveryOnceAccessFineLocationGranted"
+    )
+
+    verify {
+      wifiDirectDataSharingStrategy invoke
+        "initiatePeerDiscovery" withArguments
+        listOf(any<OnDeviceFound>())
+    }
+  }
+
+  @Test
+  fun `initiatePeerDiscoveryOnceAccessFineLocationGranted() calls requestAccessFineLocationIfNotGranted() when ACCESS_FINE_LOCATION permission is denied and build version code is greater than 23`() {
+    every { context.checkPermission(any(), any(), any()) } returns PackageManager.PERMISSION_DENIED
+    ReflectionHelpers.setStaticField(Build.VERSION::class.java, "SDK_INT", 27)
+    every { wifiP2pManager.discoverPeers(any(), any()) } just runs
+    every {
+      wifiDirectDataSharingStrategy invokeNoArgs "requestAccessFineLocationIfNotGranted"
+    } returns null
+    ReflectionHelpers.callInstanceMethod<WifiDirectDataSharingStrategy>(
+      wifiDirectDataSharingStrategy,
+      "initiatePeerDiscoveryOnceAccessFineLocationGranted"
+    )
+
+    verify { wifiDirectDataSharingStrategy invokeNoArgs "requestAccessFineLocationIfNotGranted" }
+  }
+
+  @Test
+  fun `initiatePeerDiscoveryOnceAccessFineLocationGranted() calls handleMinimumSDKVersionNotMet() when ACCESS_FINE_LOCATION permission is denied and build version code is less than 23`() {
+    every { context.checkPermission(any(), any(), any()) } returns PackageManager.PERMISSION_DENIED
+    ReflectionHelpers.setStaticField(Build.VERSION::class.java, "SDK_INT", 22)
+    every { wifiP2pManager.discoverPeers(any(), any()) } just runs
+    ReflectionHelpers.callInstanceMethod<WifiDirectDataSharingStrategy>(
+      wifiDirectDataSharingStrategy,
+      "initiatePeerDiscoveryOnceAccessFineLocationGranted"
+    )
+
+    verify { wifiDirectDataSharingStrategy.handleMinimumSDKVersionNotMet(Build.VERSION_CODES.M) }
   }
 
   @Test
@@ -370,6 +416,7 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   @Ignore
   @Test
   fun `send() calls makeSocketConnections() when wifiP2pInfo() is not  null`() {
+    ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "socket", socket)
     coEvery { wifiDirectDataSharingStrategy.makeSocketConnections(any(), any()) } just runs
     wifiDirectDataSharingStrategy.send(
       device = device,
@@ -677,6 +724,23 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
         ReflectionHelpers.ClassParameter.from(Int::class.java, 7)
       )
     Assert.assertEquals("Unknown", response)
+  }
+
+  @Test
+  fun `requestAccessFineLocationIfNotGranted() logDebug() and context#requestPermissions() when ACCESS_FINE_LOCATION permission is denied`() {
+    every { context.checkPermission(any(), any(), any()) } returns PackageManager.PERMISSION_DENIED
+    every { context.requestPermissions(any(), any()) } just runs
+    ReflectionHelpers.callInstanceMethod<WifiDirectDataSharingStrategy>(
+      wifiDirectDataSharingStrategy,
+      "requestAccessFineLocationIfNotGranted"
+    )
+    verify {
+      wifiDirectDataSharingStrategy invoke
+        "logDebug" withArguments
+        listOf("Wifi P2P: Requesting access fine location permission")
+    }
+
+    verify { context.requestPermissions(any(), any()) }
   }
 
   private fun populateManifest(): Manifest {
