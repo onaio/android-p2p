@@ -26,11 +26,14 @@ import android.net.wifi.p2p.WifiP2pGroup
 import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
 import com.google.gson.Gson
+import io.mockk.CapturingSlotMatcher
+import io.mockk.EqMatcher
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkConstructor
 import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
@@ -47,9 +50,11 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
+import org.smartregister.p2p.WifiP2pBroadcastReceiver
 import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.payload.SyncPayloadType
 import org.smartregister.p2p.robolectric.RobolectricTest
+import org.smartregister.p2p.search.contract.P2PManagerListener
 import org.smartregister.p2p.sync.DataType
 
 class WifiDirectDataSharingStrategyTest : RobolectricTest() {
@@ -130,6 +135,27 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     wifiDirectDataSharingStrategy.searchDevices(onDeviceFound, pairingListener)
 
     verify { wifiP2pManager.initialize(context, context.mainLooper, null) }
+  }
+
+  @Test
+  fun `searchDevices() initializes wifiP2pBroadcastReceiver`() {
+    mockkConstructor(WifiP2pBroadcastReceiver::class)
+    every { context.checkPermission(any(), any(), any()) } returns PackageManager.PERMISSION_GRANTED
+    every { wifiP2pManager.initialize(context, context.mainLooper, null) } returns wifiP2pChannel
+    every { context.registerReceiver(any(), any()) } returns null
+    every { wifiP2pManager.discoverPeers(any(), any()) } just runs
+
+    wifiDirectDataSharingStrategy.searchDevices(onDeviceFound, pairingListener)
+
+    val p2PManagerListenerSlot = slot<P2PManagerListener>()
+    verify {
+      constructedWith<WifiP2pBroadcastReceiver>(
+        EqMatcher(wifiP2pManager),
+        EqMatcher(wifiP2pChannel),
+        CapturingSlotMatcher(p2PManagerListenerSlot, P2PManagerListener::class),
+        EqMatcher(context)
+      )
+    }
   }
 
   @Test
