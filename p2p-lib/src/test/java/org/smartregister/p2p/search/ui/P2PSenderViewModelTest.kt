@@ -20,7 +20,6 @@ import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
 import com.google.gson.Gson
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -29,6 +28,7 @@ import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
 import java.util.TreeSet
+import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
 import org.junit.Assert
 import org.junit.Before
@@ -188,7 +188,6 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
     verify { dataSharingStrategy.send(deviceInfo, payload, any()) }
   }
 
-  @Ignore
   @Test
   fun `sendChunkData() should call syncSenderHandler#sendNextManifest() when sending succeeds`() {
     ReflectionHelpers.setField(p2PSenderViewModel, "syncSenderHandler", syncSenderHandler)
@@ -203,7 +202,7 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
     verify { dataSharingStrategy.send(deviceInfo, payload, capture(operationListener)) }
     operationListener.captured.onSuccess(deviceInfo)
 
-    coVerify { syncSenderHandler.sendNextManifest() }
+    verify { runBlocking { syncSenderHandler.sendNextManifest() } }
   }
 
   @Test

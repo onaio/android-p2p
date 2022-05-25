@@ -19,7 +19,6 @@ import io.mockk.mockk
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.RuntimeEnvironment
@@ -67,47 +66,5 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
 
     ReflectionHelpers.setField(p2PDeviceSearchActivity, "isSender", true)
     Assert.assertEquals(DeviceRole.SENDER, p2PDeviceSearchActivity.getDeviceRole())
-  }
-
-  // TODO: Move this to WifiDirectDataSharingStrategyTest
-  @Ignore
-  @Test
-  fun testGetWifiP2pReason() {
-    // TODO Fix this test
-    var wifiP2pReason =
-      ReflectionHelpers.callInstanceMethod<Any>(
-        p2PDeviceSearchActivity,
-        GET_WIFI_P2P_REASON,
-        ReflectionHelpers.ClassParameter(Int::class.java, 0)
-      )
-
-    Assert.assertEquals("Error", wifiP2pReason)
-
-    wifiP2pReason =
-      ReflectionHelpers.callInstanceMethod<Any>(
-        p2PDeviceSearchActivity,
-        GET_WIFI_P2P_REASON,
-        ReflectionHelpers.ClassParameter(Int::class.java, 1)
-      )
-
-    Assert.assertEquals("Unsupported", wifiP2pReason)
-
-    wifiP2pReason =
-      ReflectionHelpers.callInstanceMethod<Any>(
-        p2PDeviceSearchActivity,
-        GET_WIFI_P2P_REASON,
-        ReflectionHelpers.ClassParameter(Int::class.java, 2)
-      )
-
-    Assert.assertEquals("Busy", wifiP2pReason)
-
-    wifiP2pReason =
-      ReflectionHelpers.callInstanceMethod<Any>(
-        p2PDeviceSearchActivity,
-        GET_WIFI_P2P_REASON,
-        ReflectionHelpers.ClassParameter(Int::class.java, 3)
-      )
-
-    Assert.assertEquals("Unknown", wifiP2pReason)
   }
 }
