@@ -637,7 +637,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   }
 
   private fun logError(message: String) {
-    Timber.d(message)
+    Timber.e(message)
   }
 
   override fun handleWifiP2pDisabled() {

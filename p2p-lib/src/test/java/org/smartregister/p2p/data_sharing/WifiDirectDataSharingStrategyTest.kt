@@ -199,7 +199,9 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
 
   @Test
   fun `initiatePeerDiscoveryOnceAccessFineLocationGranted() calls initiatePeerDiscovery() when ACCESS_FINE_LOCATION permission is granted`() {
-    every { context.checkPermission(any(), any(), any()) } returns PackageManager.PERMISSION_GRANTED
+    every {
+      context.checkPermission(android.Manifest.permission.ACCESS_FINE_LOCATION, any(), any())
+    } returns PackageManager.PERMISSION_GRANTED
     every { wifiP2pManager.discoverPeers(any(), any()) } just runs
     ReflectionHelpers.callInstanceMethod<WifiDirectDataSharingStrategy>(
       wifiDirectDataSharingStrategy,
@@ -215,7 +217,9 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
 
   @Test
   fun `initiatePeerDiscoveryOnceAccessFineLocationGranted() calls requestAccessFineLocationIfNotGranted() when ACCESS_FINE_LOCATION permission is denied and build version code is greater than 23`() {
-    every { context.checkPermission(any(), any(), any()) } returns PackageManager.PERMISSION_DENIED
+    every {
+      context.checkPermission(android.Manifest.permission.ACCESS_FINE_LOCATION, any(), any())
+    } returns PackageManager.PERMISSION_DENIED
     ReflectionHelpers.setStaticField(Build.VERSION::class.java, "SDK_INT", 27)
     every { wifiP2pManager.discoverPeers(any(), any()) } just runs
     every {
@@ -231,7 +235,9 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
 
   @Test
   fun `initiatePeerDiscoveryOnceAccessFineLocationGranted() calls handleMinimumSDKVersionNotMet() when ACCESS_FINE_LOCATION permission is denied and build version code is less than 23`() {
-    every { context.checkPermission(any(), any(), any()) } returns PackageManager.PERMISSION_DENIED
+    every {
+      context.checkPermission(android.Manifest.permission.ACCESS_FINE_LOCATION, any(), any())
+    } returns PackageManager.PERMISSION_DENIED
     ReflectionHelpers.setStaticField(Build.VERSION::class.java, "SDK_INT", 22)
     every { wifiP2pManager.discoverPeers(any(), any()) } just runs
     ReflectionHelpers.callInstanceMethod<WifiDirectDataSharingStrategy>(
@@ -244,7 +250,9 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
 
   @Test
   fun `initiatePeerDiscovery() calls wifiP2pManager#discoverPeers()`() {
-    every { context.checkPermission(any(), any(), any()) } returns PackageManager.PERMISSION_GRANTED
+    every {
+      context.checkPermission(android.Manifest.permission.ACCESS_FINE_LOCATION, any(), any())
+    } returns PackageManager.PERMISSION_GRANTED
     every { wifiP2pManager.discoverPeers(any(), any()) } just runs
     ReflectionHelpers.callInstanceMethod<WifiDirectDataSharingStrategy>(
       wifiDirectDataSharingStrategy,
@@ -258,7 +266,9 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
 
   @Test
   fun `initiatePeerDiscovery() calls onSearchingFailed() and onDeviceFound#failed() when WifiP2pManager#ActionListener() returns failure`() {
-    every { context.checkPermission(any(), any(), any()) } returns PackageManager.PERMISSION_GRANTED
+    every {
+      context.checkPermission(android.Manifest.permission.ACCESS_FINE_LOCATION, any(), any())
+    } returns PackageManager.PERMISSION_GRANTED
     every { wifiP2pManager.discoverPeers(any(), any()) } just runs
     every { onDeviceFound.failed(any()) } just runs
     ReflectionHelpers.callInstanceMethod<WifiDirectDataSharingStrategy>(
@@ -280,7 +290,9 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
 
   @Test
   fun `initiatePeerDiscovery() calls logDebug() when WifiP2pManager#ActionListener() returns success`() {
-    every { context.checkPermission(any(), any(), any()) } returns PackageManager.PERMISSION_GRANTED
+    every {
+      context.checkPermission(android.Manifest.permission.ACCESS_FINE_LOCATION, any(), any())
+    } returns PackageManager.PERMISSION_GRANTED
     every { wifiP2pManager.discoverPeers(any(), any()) } just runs
     ReflectionHelpers.callInstanceMethod<WifiDirectDataSharingStrategy>(
       wifiDirectDataSharingStrategy,
@@ -301,7 +313,9 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
 
   @Test
   fun `requestDeviceInfo() calls handleAccessFineLocationNotGranted() when ACCESS_FINE_LOCATION permission is denied`() {
-    every { context.checkPermission(any(), any(), any()) } returns PackageManager.PERMISSION_DENIED
+    every {
+      context.checkPermission(android.Manifest.permission.ACCESS_FINE_LOCATION, any(), any())
+    } returns PackageManager.PERMISSION_DENIED
 
     ReflectionHelpers.callInstanceMethod<WifiDirectDataSharingStrategy>(
       wifiDirectDataSharingStrategy,
@@ -313,7 +327,9 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
 
   @Test
   fun `connect() calls handleAccessFineLocationNotGranted() when ACCESS_FINE_LOCATION permission is denied`() {
-    every { context.checkPermission(any(), any(), any()) } returns PackageManager.PERMISSION_DENIED
+    every {
+      context.checkPermission(android.Manifest.permission.ACCESS_FINE_LOCATION, any(), any())
+    } returns PackageManager.PERMISSION_DENIED
 
     wifiDirectDataSharingStrategy.connect(device = device, operationListener = operationListener)
 
@@ -322,7 +338,9 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
 
   @Test
   fun `connect() calls wifiP2pManager#connect() when ACCESS_FINE_LOCATION permission is granted`() {
-    every { context.checkPermission(any(), any(), any()) } returns PackageManager.PERMISSION_GRANTED
+    every {
+      context.checkPermission(android.Manifest.permission.ACCESS_FINE_LOCATION, any(), any())
+    } returns PackageManager.PERMISSION_GRANTED
     every { wifiP2pManager.connect(any(), any(), any()) } just runs
     every { operationListener.onSuccess(any()) } just runs
 
@@ -631,7 +649,7 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   }
 
   @Test
-  fun `stopSearchingDevices() calls wifiP2pManager#stopPeerDiscovery()`() {
+  fun `stopSearchingDevices() calls wifiP2pManager#stopPeerDiscovery() when isSearchingDevices flag is true`() {
     ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "isSearchingDevices", true)
     Assert.assertTrue(
       ReflectionHelpers.getField(wifiDirectDataSharingStrategy, "isSearchingDevices")
@@ -727,8 +745,10 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   }
 
   @Test
-  fun `requestAccessFineLocationIfNotGranted() logDebug() and context#requestPermissions() when ACCESS_FINE_LOCATION permission is denied`() {
-    every { context.checkPermission(any(), any(), any()) } returns PackageManager.PERMISSION_DENIED
+  fun `requestAccessFineLocationIfNotGranted() should call logDebug() and context#requestPermissions() when ACCESS_FINE_LOCATION permission is denied`() {
+    every {
+      context.checkPermission(android.Manifest.permission.ACCESS_FINE_LOCATION, any(), any())
+    } returns PackageManager.PERMISSION_DENIED
     every { context.requestPermissions(any(), any()) } just runs
     ReflectionHelpers.callInstanceMethod<WifiDirectDataSharingStrategy>(
       wifiDirectDataSharingStrategy,
@@ -740,7 +760,9 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
         listOf("Wifi P2P: Requesting access fine location permission")
     }
 
-    verify { context.requestPermissions(any(), any()) }
+    verify {
+      context.requestPermissions(arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), any())
+    }
   }
 
   private fun populateManifest(): Manifest {
