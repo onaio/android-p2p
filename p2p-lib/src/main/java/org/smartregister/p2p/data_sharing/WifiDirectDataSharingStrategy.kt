@@ -352,7 +352,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     if (wifiP2pInfo == null) {
       val p2pDevice = (device?.strategySpecificDevice as WifiP2pDevice)
       val errorMsg = "WifiP2PInfo is not available"
-      Timber.e(errorMsg)
+      logError(errorMsg)
       operationListener.onFailure(
         device,
         Exception("Error sending to ${p2pDevice.deviceName}(${p2pDevice.deviceAddress}): $errorMsg")
@@ -505,10 +505,12 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     if (wifiP2pInfo == null) {
       val p2pDevice = (device?.strategySpecificDevice as WifiP2pDevice)
       val errorMsg = "WifiP2PInfo is not available"
-      Timber.e(errorMsg)
+      logError(errorMsg)
       operationListener.onFailure(
         device,
-        Exception("Error sending to ${p2pDevice.deviceName}(${p2pDevice.deviceAddress}): $errorMsg")
+        Exception(
+          "Error receiving from ${p2pDevice.deviceName}(${p2pDevice.deviceAddress}): $errorMsg"
+        )
       )
     }
 
@@ -535,7 +537,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
                 currentBufferPos += n
                 payloadLen -= n.toLong()
-                Timber.e("file size  $payloadLen")
+                logError("file size  $payloadLen")
               }
               payloadReceiptListener.onPayloadReceived(BytePayload(payloadByteArray))
             } else {
@@ -634,6 +636,10 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     Timber.d(message)
   }
 
+  private fun logError(message: String) {
+    Timber.e(message)
+  }
+
   override fun handleWifiP2pDisabled() {
     // TODO: Handle the issue here
   }
@@ -678,13 +684,13 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
   override fun onConnectionInfoAvailable(info: WifiP2pInfo, wifiP2pGroup: WifiP2pGroup?) {
     if (info == null) {
-      Timber.e("Connection info provided is NULL")
+      logError("Connection info provided is NULL")
       return
     }
 
     val message =
       "Connection info available: groupFormed = ${info.groupFormed}, isGroupOwner = ${info.isGroupOwner}"
-    Timber.d(message)
+    logDebug(message)
     wifiP2pInfo = info
 
     if (info.groupFormed && wifiP2pGroup != null) {
@@ -712,7 +718,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
         wifiP2pChannel,
         object : WifiP2pManager.ActionListener {
           override fun onSuccess() {
-            Timber.e("Successfully stopped peer discovery")
+            logDebug("Successfully stopped peer discovery")
             operationListener?.onSuccess(null)
           }
 
