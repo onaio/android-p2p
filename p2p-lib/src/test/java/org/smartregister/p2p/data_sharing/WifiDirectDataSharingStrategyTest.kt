@@ -662,6 +662,26 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
 
     val actionListenerSlot = slot<WifiP2pManager.ActionListener>()
     verify { wifiP2pManager.stopPeerDiscovery(wifiP2pChannel, capture(actionListenerSlot)) }
+
+    Assert.assertFalse(
+      ReflectionHelpers.getField(wifiDirectDataSharingStrategy, "isSearchingDevices")
+    )
+  }
+
+  @Test
+  fun `stopSearchingDevices() calls logDebug() and operationListener#onSuccess() when isSearchingDevices flag is true and actionListener#onSuccess() is called`() {
+    ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "isSearchingDevices", true)
+    Assert.assertTrue(
+      ReflectionHelpers.getField(wifiDirectDataSharingStrategy, "isSearchingDevices")
+    )
+    every { wifiP2pManager.stopPeerDiscovery(any(), any()) } just runs
+    every { operationListener.onSuccess(null) } just runs
+    every { operationListener.onFailure(any(), any()) } just runs
+
+    wifiDirectDataSharingStrategy.stopSearchingDevices(operationListener)
+
+    val actionListenerSlot = slot<WifiP2pManager.ActionListener>()
+    verify { wifiP2pManager.stopPeerDiscovery(wifiP2pChannel, capture(actionListenerSlot)) }
     actionListenerSlot.captured.onSuccess()
     verify { operationListener.onSuccess(null) }
     verify {
@@ -669,17 +689,28 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
         "logDebug" withArguments
         listOf("Successfully stopped peer discovery")
     }
+  }
 
+  @Test
+  fun `stopSearchingDevices() calls operationListener#onFailure() when isSearchingDevices flag is true and actionListener#onFailure() is called`() {
+    ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "isSearchingDevices", true)
+    Assert.assertTrue(
+      ReflectionHelpers.getField(wifiDirectDataSharingStrategy, "isSearchingDevices")
+    )
+    every { wifiP2pManager.stopPeerDiscovery(any(), any()) } just runs
+    every { operationListener.onSuccess(null) } just runs
+    every { operationListener.onFailure(any(), any()) } just runs
+
+    wifiDirectDataSharingStrategy.stopSearchingDevices(operationListener)
+
+    val actionListenerSlot = slot<WifiP2pManager.ActionListener>()
+    verify { wifiP2pManager.stopPeerDiscovery(wifiP2pChannel, capture(actionListenerSlot)) }
     actionListenerSlot.captured.onFailure(0)
     val exceptionSlot = slot<Exception>()
     verify { operationListener.onFailure(null, capture(exceptionSlot)) }
     Assert.assertEquals(
       "Error occurred trying to stop peer discovery Error",
       exceptionSlot.captured.message
-    )
-
-    Assert.assertFalse(
-      ReflectionHelpers.getField(wifiDirectDataSharingStrategy, "isSearchingDevices")
     )
   }
 
