@@ -754,7 +754,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     }
   }
 
-  internal fun getWifiP2pReason(reasonInt: Int): String =
+  fun getWifiP2pReason(reasonInt: Int): String =
     when (reasonInt) {
       0 -> "Error"
       1 -> "Unsupported"
