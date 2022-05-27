@@ -142,10 +142,11 @@ class SyncReceiverHandlerTest : RobolectricTest() {
       p2pReceivedHistoryDao.updateReceivedHistory(capture(receivedHistorySlot))
     }
     Assert.assertEquals(lastUpdatedAt, receivedHistorySlot.captured.lastUpdatedAt)
+    Assert.assertEquals(entityType, receivedHistorySlot.captured.entityType)
   }
 
   @Test
-  fun `addReceivedHistory() creates new received history record for entity`() {
+  fun `addReceivedHistory() creates new received history record for entity when p2p received history is null`() {
     every { p2pReceivedHistoryDao.getHistory(any(), any()) } answers { null }
     every { syncReceiverHandler invokeNoArgs "getP2pReceivedHistoryDao" } returns
       p2pReceivedHistoryDao

@@ -26,7 +26,6 @@ import android.net.wifi.p2p.WifiP2pGroup
 import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
 import android.os.Build
-import com.google.android.gms.common.internal.safeparcel.SafeParcelWriter.writeLong
 import com.google.gson.Gson
 import io.mockk.CapturingSlotMatcher
 import io.mockk.EqMatcher
@@ -40,6 +39,7 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
+import io.mockk.verifySequence
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.net.Socket
@@ -466,8 +466,12 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     )
 
     coVerify { wifiDirectDataSharingStrategy.makeSocketConnections(any(), any()) }
-    coVerify(exactly = 2) { dataOutputStream.writeUTF(any()) }
-    coVerify(exactly = 2) { dataOutputStream.flush() }
+    verifySequence {
+      dataOutputStream.writeUTF(SyncPayloadType.STRING.name)
+      dataOutputStream.flush()
+      dataOutputStream.writeUTF("some data")
+      dataOutputStream.flush()
+    }
     coVerify { operationListener.onSuccess(device) }
   }
 
