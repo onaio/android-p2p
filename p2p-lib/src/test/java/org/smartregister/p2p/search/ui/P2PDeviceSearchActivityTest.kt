@@ -27,7 +27,6 @@ import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.common.api.ResolvableApiException
@@ -108,7 +107,9 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
     p2PDeviceSearchActivityController.pause().stop().destroy()
   }
 
-  @Ignore
+  @Ignore(
+    "The instance referenced inside the ambiguous class is different from what we have mocked"
+  )
   @Test
   fun `clicking scan button should call requestLocationPermissionsAndEnableLocation()`() {
     every { p2PDeviceSearchActivity.requestLocationPermissionsAndEnableLocation() } just runs
@@ -165,12 +166,17 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
     val pairingListenerSlot = slot<DataSharingStrategy.PairingListener>()
     every { dataSharingStrategy.searchDevices(any(), capture(pairingListenerSlot)) } just runs
 
+    Assert.assertNull(ReflectionHelpers.getField(p2PDeviceSearchActivity, "currentConnectedDevice"))
+
     p2PDeviceSearchActivity.startScanning()
 
     pairingListenerSlot.captured.onSuccess(deviceInfo)
 
     verify { p2PDeviceSearchActivity.showP2PSelectPage(any(), deviceInfo.getDisplayName()) }
-    Assert.assertEquals(deviceInfo, p2PDeviceSearchActivity.getCurrentConnectedDevice())
+    Assert.assertEquals(
+      deviceInfo,
+      ReflectionHelpers.getField(p2PDeviceSearchActivity, "currentConnectedDevice")
+    )
   }
 
   @Test
@@ -236,7 +242,6 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
   fun showToast() {
     p2PDeviceSearchActivity.showToast("Somebody")
 
-    // Assert.assertEquals("Somebody", ShadowP2pToast.getLatestToastText())
     Assert.assertEquals("Somebody", ShadowToast.getTextOfLatestToast())
   }
 
@@ -287,8 +292,6 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
     every { task.addOnFailureListener(any<Activity>(), capture(onFailureListenerSlot)) } returns
       mockk()
     every { resolvableError.startResolutionForResult(any(), any()) } just runs
-    // every { resolvableError.startResolutionForResult(any(),
-    // eq(p2PDeviceSearchActivity.REQUEST_CHECK_LOCATION_ENABLED)) } just runs
 
     p2PDeviceSearchActivity.checkLocationEnabled()
 
@@ -305,17 +308,9 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
     Assert.assertEquals(LocationRequest.PRIORITY_LOW_POWER, locationRequest.priority)
   }
 
-  @Ignore
   @Test
   fun `onActivityResult() should call requestLocationPermissionsAndEnableLocation when resultCode is RESULT_OK and requestCode is REQUEST_CHECK_LOCATION_ENABLED`() {
     every { p2PDeviceSearchActivity.requestLocationPermissionsAndEnableLocation() } just runs
-    val superActivity = p2PDeviceSearchActivity as AppCompatActivity
-
-    justRun {
-      superActivity invoke
-        "onActivityResult" withArguments
-        listOf(any<Int>(), any<Int>(), any<Intent>())
-    }
 
     ReflectionHelpers.callInstanceMethod<Void>(
       p2PDeviceSearchActivity,
@@ -380,7 +375,6 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
     every { bottomSheetDialog.setCancelable(any()) } just runs
     every { bottomSheetDialog.show() } just runs
 
-    // TODO: Finish this
     p2PDeviceSearchActivity.showScanningDialog()
 
     verify { bottomSheetDialog.setContentView(any<Int>()) }
@@ -696,6 +690,9 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
 
   @Test
   fun `senderSyncComplete() should change isSenderSyncComplete flag to false when false is passed`() {
+    ReflectionHelpers.setField(p2PDeviceSearchActivity, "isSenderSyncComplete", true)
+    Assert.assertTrue(ReflectionHelpers.getField(p2PDeviceSearchActivity, "isSenderSyncComplete"))
+
     p2PDeviceSearchActivity.senderSyncComplete(false)
 
     Assert.assertFalse(ReflectionHelpers.getField(p2PDeviceSearchActivity, "isSenderSyncComplete"))
@@ -703,6 +700,8 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
 
   @Test
   fun `senderSyncComplete() should change isSenderSyncComplete flag to true when true is passed`() {
+    Assert.assertFalse(ReflectionHelpers.getField(p2PDeviceSearchActivity, "isSenderSyncComplete"))
+
     p2PDeviceSearchActivity.senderSyncComplete(true)
 
     Assert.assertTrue(ReflectionHelpers.getField(p2PDeviceSearchActivity, "isSenderSyncComplete"))
