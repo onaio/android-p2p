@@ -49,8 +49,9 @@ class P2PLibrary private constructor() {
       return instance!!
     }
 
-    fun init(@NonNull options: Options) {
+    fun init(@NonNull options: Options): P2PLibrary {
       instance = P2PLibrary(options)
+      return instance!!
     }
   }
 
