@@ -74,7 +74,7 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
 
   private lateinit var p2PDeviceSearchActivity: P2PDeviceSearchActivity
   private lateinit var p2PDeviceSearchActivityController:
-          ActivityController<P2PDeviceSearchActivity>
+    ActivityController<P2PDeviceSearchActivity>
   private lateinit var dataSharingStrategy: DataSharingStrategy
   private lateinit var deviceInfo: DeviceInfo
 
@@ -262,7 +262,7 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
     every { settingsClient.checkLocationSettings(any()) } returns task
     every { p2PDeviceSearchActivity.startScanning() } just runs
     every { task.addOnSuccessListener(any<Activity>(), capture(onSuccessListenerSlot)) } returns
-            mockk()
+      mockk()
     every { task.addOnFailureListener(any<Activity>(), any()) } returns mockk()
 
     p2PDeviceSearchActivity.checkLocationEnabled()
@@ -285,7 +285,7 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
     every { p2PDeviceSearchActivity.startScanning() } just runs
     every { task.addOnSuccessListener(any<Activity>(), any()) } returns mockk()
     every { task.addOnFailureListener(any<Activity>(), capture(onFailureListenerSlot)) } returns
-            mockk()
+      mockk()
     every { resolvableError.startResolutionForResult(any(), any()) } just runs
     // every { resolvableError.startResolutionForResult(any(),
     // eq(p2PDeviceSearchActivity.REQUEST_CHECK_LOCATION_ENABLED)) } just runs
@@ -313,8 +313,8 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
 
     justRun {
       superActivity invoke
-              "onActivityResult" withArguments
-              listOf(any<Int>(), any<Int>(), any<Intent>())
+        "onActivityResult" withArguments
+        listOf(any<Int>(), any<Int>(), any<Intent>())
     }
 
     ReflectionHelpers.callInstanceMethod<Void>(
@@ -363,9 +363,9 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
 
     val intSlot = slot<Int>()
     every { p2PDeviceSearchActivity.getString(capture(intSlot)) } answers
-            {
-              RuntimeEnvironment.application.getString(intSlot.captured)
-            }
+      {
+        RuntimeEnvironment.application.getString(intSlot.captured)
+      }
     every { bottomSheetDialog.setContentView(any<Int>()) } just runs
     every { bottomSheetDialog.setTitle(any<String>()) } just runs
     every {
@@ -465,9 +465,9 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
     justRun { p2PDeviceSearchActivity invokeNoArgs "initInteractiveDialog" }
     every { p2PDeviceSearchActivity getProperty "interactiveDialog" } returns bottomSheetDialog
     every { p2PDeviceSearchActivity.getString(R.string.start_sending_data) } returns
-            "Start sending data"
+      "Start sending data"
     every { p2PDeviceSearchActivity.getString(R.string.start_sending_data_to) } returns
-            "Start sending data to %s"
+      "Start sending data to %s"
     every { bottomSheetDialog.setContentView(any<Int>()) } just runs
     every {
       hint(TextView::class)
@@ -506,13 +506,13 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
     val p2PReceiverViewModel = mockk<P2PReceiverViewModel>(relaxed = true)
 
     every { p2PDeviceSearchActivity getProperty "p2PReceiverViewModel" } returns
-            p2PReceiverViewModel
+      p2PReceiverViewModel
     justRun { p2PDeviceSearchActivity invokeNoArgs "initInteractiveDialog" }
     every { p2PDeviceSearchActivity getProperty "interactiveDialog" } returns bottomSheetDialog
     every { p2PDeviceSearchActivity.getString(R.string.start_receiving_data) } returns
-            "Start receiving data"
+      "Start receiving data"
     every { p2PDeviceSearchActivity.getString(R.string.waiting_for_transfer_to_start) } returns
-            "Waiting for data transfer to start"
+      "Waiting for data transfer to start"
     every { bottomSheetDialog.setContentView(any<Int>()) } just runs
     every {
       hint(TextView::class)
