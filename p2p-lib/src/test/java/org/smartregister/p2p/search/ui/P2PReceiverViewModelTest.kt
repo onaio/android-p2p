@@ -16,6 +16,7 @@
 package org.smartregister.p2p.search.ui
 
 import android.net.wifi.p2p.WifiP2pDevice
+import android.os.Looper
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import io.mockk.clearAllMocks
@@ -33,6 +34,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.RuntimeEnvironment
+import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.p2p.CoroutineTestRule
@@ -247,6 +249,9 @@ class P2PReceiverViewModelTest : RobolectricTest() {
     every { p2PReceiverViewModel.getReceivedHistory(appLifetimeKey) } returns null
 
     p2PReceiverViewModel.checkIfDeviceKeyHasChanged(appLifetimeKey)
+
+    Shadows.shadowOf(Looper.getMainLooper()).idle()
+
     val receivedHistorySlot = slot<List<P2PReceivedHistory>>()
     coVerify { p2PReceiverViewModel.sendLastReceivedRecords(capture(receivedHistorySlot)) }
     Assert.assertTrue(receivedHistorySlot.captured.isEmpty())

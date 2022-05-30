@@ -74,7 +74,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
   private var isSender = false
   private var scanning = false
   private var isSenderSyncComplete = false
-  private lateinit var interactiveDialog: BottomSheetDialog
+  internal lateinit var interactiveDialog: BottomSheetDialog
   private var currentConnectedDevice: DeviceInfo? = null
 
   private lateinit var dataSharingStrategy: DataSharingStrategy
@@ -142,16 +142,14 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
         override fun onDisconnected() {
           if (!requestDisconnection) {
             removeScanningDialog()
-            Toast.makeText(
-                this@P2PDeviceSearchActivity,
-                "Connection was disconnected",
-                Toast.LENGTH_LONG
-              )
-              .show()
+            showToast("Connection was disconnected")
+
+            keepScreenOn(false)
 
             if (isSenderSyncComplete) {
               showTransferCompleteDialog()
             }
+
             Timber.e("Successful on disconnect")
             Timber.e("isSenderSyncComplete $isSenderSyncComplete")
             // But use a flag to determine if sync was completed
@@ -161,6 +159,10 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     )
 
     showScanningDialog()
+  }
+
+  internal fun showToast(text: String) {
+    Toast.makeText(this@P2PDeviceSearchActivity, text, Toast.LENGTH_LONG).show()
   }
 
   fun requestLocationPermissionsAndEnableLocation() {
@@ -298,7 +300,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
   }
 
   @RequiresApi(Build.VERSION_CODES.M)
-  private fun requestAccessFineLocationIfNotGranted() {
+  internal fun requestAccessFineLocationIfNotGranted() {
     when (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
       PackageManager.PERMISSION_GRANTED -> logDebug("Wifi P2P: Access fine location granted")
       else -> {
@@ -311,8 +313,12 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     }
   }
 
+  internal fun createBottomSheetDialog(): BottomSheetDialog {
+    return BottomSheetDialog(this)
+  }
+
   fun showScanningDialog() {
-    interactiveDialog = BottomSheetDialog(this)
+    interactiveDialog = createBottomSheetDialog()
     interactiveDialog.setContentView(R.layout.devices_list_bottom_sheet)
     interactiveDialog.setTitle(getString(R.string.nearby_devices))
 
@@ -545,7 +551,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
    *
    * @param enable `TRUE` to enable or `FALSE` disable
    */
-  protected fun keepScreenOn(enable: Boolean) {
+  internal fun keepScreenOn(enable: Boolean) {
     if (enable) {
       keepScreenOnCounter++
       if (keepScreenOnCounter == 1) {
