@@ -52,6 +52,7 @@ import org.junit.Before
 import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.p2p.WifiP2pBroadcastReceiver
+import org.smartregister.p2p.payload.BytePayload
 import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.payload.StringPayload
 import org.smartregister.p2p.payload.SyncPayloadType
@@ -651,7 +652,20 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "socket", socket)
     every { dataInputStream.readUTF() } returns SyncPayloadType.BYTES.name
     every { dataInputStream.readLong() } returns bytePayload.size.toLong()
-    every { dataInputStream.read(any(), any(), any()) } returnsMany (listOf(0, -1))
+
+    val byteArraySlot = slot<ByteArray>()
+    val offsetSlot = slot<Int>()
+    every { dataInputStream.read(capture(byteArraySlot), capture(offsetSlot), any()) } answers
+      {
+        if (offsetSlot.captured == 0) {
+          bytePayload.forEachIndexed { index, byte -> byteArraySlot.captured[index] = byte }
+
+          bytePayload.size
+        } else {
+          -1
+        }
+      }
+
     every { wifiDirectDataSharingStrategy invokeNoArgs "getGroupOwnerAddress" } returns
       groupOwnerAddress
 
@@ -662,13 +676,12 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     )
 
     coVerify { dataInputStream.readLong() }
-    coVerify { dataInputStream.read(ByteArray(bytePayload.size), 0, bytePayload.size) }
-    verify {
-      wifiDirectDataSharingStrategy invoke
-        "logDebug" withArguments
-        listOf("file size  ${bytePayload.size.toLong()}")
-    }
-    verify { payloadReceiptListener.onPayloadReceived(any()) }
+    coVerify { dataInputStream.read(any(), 0, bytePayload.size) }
+    verify { wifiDirectDataSharingStrategy invoke "logDebug" withArguments listOf("file size 0") }
+
+    val bytePayloadSlot = slot<BytePayload>()
+    verify { payloadReceiptListener.onPayloadReceived(capture(bytePayloadSlot)) }
+    Assert.assertArrayEquals(bytePayload, bytePayloadSlot.captured.payload)
   }
 
   @Test

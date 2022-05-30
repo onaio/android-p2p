@@ -541,7 +541,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
                 currentBufferPos += n
                 payloadLen -= n.toLong()
-                logDebug("file size  $payloadLen")
+                logDebug("file size $payloadLen")
               }
               payloadReceiptListener.onPayloadReceived(BytePayload(payloadByteArray))
             } else {
