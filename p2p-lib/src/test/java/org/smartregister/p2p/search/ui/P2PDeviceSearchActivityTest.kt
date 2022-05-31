@@ -48,14 +48,15 @@ import io.mockk.verify
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import org.robolectric.Robolectric
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.android.controller.ActivityController
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowToast
+import org.robolectric.shadows._Activity_
 import org.robolectric.util.ReflectionHelpers
+import org.robolectric.util.reflector.Reflector
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.R
 import org.smartregister.p2p.authentication.model.DeviceRole
@@ -92,7 +93,21 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
     p2PDeviceSearchActivityController =
       Robolectric.buildActivity(P2PDeviceSearchActivity::class.java)
     p2PDeviceSearchActivity =
-      spyk(p2PDeviceSearchActivityController.create().resume().get(), recordPrivateCalls = true)
+      spyk(
+        ReflectionHelpers.getField<P2PDeviceSearchActivity>(
+          p2PDeviceSearchActivityController,
+          "component"
+        ),
+        recordPrivateCalls = true
+      )
+    val _component_ = Reflector.reflector(_Activity_::class.java, p2PDeviceSearchActivity)
+    ReflectionHelpers.setField(
+      p2PDeviceSearchActivityController,
+      "component",
+      p2PDeviceSearchActivity
+    )
+    ReflectionHelpers.setField(p2PDeviceSearchActivityController, "_component_", _component_)
+    p2PDeviceSearchActivityController.create().resume().get()
 
     val wifiP2pDevice =
       WifiP2pDevice().apply {
@@ -107,9 +122,6 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
     p2PDeviceSearchActivityController.pause().stop().destroy()
   }
 
-  @Ignore(
-    "The instance referenced inside the ambiguous class is different from what we have mocked"
-  )
   @Test
   fun `clicking scan button should call requestLocationPermissionsAndEnableLocation()`() {
     every { p2PDeviceSearchActivity.requestLocationPermissionsAndEnableLocation() } just runs

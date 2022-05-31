@@ -15,6 +15,7 @@
  */
 package org.smartregister.p2p.search.ui
 
+import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -193,12 +194,7 @@ class P2PSenderViewModel(
     viewModelScope.launch(Dispatchers.IO) {
       dataTypes = P2PLibrary.getInstance().getSenderTransferDao().getP2PDataTypes()
     }
-    syncSenderHandler =
-      SyncSenderHandler(
-        p2PSenderViewModel = this,
-        dataSyncOrder = dataTypes,
-        receivedHistory = receivedHistory
-      )
+    syncSenderHandler = createSyncSenderHandler(dataTypes, receivedHistory)
 
     if (!dataTypes.isEmpty()) {
       Timber.i("Process received history json data not null")
@@ -208,6 +204,17 @@ class P2PSenderViewModel(
       sendSyncComplete()
     }
   }
+
+  @VisibleForTesting()
+  internal fun createSyncSenderHandler(
+    dataTypes: TreeSet<DataType>,
+    receivedHistory: List<P2PReceivedHistory>
+  ) =
+    SyncSenderHandler(
+      p2PSenderViewModel = this,
+      dataSyncOrder = dataTypes,
+      receivedHistory = receivedHistory
+    )
 
   fun updateSenderSyncComplete(senderSyncComplete: Boolean) {
     viewModelScope.launch {
