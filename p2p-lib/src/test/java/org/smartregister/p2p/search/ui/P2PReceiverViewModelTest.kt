@@ -247,6 +247,7 @@ class P2PReceiverViewModelTest : RobolectricTest() {
   @Test
   fun `checkIfDeviceKeyHasChanged() calls p2pReceiverViewModel#sendLastReceivedRecords() with empty list when received history is null`() {
     every { p2PReceiverViewModel.getReceivedHistory(appLifetimeKey) } returns null
+    every { p2PReceiverViewModel.sendLastReceivedRecords(any()) } just runs
 
     p2PReceiverViewModel.checkIfDeviceKeyHasChanged(appLifetimeKey)
 
