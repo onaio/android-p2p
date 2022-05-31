@@ -360,7 +360,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       return
     }
 
-    coroutineScope.launch {
+    coroutineScope.launch(Dispatchers.IO) {
       makeSocketConnections(wifiP2pInfo!!.groupOwnerAddress.hostAddress) { socket ->
         if (socket != null) {
 
@@ -514,7 +514,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       )
     }
 
-    coroutineScope.launch {
+    coroutineScope.launch(Dispatchers.IO) {
       makeSocketConnections(wifiP2pInfo!!.groupOwnerAddress.hostAddress) { socket ->
         if (socket != null) {
 
