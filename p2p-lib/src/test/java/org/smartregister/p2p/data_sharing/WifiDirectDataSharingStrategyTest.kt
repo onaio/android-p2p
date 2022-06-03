@@ -500,9 +500,10 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
 
   @Test
   fun `send() calls dataOutputStream#writeUTF, dataOutputStream#writeLong, dataOutputStream#write and operationListener#onSuccess() when dataOutputStream is not null and payload datatype is bytes`() {
+    val payload = "some data"
     ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "socket", socket)
     every { syncPayload.getDataType() } returns SyncPayloadType.BYTES
-    every { syncPayload.getData() } returns "some data".toByteArray()
+    every { syncPayload.getData() } returns payload.toByteArray()
     every { wifiDirectDataSharingStrategy invokeNoArgs "getGroupOwnerAddress" } returns
       groupOwnerAddress
     coEvery { dataOutputStream.writeUTF(any()) } just runs
@@ -515,11 +516,11 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
       operationListener = operationListener,
       syncPayload = syncPayload
     )
-    val payloadSize = "some data".toByteArray().size
+    val payloadSize = payload.toByteArray().size
     coVerify { wifiDirectDataSharingStrategy.makeSocketConnections(any(), any()) }
     coVerify { dataOutputStream.writeUTF(SyncPayloadType.BYTES.name) }
     coVerify { dataOutputStream.writeLong(payloadSize.toLong()) }
-    coVerify { dataOutputStream.write("some data".toByteArray(), 0, payloadSize) }
+    coVerify { dataOutputStream.write(payload.toByteArray(), 0, payloadSize) }
     coVerify { operationListener.onSuccess(device) }
   }
 
