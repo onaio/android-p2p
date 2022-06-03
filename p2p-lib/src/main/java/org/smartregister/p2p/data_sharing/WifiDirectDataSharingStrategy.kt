@@ -361,7 +361,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     }
 
     coroutineScope.launch(Dispatchers.IO) {
-      makeSocketConnections(wifiP2pInfo!!.groupOwnerAddress.hostAddress) { socket ->
+      makeSocketConnections(getGroupOwnerAddress()) { socket ->
         if (socket != null) {
 
           when (syncPayload.getDataType()) {
@@ -380,7 +380,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
                   operationListener.onSuccess(device)
                 }
               } else {
-                operationListener.onFailure(device, java.lang.Exception(""))
+                operationListener.onFailure(device, Exception("DataOutputStream is null"))
               }
             }
             SyncPayloadType.BYTES -> {
@@ -421,6 +421,10 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
         }
       }
     }
+  }
+
+  private fun getGroupOwnerAddress(): String {
+    return wifiP2pInfo!!.groupOwnerAddress.hostAddress
   }
 
   suspend fun makeSocketConnections(
@@ -518,7 +522,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     }
 
     coroutineScope.launch(Dispatchers.IO) {
-      makeSocketConnections(wifiP2pInfo!!.groupOwnerAddress.hostAddress) { socket ->
+      makeSocketConnections(getGroupOwnerAddress()) { socket ->
         if (socket != null) {
 
           dataInputStream?.run {
@@ -540,7 +544,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
                 currentBufferPos += n
                 payloadLen -= n.toLong()
-                logError("file size  $payloadLen")
+                logDebug("file size $payloadLen")
               }
               payloadReceiptListener.onPayloadReceived(BytePayload(payloadByteArray))
             } else {

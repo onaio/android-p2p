@@ -47,19 +47,18 @@ class SyncReceiverHandler constructor(@NonNull val p2PReceiverViewModel: P2PRece
     var lastUpdatedAt =
       P2PLibrary.getInstance().getReceiverTransferDao().receiveJson(currentManifest.dataType, data)
 
-    updateLastRecord(currentManifest.dataType.name, lastUpdatedAt = lastUpdatedAt)
+    addOrUpdateLastRecord(currentManifest.dataType.name, lastUpdatedAt = lastUpdatedAt)
 
     p2PReceiverViewModel.processIncomingManifest()
   }
 
-  suspend fun updateLastRecord(@NonNull entityType: String, lastUpdatedAt: Long) {
+  suspend fun addOrUpdateLastRecord(@NonNull entityType: String, lastUpdatedAt: Long) {
     // Retrieve sending device details
     val sendingDeviceAppLifetimeKey = p2PReceiverViewModel.getSendingDeviceAppLifetimeKey()
 
     withContext(Dispatchers.IO) {
       if (sendingDeviceAppLifetimeKey.isNotBlank()) {
-        val p2pReceivedHistoryDao: P2pReceivedHistoryDao? =
-          P2PLibrary.getInstance()!!.getDb()?.p2pReceivedHistoryDao()
+        val p2pReceivedHistoryDao: P2pReceivedHistoryDao? = getP2pReceivedHistoryDao()
 
         var receivedHistory: P2PReceivedHistory? =
           p2pReceivedHistoryDao?.getHistory(sendingDeviceAppLifetimeKey, entityType)
@@ -76,5 +75,9 @@ class SyncReceiverHandler constructor(@NonNull val p2PReceiverViewModel: P2PRece
         }
       }
     }
+  }
+
+  private fun getP2pReceivedHistoryDao(): P2pReceivedHistoryDao? {
+    return P2PLibrary.getInstance()!!.getDb()?.p2pReceivedHistoryDao()
   }
 }
