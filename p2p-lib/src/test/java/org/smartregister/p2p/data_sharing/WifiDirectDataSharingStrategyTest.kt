@@ -515,10 +515,11 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
       operationListener = operationListener,
       syncPayload = syncPayload
     )
+    val payloadSize = "some data".toByteArray().size
     coVerify { wifiDirectDataSharingStrategy.makeSocketConnections(any(), any()) }
     coVerify { dataOutputStream.writeUTF(SyncPayloadType.BYTES.name) }
-    coVerify { dataOutputStream.writeLong("some data".toByteArray().size.toLong()) }
-    coVerify { dataOutputStream.write("some data".toByteArray(), 0, 1024) }
+    coVerify { dataOutputStream.writeLong(payloadSize.toLong()) }
+    coVerify { dataOutputStream.write("some data".toByteArray(), 0, payloadSize) }
     coVerify { operationListener.onSuccess(device) }
   }
 
