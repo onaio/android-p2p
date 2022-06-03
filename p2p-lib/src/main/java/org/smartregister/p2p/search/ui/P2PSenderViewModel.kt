@@ -20,7 +20,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import java.util.TreeSet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -33,7 +32,6 @@ import org.smartregister.p2p.model.P2PReceivedHistory
 import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.payload.StringPayload
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
-import org.smartregister.p2p.sync.DataType
 import org.smartregister.p2p.utils.Constants
 import timber.log.Timber
 
@@ -189,10 +187,8 @@ class P2PSenderViewModel(
     val receivedHistory: List<P2PReceivedHistory> =
       Gson().fromJson(syncPayload.string, receivedHistoryListType)
 
-    var dataTypes = TreeSet<DataType>()
-    viewModelScope.launch(Dispatchers.IO) {
-      dataTypes = P2PLibrary.getInstance().getSenderTransferDao().getP2PDataTypes()
-    }
+    var dataTypes = P2PLibrary.getInstance().getSenderTransferDao().getP2PDataTypes()
+
     syncSenderHandler =
       SyncSenderHandler(
         p2PSenderViewModel = this,

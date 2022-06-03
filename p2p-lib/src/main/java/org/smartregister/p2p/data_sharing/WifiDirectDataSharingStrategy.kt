@@ -398,6 +398,9 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
                 var chunkSize = 1024
 
                 while (offset < len) {
+                  if (chunkSize > len) {
+                    chunkSize = len
+                  }
                   write(byteArray, offset, chunkSize)
 
                   offset += chunkSize
