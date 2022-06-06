@@ -108,7 +108,7 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     onSocketConnectionMade = mockk()
     expectedManifest = populateManifest()
     dataOutputStream = mockk()
-    dataInputStream = mockk()
+    dataInputStream = mockk(relaxed = true)
     wifiDirectDataSharingStrategy = spyk(recordPrivateCalls = true)
     wifiDirectDataSharingStrategy.setActivity(context)
     wifiDirectDataSharingStrategy.setCoroutineScope(coroutineScope = coroutineScope)
