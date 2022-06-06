@@ -100,7 +100,7 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     context = spyk(Activity())
     onDeviceFound = mockk()
     pairingListener = mockk()
-    operationListener = mockk(relaxed = true)
+    operationListener = mockk()
     payloadReceiptListener = mockk()
     device = mockk()
     syncPayload = mockk()
@@ -385,6 +385,7 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     } returns PackageManager.PERMISSION_GRANTED
     every { wifiP2pManager.connect(any(), any(), any()) } just runs
     every { operationListener.onSuccess(any()) } just runs
+    every { operationListener.onFailure(any(), any()) } just runs
     every { wifiDirectDataSharingStrategy.closeSocketAndStreams() } just runs
 
     Assert.assertFalse(ReflectionHelpers.getField(wifiDirectDataSharingStrategy, "paired"))
