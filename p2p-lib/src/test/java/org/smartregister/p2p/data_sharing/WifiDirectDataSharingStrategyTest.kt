@@ -100,7 +100,7 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     context = spyk(Activity())
     onDeviceFound = mockk()
     pairingListener = mockk()
-    operationListener = mockk()
+    operationListener = mockk(relaxed = true)
     payloadReceiptListener = mockk()
     device = mockk()
     syncPayload = mockk()
@@ -376,6 +376,42 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
       wifiDirectDataSharingStrategy invoke "onConnectionSucceeded" withArguments listOf(device)
     }
     verify { operationListener.onSuccess(device) }
+  }
+
+  @Test
+  fun `connect() calls onConnectionFailed() and operationListener#onFailure() when ACCESS_FINE_LOCATION permission is granted and wifiP2pManager#connect() fails`() {
+    every {
+      context.checkPermission(android.Manifest.permission.ACCESS_FINE_LOCATION, any(), any())
+    } returns PackageManager.PERMISSION_GRANTED
+    every { wifiP2pManager.connect(any(), any(), any()) } just runs
+    every { operationListener.onSuccess(any()) } just runs
+    every { wifiDirectDataSharingStrategy.closeSocketAndStreams() } just runs
+
+    Assert.assertFalse(ReflectionHelpers.getField(wifiDirectDataSharingStrategy, "paired"))
+    Assert.assertNull(ReflectionHelpers.getField(wifiDirectDataSharingStrategy, "currentDevice"))
+
+    wifiDirectDataSharingStrategy.connect(device = device, operationListener = operationListener)
+
+    verify(exactly = 0) {
+      wifiDirectDataSharingStrategy invokeNoArgs "handleAccessFineLocationNotGranted"
+    }
+
+    val wifiP2pConfigSlot = slot<WifiP2pConfig>()
+    val actionListenerSlot = slot<WifiP2pManager.ActionListener>()
+    verify {
+      wifiP2pManager.connect(
+        wifiP2pChannel,
+        capture(wifiP2pConfigSlot),
+        capture(actionListenerSlot)
+      )
+    }
+
+    val exceptionSlot = slot<Exception>()
+    actionListenerSlot.captured.onFailure(0)
+    verify { wifiDirectDataSharingStrategy.onConnectionFailed(device, capture(exceptionSlot)) }
+    Assert.assertEquals("Error #0: Error", exceptionSlot.captured.message)
+    verify { operationListener.onFailure(device, capture(exceptionSlot)) }
+    Assert.assertEquals("Error #0: Error", exceptionSlot.captured.message)
   }
 
   @Test
