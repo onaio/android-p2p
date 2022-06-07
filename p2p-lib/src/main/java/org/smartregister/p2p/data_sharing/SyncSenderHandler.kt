@@ -53,7 +53,7 @@ constructor(
       remainingLastRecordIds[dataType.name] = 0L
     }
 
-    if (receivedHistory != null && receivedHistory.isNotEmpty()) {
+    if (receivedHistory.isNotEmpty()) {
       for (dataTypeHistory in receivedHistory) {
         if (dataTypeHistory.lastUpdatedAt == 0L) {
           continue
