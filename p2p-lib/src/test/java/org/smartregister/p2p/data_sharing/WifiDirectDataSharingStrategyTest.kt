@@ -108,7 +108,7 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     onSocketConnectionMade = mockk()
     expectedManifest = populateManifest()
     dataOutputStream = mockk()
-    dataInputStream = mockk()
+    dataInputStream = mockk(relaxed = true)
     wifiDirectDataSharingStrategy = spyk(recordPrivateCalls = true)
     wifiDirectDataSharingStrategy.setActivity(context)
     wifiDirectDataSharingStrategy.setCoroutineScope(coroutineScope = coroutineScope)
@@ -379,6 +379,43 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   }
 
   @Test
+  fun `connect() calls onConnectionFailed() and operationListener#onFailure() when ACCESS_FINE_LOCATION permission is granted and wifiP2pManager#connect() fails`() {
+    every {
+      context.checkPermission(android.Manifest.permission.ACCESS_FINE_LOCATION, any(), any())
+    } returns PackageManager.PERMISSION_GRANTED
+    every { wifiP2pManager.connect(any(), any(), any()) } just runs
+    every { operationListener.onSuccess(any()) } just runs
+    every { operationListener.onFailure(any(), any()) } just runs
+    every { wifiDirectDataSharingStrategy.closeSocketAndStreams() } just runs
+
+    Assert.assertFalse(ReflectionHelpers.getField(wifiDirectDataSharingStrategy, "paired"))
+    Assert.assertNull(ReflectionHelpers.getField(wifiDirectDataSharingStrategy, "currentDevice"))
+
+    wifiDirectDataSharingStrategy.connect(device = device, operationListener = operationListener)
+
+    verify(exactly = 0) {
+      wifiDirectDataSharingStrategy invokeNoArgs "handleAccessFineLocationNotGranted"
+    }
+
+    val wifiP2pConfigSlot = slot<WifiP2pConfig>()
+    val actionListenerSlot = slot<WifiP2pManager.ActionListener>()
+    verify {
+      wifiP2pManager.connect(
+        wifiP2pChannel,
+        capture(wifiP2pConfigSlot),
+        capture(actionListenerSlot)
+      )
+    }
+
+    val exceptionSlot = slot<Exception>()
+    actionListenerSlot.captured.onFailure(0)
+    verify { wifiDirectDataSharingStrategy.onConnectionFailed(device, capture(exceptionSlot)) }
+    Assert.assertEquals("Error #0: Error", exceptionSlot.captured.message)
+    verify { operationListener.onFailure(device, capture(exceptionSlot)) }
+    Assert.assertEquals("Error #0: Error", exceptionSlot.captured.message)
+  }
+
+  @Test
   fun `disconnect() calls wifiP2pManager#removeGroup()`() {
     every { wifiP2pManager.removeGroup(any(), any()) } just runs
     every { operationListener.onSuccess(any()) } just runs
@@ -500,9 +537,10 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
 
   @Test
   fun `send() calls dataOutputStream#writeUTF, dataOutputStream#writeLong, dataOutputStream#write and operationListener#onSuccess() when dataOutputStream is not null and payload datatype is bytes`() {
+    val payload = "some data"
     ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "socket", socket)
     every { syncPayload.getDataType() } returns SyncPayloadType.BYTES
-    every { syncPayload.getData() } returns "some data".toByteArray()
+    every { syncPayload.getData() } returns payload.toByteArray()
     every { wifiDirectDataSharingStrategy invokeNoArgs "getGroupOwnerAddress" } returns
       groupOwnerAddress
     coEvery { dataOutputStream.writeUTF(any()) } just runs
@@ -515,10 +553,11 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
       operationListener = operationListener,
       syncPayload = syncPayload
     )
+    val payloadSize = payload.toByteArray().size
     coVerify { wifiDirectDataSharingStrategy.makeSocketConnections(any(), any()) }
     coVerify { dataOutputStream.writeUTF(SyncPayloadType.BYTES.name) }
-    coVerify { dataOutputStream.writeLong("some data".toByteArray().size.toLong()) }
-    coVerify { dataOutputStream.write("some data".toByteArray(), 0, 1024) }
+    coVerify { dataOutputStream.writeLong(payloadSize.toLong()) }
+    coVerify { dataOutputStream.write(payload.toByteArray(), 0, payloadSize) }
     coVerify { operationListener.onSuccess(device) }
   }
 

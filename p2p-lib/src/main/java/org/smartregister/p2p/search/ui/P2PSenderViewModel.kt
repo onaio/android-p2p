@@ -190,10 +190,7 @@ class P2PSenderViewModel(
     val receivedHistory: List<P2PReceivedHistory> =
       Gson().fromJson(syncPayload.string, receivedHistoryListType)
 
-    var dataTypes = TreeSet<DataType>()
-    viewModelScope.launch(Dispatchers.IO) {
-      dataTypes = P2PLibrary.getInstance().getSenderTransferDao().getP2PDataTypes()
-    }
+    var dataTypes = P2PLibrary.getInstance().getSenderTransferDao().getP2PDataTypes()
     syncSenderHandler = createSyncSenderHandler(dataTypes, receivedHistory)
 
     if (!dataTypes.isEmpty()) {
