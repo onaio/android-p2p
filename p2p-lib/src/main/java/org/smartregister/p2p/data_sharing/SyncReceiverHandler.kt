@@ -16,7 +16,6 @@
 package org.smartregister.p2p.data_sharing
 
 import androidx.annotation.NonNull
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.smartregister.p2p.P2PLibrary
@@ -24,9 +23,14 @@ import org.smartregister.p2p.dao.P2pReceivedHistoryDao
 import org.smartregister.p2p.model.P2PReceivedHistory
 import org.smartregister.p2p.search.ui.P2PReceiverViewModel
 import org.smartregister.p2p.utils.Constants
+import org.smartregister.p2p.utils.DispatcherProvider
 import timber.log.Timber
 
-class SyncReceiverHandler constructor(@NonNull val p2PReceiverViewModel: P2PReceiverViewModel) {
+class SyncReceiverHandler
+constructor(
+  @NonNull val p2PReceiverViewModel: P2PReceiverViewModel,
+  private val dispatcherProvider: DispatcherProvider
+) {
 
   private lateinit var currentManifest: Manifest
 
@@ -56,7 +60,7 @@ class SyncReceiverHandler constructor(@NonNull val p2PReceiverViewModel: P2PRece
     // Retrieve sending device details
     val sendingDeviceAppLifetimeKey = p2PReceiverViewModel.getSendingDeviceAppLifetimeKey()
 
-    withContext(Dispatchers.IO) {
+    withContext(dispatcherProvider.io()) {
       if (sendingDeviceAppLifetimeKey.isNotBlank()) {
         val p2pReceivedHistoryDao: P2pReceivedHistoryDao? = getP2pReceivedHistoryDao()
 

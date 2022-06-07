@@ -44,6 +44,7 @@ import org.smartregister.p2p.search.ui.P2PSenderViewModel
 import org.smartregister.p2p.shadows.ShadowAppDatabase
 import org.smartregister.p2p.sync.DataType
 import org.smartregister.p2p.utils.Constants
+import org.smartregister.p2p.utils.TestDispatcherProvider
 
 @Config(shadows = [ShadowAppDatabase::class])
 class SyncSenderHandlerTest : RobolectricTest() {
@@ -117,8 +118,10 @@ class SyncSenderHandlerTest : RobolectricTest() {
         SyncSenderHandler(
           dataSyncOrder = dataSyncOrder,
           p2PSenderViewModel = p2PSenderViewModel,
-          receivedHistory = receivedHistory
-        )
+          receivedHistory = receivedHistory,
+          dispatcherProvider = TestDispatcherProvider()
+          // dispatcherProvider = DefaultDispatcherProvider()
+          )
       )
   }
 
@@ -200,8 +203,9 @@ class SyncSenderHandlerTest : RobolectricTest() {
   }
 
   @Test
-  fun `sendNextManifest() calls sendJsonDataManifest() when dataSyncOrder is not empty`() {
-    runBlocking { syncSenderHandler.sendNextManifest() }
+  fun `sendNextManifest() calls sendJsonDataManifest() when dataSyncOrder is not empty`() =
+      runBlocking {
+    syncSenderHandler.sendNextManifest()
     coVerify(exactly = 1) { syncSenderHandler.sendJsonDataManifest(dataSyncOrder.first()) }
   }
 

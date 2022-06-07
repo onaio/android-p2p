@@ -42,6 +42,7 @@ import org.smartregister.p2p.search.ui.P2PReceiverViewModel
 import org.smartregister.p2p.shadows.ShadowAppDatabase
 import org.smartregister.p2p.sync.DataType
 import org.smartregister.p2p.utils.Constants
+import org.smartregister.p2p.utils.TestDispatcherProvider
 
 @Config(shadows = [ShadowAppDatabase::class])
 class SyncReceiverHandlerTest : RobolectricTest() {
@@ -81,7 +82,10 @@ class SyncReceiverHandlerTest : RobolectricTest() {
     dataType = DataType(name = "Group", type = DataType.Filetype.JSON, position = 0)
     manifest = Manifest(dataType = dataType, recordsSize = 25, payloadSize = 50)
 
-    syncReceiverHandler = spyk(SyncReceiverHandler(p2PReceiverViewModel = p2PReceiverViewModel))
+    syncReceiverHandler =
+      spyk(
+        SyncReceiverHandler(p2PReceiverViewModel = p2PReceiverViewModel, TestDispatcherProvider())
+      )
     ReflectionHelpers.setField(syncReceiverHandler, "currentManifest", manifest)
   }
 

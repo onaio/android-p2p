@@ -22,7 +22,6 @@ import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.util.TreeSet
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.smartregister.p2p.P2PLibrary
@@ -36,11 +35,14 @@ import org.smartregister.p2p.payload.StringPayload
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
 import org.smartregister.p2p.sync.DataType
 import org.smartregister.p2p.utils.Constants
+import org.smartregister.p2p.utils.DefaultDispatcherProvider
+import org.smartregister.p2p.utils.DispatcherProvider
 import timber.log.Timber
 
 class P2PSenderViewModel(
   private val view: P2pModeSelectContract.View,
-  private val dataSharingStrategy: DataSharingStrategy
+  private val dataSharingStrategy: DataSharingStrategy,
+  private val dispatcherProvider: DispatcherProvider
 ) : ViewModel(), P2pModeSelectContract.SenderViewModel {
 
   private var connectionLevel: Constants.ConnectionLevel? = null
@@ -121,7 +123,7 @@ class P2PSenderViewModel(
   override fun sendSyncComplete() {
     Timber.i("P2P sync complete")
     viewModelScope.launch {
-      withContext(Dispatchers.Main) { view.showTransferCompleteDialog() }
+      withContext(dispatcherProvider.main()) { view.showTransferCompleteDialog() }
       dataSharingStrategy.disconnect(
         getCurrentConnectedDevice()!!,
         object : DataSharingStrategy.OperationListener {
@@ -146,7 +148,7 @@ class P2PSenderViewModel(
       object : DataSharingStrategy.OperationListener {
         override fun onSuccess(device: DeviceInfo?) {
           Timber.i("Chunk data sent successfully")
-          viewModelScope.launch(Dispatchers.IO) { syncSenderHandler.sendNextManifest() }
+          viewModelScope.launch(dispatcherProvider.io()) { syncSenderHandler.sendNextManifest() }
         }
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
@@ -195,7 +197,7 @@ class P2PSenderViewModel(
 
     if (!dataTypes.isEmpty()) {
       Timber.i("Process received history json data not null")
-      viewModelScope.launch(Dispatchers.IO) { syncSenderHandler.startSyncProcess() }
+      viewModelScope.launch(dispatcherProvider.io()) { syncSenderHandler.startSyncProcess() }
     } else {
       Timber.i("Process received history json data null")
       sendSyncComplete()
@@ -210,21 +212,23 @@ class P2PSenderViewModel(
     SyncSenderHandler(
       p2PSenderViewModel = this,
       dataSyncOrder = dataTypes,
-      receivedHistory = receivedHistory
+      receivedHistory = receivedHistory,
+      dispatcherProvider = DefaultDispatcherProvider()
     )
 
   fun updateSenderSyncComplete(senderSyncComplete: Boolean) {
     viewModelScope.launch {
-      withContext(Dispatchers.Main) { view.senderSyncComplete(senderSyncComplete) }
+      withContext(dispatcherProvider.main()) { view.senderSyncComplete(senderSyncComplete) }
     }
   }
 
   class Factory(
     private val context: P2pModeSelectContract.View,
-    private val dataSharingStrategy: DataSharingStrategy
+    private val dataSharingStrategy: DataSharingStrategy,
+    private val dispatcherProvider: DispatcherProvider
   ) : ViewModelProvider.Factory {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-      return P2PSenderViewModel(context, dataSharingStrategy).apply {
+      return P2PSenderViewModel(context, dataSharingStrategy, dispatcherProvider).apply {
         dataSharingStrategy.setCoroutineScope(viewModelScope)
       } as
         T

@@ -54,6 +54,7 @@ import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.OnDeviceFound
 import org.smartregister.p2p.search.adapter.DeviceListAdapter
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
+import org.smartregister.p2p.utils.DefaultDispatcherProvider
 import org.smartregister.p2p.utils.getDeviceName
 import org.smartregister.p2p.utils.startP2PScreen
 import timber.log.Timber
@@ -66,10 +67,18 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
 
   private val accessFineLocationPermissionRequestInt: Int = 12345
   private val p2PReceiverViewModel by viewModels<P2PReceiverViewModel> {
-    P2PReceiverViewModel.Factory(context = this, dataSharingStrategy = dataSharingStrategy)
+    P2PReceiverViewModel.Factory(
+      context = this,
+      dataSharingStrategy = dataSharingStrategy,
+      DefaultDispatcherProvider()
+    )
   }
   private val p2PSenderViewModel by viewModels<P2PSenderViewModel> {
-    P2PSenderViewModel.Factory(context = this, dataSharingStrategy = dataSharingStrategy)
+    P2PSenderViewModel.Factory(
+      context = this,
+      dataSharingStrategy = dataSharingStrategy,
+      DefaultDispatcherProvider()
+    )
   }
   private var isSender = false
   private var scanning = false

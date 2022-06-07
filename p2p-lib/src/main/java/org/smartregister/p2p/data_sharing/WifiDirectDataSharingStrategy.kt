@@ -37,7 +37,6 @@ import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.smartregister.p2p.WifiP2pBroadcastReceiver
@@ -46,6 +45,8 @@ import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.payload.StringPayload
 import org.smartregister.p2p.payload.SyncPayloadType
 import org.smartregister.p2p.search.contract.P2PManagerListener
+import org.smartregister.p2p.utils.DefaultDispatcherProvider
+import org.smartregister.p2p.utils.DispatcherProvider
 import timber.log.Timber
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 21-03-2022. */
@@ -74,8 +75,13 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   private var requestedDisconnection = false
   private var isSearchingDevices = false
   private var paired = false
+  private var dispatcherProvider: DispatcherProvider = DefaultDispatcherProvider()
 
   private lateinit var coroutineScope: CoroutineScope
+
+  override fun setDispatcherProvider(dispatcherProvider: DispatcherProvider) {
+    this.dispatcherProvider = dispatcherProvider
+  }
 
   override fun setActivity(context: Activity) {
     this.context = context
@@ -360,7 +366,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       return
     }
 
-    coroutineScope.launch(Dispatchers.IO) {
+    coroutineScope.launch(dispatcherProvider.io()) {
       makeSocketConnections(getGroupOwnerAddress()) { socket ->
         if (socket != null) {
 
@@ -454,7 +460,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   }
 
   private suspend fun acceptConnectionsToServerSocket(): Socket? =
-    withContext(Dispatchers.IO) {
+    withContext(dispatcherProvider.io()) {
       try {
         val serverSocket = ServerSocket(PORT)
         serverSocket.accept().apply { constructStreamsFromSocket(this) }
@@ -470,7 +476,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   }
 
   private suspend fun connectToServerSocket(groupOwnerAddress: String): Socket? =
-    withContext(Dispatchers.IO) {
+    withContext(dispatcherProvider.io()) {
       try {
         Socket().apply {
           bind(null)
@@ -521,7 +527,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       )
     }
 
-    coroutineScope.launch(Dispatchers.IO) {
+    coroutineScope.launch(dispatcherProvider.io()) {
       makeSocketConnections(getGroupOwnerAddress()) { socket ->
         if (socket != null) {
 
