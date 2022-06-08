@@ -670,7 +670,7 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   fun `receive() calls dataInputStream#readUTF() and payloadReceiptListener#onPayloadReceived() when payload data type is string`() {
     val stringPayload = "some data"
     ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "socket", socket)
-    every { dataInputStream.readUTF() } returnsMany
+    coEvery { dataInputStream.readUTF() } returnsMany
       (listOf(SyncPayloadType.STRING.name, stringPayload))
     every { wifiDirectDataSharingStrategy invokeNoArgs "getGroupOwnerAddress" } returns
       groupOwnerAddress
@@ -729,7 +729,7 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   fun `receive() calls operationListener#onFailure when payload data type is unknown`() {
     ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "socket", socket)
     coEvery { wifiDirectDataSharingStrategy.getCurrentDevice() } returns device
-    every { dataInputStream.readUTF() } returns "int"
+    coEvery { dataInputStream.readUTF() } returns "int"
     every { wifiDirectDataSharingStrategy invokeNoArgs "getGroupOwnerAddress" } returns
       groupOwnerAddress
 
@@ -748,7 +748,7 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   @Test
   fun `receiveManifest() call dataOutputStream#readUTF()`() {
     val manifestString = Gson().toJson(expectedManifest)
-    every { dataInputStream.readUTF() } returnsMany
+    coEvery { dataInputStream.readUTF() } returnsMany
       (listOf(SyncPayloadType.MANIFEST.name, manifestString))
 
     val actualManifest = wifiDirectDataSharingStrategy.receiveManifest(device, operationListener)
