@@ -44,6 +44,7 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.net.Socket
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestCoroutineDispatcher
 import kotlinx.coroutines.test.TestCoroutineScope
@@ -471,7 +472,7 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   }
 
   @Test
-  fun `send() calls makeSocketConnections() when wifiP2pInfo() is not  null`() {
+  fun `send() calls makeSocketConnections() when wifiP2pInfo() is not  null`() = runBlocking {
     ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "socket", socket)
     coEvery { wifiDirectDataSharingStrategy.makeSocketConnections(any(), any()) } just runs
     every { wifiDirectDataSharingStrategy invokeNoArgs "getGroupOwnerAddress" } returns
@@ -483,11 +484,14 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
       syncPayload = syncPayload
     )
 
+    delay(1000)
+
     coVerify { wifiDirectDataSharingStrategy.makeSocketConnections(any(), any()) }
   }
 
   @Test
-  fun `send() calls dataOutputStream#flush, dataOutputStream#writeUTF and operationListener#onSuccess() when dataOutputStream is not null and payload datatype is string`() {
+  fun `send() calls dataOutputStream#flush, dataOutputStream#writeUTF and operationListener#onSuccess() when dataOutputStream is not null and payload datatype is string`() =
+      runBlocking {
     ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "socket", socket)
     every { syncPayload.getDataType() } returns SyncPayloadType.STRING
     every { syncPayload.getData() } returns "some data"
@@ -503,6 +507,8 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
       syncPayload = syncPayload
     )
 
+    delay(1000)
+
     coVerify { wifiDirectDataSharingStrategy.makeSocketConnections(any(), any()) }
     verifySequence {
       dataOutputStream.writeUTF(SyncPayloadType.STRING.name)
@@ -514,7 +520,8 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   }
 
   @Test
-  fun `send() calls operationListener#onFailure() when dataOutputStream is null and payload datatype is string`() {
+  fun `send() calls operationListener#onFailure() when dataOutputStream is null and payload datatype is string`() =
+      runBlocking {
     ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "socket", socket)
     ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "dataOutputStream", null)
     every { syncPayload.getDataType() } returns SyncPayloadType.STRING
@@ -529,6 +536,8 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
       syncPayload = syncPayload
     )
 
+    delay(1000)
+
     coVerify { wifiDirectDataSharingStrategy.makeSocketConnections(any(), any()) }
     var exceptionSlot = slot<Exception>()
     coVerify { operationListener.onFailure(device, capture(exceptionSlot)) }
@@ -536,7 +545,8 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   }
 
   @Test
-  fun `send() calls dataOutputStream#writeUTF, dataOutputStream#writeLong, dataOutputStream#write and operationListener#onSuccess() when dataOutputStream is not null and payload datatype is bytes`() {
+  fun `send() calls dataOutputStream#writeUTF, dataOutputStream#writeLong, dataOutputStream#write and operationListener#onSuccess() when dataOutputStream is not null and payload datatype is bytes`() =
+      runBlocking {
     val payload = "some data"
     ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "socket", socket)
     every { syncPayload.getDataType() } returns SyncPayloadType.BYTES
@@ -553,6 +563,9 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
       operationListener = operationListener,
       syncPayload = syncPayload
     )
+
+    delay(1000)
+
     val payloadSize = payload.toByteArray().size
     coVerify { wifiDirectDataSharingStrategy.makeSocketConnections(any(), any()) }
     coVerify { dataOutputStream.writeUTF(SyncPayloadType.BYTES.name) }
@@ -650,7 +663,7 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   }
 
   @Test
-  fun `receive() calls makeSocketConnections() when wifiP2pInfo() is not null `() {
+  fun `receive() calls makeSocketConnections() when wifiP2pInfo() is not null `() = runBlocking {
     coEvery { wifiDirectDataSharingStrategy.makeSocketConnections(any(), any()) } just runs
     every { wifiDirectDataSharingStrategy invokeNoArgs "getGroupOwnerAddress" } returns
       groupOwnerAddress
@@ -661,11 +674,14 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
       operationListener = operationListener
     )
 
+    delay(1000)
+
     coVerify { wifiDirectDataSharingStrategy.makeSocketConnections(any(), any()) }
   }
 
   @Test
-  fun `receive() calls dataInputStream#readUTF() and payloadReceiptListener#onPayloadReceived() when payload data type is string`() {
+  fun `receive() calls dataInputStream#readUTF() and payloadReceiptListener#onPayloadReceived() when payload data type is string`() =
+      runBlocking {
     val stringPayload = "some data"
     ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "socket", socket)
     every { dataInputStream.readUTF() } returnsMany
@@ -679,6 +695,8 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
       operationListener = operationListener
     )
 
+    delay(1000)
+
     coVerify(exactly = 2) { dataInputStream.readUTF() }
     val stringPayloadSlot = slot<StringPayload>()
     coVerify { payloadReceiptListener.onPayloadReceived(capture(stringPayloadSlot)) }
@@ -686,7 +704,8 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   }
 
   @Test
-  fun `receive() calls dataInputStream#readLong(), dataInputStream#read(), logDebug() and payloadReceiptListener#onPayloadReceived() when payload data type is bytes`() {
+  fun `receive() calls dataInputStream#readLong(), dataInputStream#read(), logDebug() and payloadReceiptListener#onPayloadReceived() when payload data type is bytes`() =
+      runBlocking {
     val bytePayload = "some data".toByteArray()
     ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "socket", socket)
     every { dataInputStream.readUTF() } returns SyncPayloadType.BYTES.name
@@ -714,6 +733,8 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
       operationListener = operationListener
     )
 
+    delay(1000)
+
     coVerify { dataInputStream.readLong() }
     coVerify { dataInputStream.read(any(), 0, bytePayload.size) }
     verify { wifiDirectDataSharingStrategy invoke "logDebug" withArguments listOf("file size 0") }
@@ -724,7 +745,8 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   }
 
   @Test
-  fun `receive() calls operationListener#onFailure when payload data type is unknown`() {
+  fun `receive() calls operationListener#onFailure when payload data type is unknown`() =
+      runBlocking {
     ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "socket", socket)
     coEvery { wifiDirectDataSharingStrategy.getCurrentDevice() } returns device
     every { dataInputStream.readUTF() } returns "int"
@@ -736,6 +758,8 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
       payloadReceiptListener = payloadReceiptListener,
       operationListener = operationListener
     )
+
+    delay(1000)
 
     coVerify { dataInputStream.readUTF() }
     val exceptionSlot = slot<Exception>()
