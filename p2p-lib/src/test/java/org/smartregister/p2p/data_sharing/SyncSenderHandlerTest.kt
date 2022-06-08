@@ -44,7 +44,7 @@ import org.smartregister.p2p.search.ui.P2PSenderViewModel
 import org.smartregister.p2p.shadows.ShadowAppDatabase
 import org.smartregister.p2p.sync.DataType
 import org.smartregister.p2p.utils.Constants
-import org.smartregister.p2p.utils.TestDispatcherProvider
+import org.smartregister.p2p.utils.DefaultDispatcherProvider
 
 @Config(shadows = [ShadowAppDatabase::class])
 class SyncSenderHandlerTest : RobolectricTest() {
@@ -119,7 +119,7 @@ class SyncSenderHandlerTest : RobolectricTest() {
           dataSyncOrder = dataSyncOrder,
           p2PSenderViewModel = p2PSenderViewModel,
           receivedHistory = receivedHistory,
-          dispatcherProvider = TestDispatcherProvider()
+          dispatcherProvider = DefaultDispatcherProvider()
           // dispatcherProvider = DefaultDispatcherProvider()
           )
       )

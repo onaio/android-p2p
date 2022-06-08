@@ -59,7 +59,7 @@ import org.smartregister.p2p.payload.SyncPayloadType
 import org.smartregister.p2p.robolectric.RobolectricTest
 import org.smartregister.p2p.search.contract.P2PManagerListener
 import org.smartregister.p2p.sync.DataType
-import org.smartregister.p2p.utils.TestDispatcherProvider
+import org.smartregister.p2p.utils.DefaultDispatcherProvider
 
 class WifiDirectDataSharingStrategyTest : RobolectricTest() {
 
@@ -113,7 +113,7 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     wifiDirectDataSharingStrategy = spyk(recordPrivateCalls = true)
     wifiDirectDataSharingStrategy.setActivity(context)
     wifiDirectDataSharingStrategy.setCoroutineScope(coroutineScope = coroutineScope)
-    wifiDirectDataSharingStrategy.setDispatcherProvider(TestDispatcherProvider())
+    wifiDirectDataSharingStrategy.setDispatcherProvider(DefaultDispatcherProvider())
     every { context.getSystemService(Context.WIFI_P2P_SERVICE) } returns wifiP2pManager
 
     wifiP2pDevice =

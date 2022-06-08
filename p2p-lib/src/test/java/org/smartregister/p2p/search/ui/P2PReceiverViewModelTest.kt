@@ -53,7 +53,7 @@ import org.smartregister.p2p.robolectric.RobolectricTest
 import org.smartregister.p2p.shadows.ShadowAppDatabase
 import org.smartregister.p2p.sync.DataType
 import org.smartregister.p2p.utils.Constants
-import org.smartregister.p2p.utils.TestDispatcherProvider
+import org.smartregister.p2p.utils.DefaultDispatcherProvider
 
 @Config(shadows = [ShadowAppDatabase::class])
 class P2PReceiverViewModelTest : RobolectricTest() {
@@ -91,7 +91,7 @@ class P2PReceiverViewModelTest : RobolectricTest() {
     expectedDeviceInfo = populateDeviceInfo()
     every { dataSharingStrategy.getCurrentDevice() } answers { expectedDeviceInfo }
     p2PReceiverViewModel =
-      spyk(P2PReceiverViewModel(view, dataSharingStrategy, TestDispatcherProvider()))
+      spyk(P2PReceiverViewModel(view, dataSharingStrategy, DefaultDispatcherProvider()))
     ReflectionHelpers.setField(p2PReceiverViewModel, "syncReceiverHandler", syncReceiverHandler)
   }
 
@@ -309,11 +309,19 @@ class P2PReceiverViewModelTest : RobolectricTest() {
     every { wifiDirectDataSharingStrategy.setCoroutineScope(any()) } just runs
 
     Assert.assertNotNull(
-      P2PReceiverViewModel.Factory(mockk(), wifiDirectDataSharingStrategy, TestDispatcherProvider())
+      P2PReceiverViewModel.Factory(
+          mockk(),
+          wifiDirectDataSharingStrategy,
+          DefaultDispatcherProvider()
+        )
         .create(P2PReceiverViewModel::class.java)
     )
     Assert.assertTrue(
-      P2PReceiverViewModel.Factory(mockk(), wifiDirectDataSharingStrategy, TestDispatcherProvider())
+      P2PReceiverViewModel.Factory(
+          mockk(),
+          wifiDirectDataSharingStrategy,
+          DefaultDispatcherProvider()
+        )
         .create(P2PReceiverViewModel::class.java) is
         P2PReceiverViewModel
     )
