@@ -215,6 +215,8 @@ class P2PReceiverViewModelTest : RobolectricTest() {
     val chunkData = BytePayload(data.toByteArray())
     payloadReceiptListener.captured.onPayloadReceived(chunkData)
 
+    delay(1000)
+
     coVerify(exactly = 1) { syncReceiverHandler.processData(any()) }
   }
 
@@ -250,11 +252,14 @@ class P2PReceiverViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun `checkIfDeviceKeyHasChanged() calls p2pReceiverViewModel#sendLastReceivedRecords() with empty list when received history is null`() {
+  fun `checkIfDeviceKeyHasChanged() calls p2pReceiverViewModel#sendLastReceivedRecords() with empty list when received history is null`() =
+      runBlocking {
     every { p2PReceiverViewModel.getReceivedHistory(appLifetimeKey) } returns null
     every { p2PReceiverViewModel.sendLastReceivedRecords(any()) } just runs
 
     p2PReceiverViewModel.checkIfDeviceKeyHasChanged(appLifetimeKey)
+
+    delay(1000)
 
     Shadows.shadowOf(Looper.getMainLooper()).idle()
 

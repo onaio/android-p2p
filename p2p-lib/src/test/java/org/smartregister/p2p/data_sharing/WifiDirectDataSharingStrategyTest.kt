@@ -673,7 +673,8 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   }
 
   @Test
-  fun `receive() calls dataInputStream#readUTF() and payloadReceiptListener#onPayloadReceived() when payload data type is string`() {
+  fun `receive() calls dataInputStream#readUTF() and payloadReceiptListener#onPayloadReceived() when payload data type is string`() =
+      runBlocking {
     val stringPayload = "some data"
     ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "socket", socket)
     every { dataInputStream.readUTF() } returnsMany
@@ -686,6 +687,8 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
       payloadReceiptListener = payloadReceiptListener,
       operationListener = operationListener
     )
+
+    delay(1000)
 
     coVerify(exactly = 2) { dataInputStream.readUTF() }
     val stringPayloadSlot = slot<StringPayload>()
