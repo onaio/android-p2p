@@ -181,7 +181,8 @@ class P2PReceiverViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun `processChunkData() calls syncReceiverHandler#processData() when chunk data is received`() {
+  fun `processChunkData() calls syncReceiverHandler#processData() when chunk data is received`() =
+      runBlocking {
     ReflectionHelpers.setField(p2PReceiverViewModel, "syncReceiverHandler", syncReceiverHandler)
     every { dataSharingStrategy.receive(any(), any(), any()) } just runs
 
@@ -189,6 +190,8 @@ class P2PReceiverViewModelTest : RobolectricTest() {
     val payloadReceiptListener = slot<DataSharingStrategy.PayloadReceiptListener>()
 
     p2PReceiverViewModel.processChunkData()
+
+    delay(1000)
 
     verify {
       dataSharingStrategy.receive(
