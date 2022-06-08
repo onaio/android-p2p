@@ -29,7 +29,6 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
-import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -262,8 +261,7 @@ class P2PReceiverViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun `checkIfDeviceKeyHasChanged() calls p2pReceiverViewModel#sendLastReceivedRecords() with retrieved received history value`() =
-      runBlocking {
+  fun `checkIfDeviceKeyHasChanged() calls p2pReceiverViewModel#sendLastReceivedRecords() with retrieved received history value`() {
     coEvery { p2PReceiverViewModel.sendLastReceivedRecords(any()) } just runs
     every { p2PReceiverViewModel.getReceivedHistory(appLifetimeKey) } returns receivedHistory
 
