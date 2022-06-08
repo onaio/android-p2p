@@ -29,6 +29,7 @@ import android.os.Build
 import com.google.gson.Gson
 import io.mockk.CapturingSlotMatcher
 import io.mockk.EqMatcher
+import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -92,6 +93,7 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
 
   @Before
   fun setUp() {
+    clearAllMocks()
     wifiP2pManager = mockk()
     wifiP2pChannel = mockk()
     wifiP2pReceiver = mockk()
