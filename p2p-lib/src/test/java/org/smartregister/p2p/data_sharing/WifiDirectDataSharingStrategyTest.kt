@@ -691,8 +691,8 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   fun `receive() calls dataInputStream#readLong(), dataInputStream#read(), logDebug() and payloadReceiptListener#onPayloadReceived() when payload data type is bytes`() {
     val bytePayload = "some data".toByteArray()
     ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "socket", socket)
-    every { dataInputStream.readUTF() } returns SyncPayloadType.BYTES.name
-    every { dataInputStream.readLong() } returns bytePayload.size.toLong()
+    coEvery { dataInputStream.readUTF() } returns SyncPayloadType.BYTES.name
+    coEvery { dataInputStream.readLong() } returns bytePayload.size.toLong()
 
     val byteArraySlot = slot<ByteArray>()
     val offsetSlot = slot<Int>()
