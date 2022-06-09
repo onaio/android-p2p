@@ -30,10 +30,12 @@ import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
+import org.smartregister.p2p.CoroutineTestRule
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.dao.SenderTransferDao
 import org.smartregister.p2p.model.P2PReceivedHistory
@@ -47,6 +49,8 @@ import org.smartregister.p2p.utils.Constants
 
 @Config(shadows = [ShadowAppDatabase::class])
 class SyncSenderHandlerTest : RobolectricTest() {
+
+  @get:Rule var coroutinesTestRule = CoroutineTestRule()
 
   private lateinit var dataSyncOrder: TreeSet<DataType>
   private lateinit var p2PSenderViewModel: P2PSenderViewModel
@@ -117,7 +121,8 @@ class SyncSenderHandlerTest : RobolectricTest() {
         SyncSenderHandler(
           dataSyncOrder = dataSyncOrder,
           p2PSenderViewModel = p2PSenderViewModel,
-          receivedHistory = receivedHistory
+          receivedHistory = receivedHistory,
+          dispatcherProvider = coroutinesTestRule.testDispatcherProvider
         )
       )
   }
@@ -200,8 +205,9 @@ class SyncSenderHandlerTest : RobolectricTest() {
   }
 
   @Test
-  fun `sendNextManifest() calls sendJsonDataManifest() when dataSyncOrder is not empty`() {
-    runBlocking { syncSenderHandler.sendNextManifest() }
+  fun `sendNextManifest() calls sendJsonDataManifest() when dataSyncOrder is not empty`() =
+      runBlocking {
+    syncSenderHandler.sendNextManifest()
     coVerify(exactly = 1) { syncSenderHandler.sendJsonDataManifest(dataSyncOrder.first()) }
   }
 

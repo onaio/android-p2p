@@ -29,6 +29,7 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
@@ -88,7 +89,10 @@ class P2PReceiverViewModelTest : RobolectricTest() {
 
     expectedDeviceInfo = populateDeviceInfo()
     every { dataSharingStrategy.getCurrentDevice() } answers { expectedDeviceInfo }
-    p2PReceiverViewModel = spyk(P2PReceiverViewModel(view, dataSharingStrategy))
+    p2PReceiverViewModel =
+      spyk(
+        P2PReceiverViewModel(view, dataSharingStrategy, coroutinesTestRule.testDispatcherProvider)
+      )
     ReflectionHelpers.setField(p2PReceiverViewModel, "syncReceiverHandler", syncReceiverHandler)
   }
 
@@ -247,6 +251,7 @@ class P2PReceiverViewModelTest : RobolectricTest() {
   @Test
   fun `checkIfDeviceKeyHasChanged() calls p2pReceiverViewModel#sendLastReceivedRecords() with empty list when received history is null`() {
     every { p2PReceiverViewModel.getReceivedHistory(appLifetimeKey) } returns null
+    every { p2PReceiverViewModel.sendLastReceivedRecords(any()) } just runs
 
     p2PReceiverViewModel.checkIfDeviceKeyHasChanged(appLifetimeKey)
 
@@ -258,13 +263,16 @@ class P2PReceiverViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun `checkIfDeviceKeyHasChanged() calls p2pReceiverViewModel#sendLastReceivedRecords() with retrieved received history value`() {
+  fun `checkIfDeviceKeyHasChanged() calls p2pReceiverViewModel#sendLastReceivedRecords() with retrieved received history value`() =
+      runBlocking {
     coEvery { p2PReceiverViewModel.sendLastReceivedRecords(any()) } just runs
     every { p2PReceiverViewModel.getReceivedHistory(appLifetimeKey) } returns receivedHistory
 
     p2PReceiverViewModel.checkIfDeviceKeyHasChanged(appLifetimeKey)
+
     val receivedHistorySlot = slot<List<P2PReceivedHistory>>()
     coVerify { p2PReceiverViewModel.sendLastReceivedRecords(capture(receivedHistorySlot)) }
+
     Assert.assertEquals(1, receivedHistorySlot.captured.size)
     Assert.assertEquals(entity, receivedHistorySlot.captured[0].entityType)
     Assert.assertEquals(lastUpdatedAt, receivedHistorySlot.captured[0].lastUpdatedAt)
@@ -302,11 +310,19 @@ class P2PReceiverViewModelTest : RobolectricTest() {
     every { wifiDirectDataSharingStrategy.setCoroutineScope(any()) } just runs
 
     Assert.assertNotNull(
-      P2PReceiverViewModel.Factory(mockk(), wifiDirectDataSharingStrategy)
+      P2PReceiverViewModel.Factory(
+          mockk(),
+          wifiDirectDataSharingStrategy,
+          coroutinesTestRule.testDispatcherProvider
+        )
         .create(P2PReceiverViewModel::class.java)
     )
     Assert.assertTrue(
-      P2PReceiverViewModel.Factory(mockk(), wifiDirectDataSharingStrategy)
+      P2PReceiverViewModel.Factory(
+          mockk(),
+          wifiDirectDataSharingStrategy,
+          coroutinesTestRule.testDispatcherProvider
+        )
         .create(P2PReceiverViewModel::class.java) is
         P2PReceiverViewModel
     )

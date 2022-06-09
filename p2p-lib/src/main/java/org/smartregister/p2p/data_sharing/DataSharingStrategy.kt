@@ -18,9 +18,12 @@ package org.smartregister.p2p.data_sharing
 import android.app.Activity
 import kotlinx.coroutines.CoroutineScope
 import org.smartregister.p2p.payload.PayloadContract
+import org.smartregister.p2p.utils.DispatcherProvider
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 21-03-2022. */
 interface DataSharingStrategy {
+
+  fun setDispatcherProvider(dispatcherProvider: DispatcherProvider)
 
   fun setActivity(context: Activity)
 

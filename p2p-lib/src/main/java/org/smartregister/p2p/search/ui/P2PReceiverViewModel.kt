@@ -19,7 +19,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -34,11 +33,14 @@ import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.payload.StringPayload
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
 import org.smartregister.p2p.utils.Constants
+import org.smartregister.p2p.utils.DefaultDispatcherProvider
+import org.smartregister.p2p.utils.DispatcherProvider
 import timber.log.Timber
 
 class P2PReceiverViewModel(
   private val view: P2PDeviceSearchActivity,
-  private val dataSharingStrategy: DataSharingStrategy
+  private val dataSharingStrategy: DataSharingStrategy,
+  private val dispatcherProvider: DispatcherProvider
 ) : ViewModel(), P2pModeSelectContract.ReceiverViewModel {
 
   private lateinit var syncReceiverHandler: SyncReceiverHandler
@@ -60,7 +62,7 @@ class P2PReceiverViewModel(
           )
 
           viewModelScope.launch {
-            withContext(Dispatchers.Main) { view.showTransferProgressDialog() }
+            withContext(dispatcherProvider.main()) { view.showTransferProgressDialog() }
           }
         }
       },
@@ -74,7 +76,7 @@ class P2PReceiverViewModel(
 
   fun checkIfDeviceKeyHasChanged(appLifetimeKey: String) {
     Timber.e("In check if device key has changed with app lifetime key $appLifetimeKey")
-    viewModelScope.launch(Dispatchers.IO) {
+    viewModelScope.launch(dispatcherProvider.io()) {
       val receivedHistory = getReceivedHistory(appLifetimeKey = appLifetimeKey)
 
       sendingDeviceAppLifetimeKey = appLifetimeKey
@@ -101,7 +103,7 @@ class P2PReceiverViewModel(
     deviceInfo[Constants.BasicDeviceDetails.KEY_DEVICE_ID] =
       P2PLibrary.getInstance().getDeviceUniqueIdentifier()
 
-    syncReceiverHandler = SyncReceiverHandler(this)
+    syncReceiverHandler = SyncReceiverHandler(this, DefaultDispatcherProvider())
 
     dataSharingStrategy.send(
       device = dataSharingStrategy.getCurrentDevice(),
@@ -152,7 +154,9 @@ class P2PReceiverViewModel(
           val jsonString = String((payload as BytePayload).getData())
           Timber.e(jsonString)
           val chunkData = JSONArray(jsonString)
-          viewModelScope.launch(Dispatchers.IO) { syncReceiverHandler.processData(chunkData) }
+          viewModelScope.launch(dispatcherProvider.io()) {
+            syncReceiverHandler.processData(chunkData)
+          }
         }
       },
       object : DataSharingStrategy.OperationListener {
@@ -181,7 +185,7 @@ class P2PReceiverViewModel(
   fun handleDataTransferCompleteManifest() {
     Timber.e("Data transfer complete")
     viewModelScope.launch {
-      withContext(Dispatchers.Main) { view.showTransferCompleteDialog() }
+      withContext(dispatcherProvider.main()) { view.showTransferCompleteDialog() }
       dataSharingStrategy.disconnect(
         dataSharingStrategy.getCurrentDevice()!!,
         object : DataSharingStrategy.OperationListener {
@@ -225,10 +229,11 @@ class P2PReceiverViewModel(
 
   class Factory(
     private val context: P2PDeviceSearchActivity,
-    private val dataSharingStrategy: DataSharingStrategy
+    private val dataSharingStrategy: DataSharingStrategy,
+    private val dispatcherProvider: DispatcherProvider
   ) : ViewModelProvider.Factory {
     override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-      return P2PReceiverViewModel(context, dataSharingStrategy).apply {
+      return P2PReceiverViewModel(context, dataSharingStrategy, dispatcherProvider).apply {
         dataSharingStrategy.setCoroutineScope(viewModelScope)
       } as
         T

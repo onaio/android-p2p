@@ -18,7 +18,6 @@ package org.smartregister.p2p.data_sharing
 import androidx.annotation.NonNull
 import androidx.annotation.Nullable
 import java.util.TreeSet
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.model.P2PReceivedHistory
@@ -27,13 +26,15 @@ import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.search.ui.P2PSenderViewModel
 import org.smartregister.p2p.sync.DataType
 import org.smartregister.p2p.utils.Constants
+import org.smartregister.p2p.utils.DispatcherProvider
 import timber.log.Timber
 
 class SyncSenderHandler
 constructor(
   @NonNull val p2PSenderViewModel: P2PSenderViewModel,
   @NonNull val dataSyncOrder: TreeSet<DataType>,
-  @Nullable val receivedHistory: List<P2PReceivedHistory>
+  @Nullable val receivedHistory: List<P2PReceivedHistory>,
+  private val dispatcherProvider: DispatcherProvider
 ) {
   private val remainingLastRecordIds = HashMap<String, Long>()
   private val batchSize = 25
@@ -53,7 +54,7 @@ constructor(
       remainingLastRecordIds[dataType.name] = 0L
     }
 
-    if (receivedHistory != null && receivedHistory.isNotEmpty()) {
+    if (receivedHistory.isNotEmpty()) {
       for (dataTypeHistory in receivedHistory) {
         if (dataTypeHistory.lastUpdatedAt == 0L) {
           continue
@@ -86,7 +87,7 @@ constructor(
     val nullableRecordId = remainingLastRecordIds[dataType.name]
     val lastRecordId = nullableRecordId ?: 0L
 
-    withContext(Dispatchers.IO) {
+    withContext(dispatcherProvider.io()) {
       val jsonData =
         P2PLibrary.getInstance()
           .getSenderTransferDao()
