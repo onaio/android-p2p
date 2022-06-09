@@ -490,7 +490,8 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   }
 
   @Test
-  fun `send() calls dataOutputStream#flush, dataOutputStream#writeUTF and operationListener#onSuccess() when dataOutputStream is not null and payload datatype is string`() {
+  fun `send() calls dataOutputStream#flush, dataOutputStream#writeUTF and operationListener#onSuccess() when dataOutputStream is not null and payload datatype is string`() =
+      runBlocking {
     ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "socket", socket)
     every { syncPayload.getDataType() } returns SyncPayloadType.STRING
     every { syncPayload.getData() } returns "some data"
@@ -505,6 +506,8 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
       operationListener = operationListener,
       syncPayload = syncPayload
     )
+
+    delay(1000)
 
     coVerify { wifiDirectDataSharingStrategy.makeSocketConnections(any(), any()) }
     verifySequence {
@@ -542,7 +545,8 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   }
 
   @Test
-  fun `send() calls dataOutputStream#writeUTF, dataOutputStream#writeLong, dataOutputStream#write and operationListener#onSuccess() when dataOutputStream is not null and payload datatype is bytes`() {
+  fun `send() calls dataOutputStream#writeUTF, dataOutputStream#writeLong, dataOutputStream#write and operationListener#onSuccess() when dataOutputStream is not null and payload datatype is bytes`() =
+      runBlocking {
     val payload = "some data"
     ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "socket", socket)
     every { syncPayload.getDataType() } returns SyncPayloadType.BYTES
@@ -559,6 +563,9 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
       operationListener = operationListener,
       syncPayload = syncPayload
     )
+
+    delay(1000)
+
     val payloadSize = payload.toByteArray().size
     coVerify { wifiDirectDataSharingStrategy.makeSocketConnections(any(), any()) }
     coVerify { dataOutputStream.writeUTF(SyncPayloadType.BYTES.name) }
