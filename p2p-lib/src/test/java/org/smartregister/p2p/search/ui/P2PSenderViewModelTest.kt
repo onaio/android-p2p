@@ -53,7 +53,6 @@ import org.smartregister.p2p.search.contract.P2pModeSelectContract
 import org.smartregister.p2p.shadows.ShadowAppDatabase
 import org.smartregister.p2p.sync.DataType
 import org.smartregister.p2p.utils.Constants
-import org.smartregister.p2p.utils.TestDispatcherProvider
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 10-05-2022. */
 @Config(shadows = [ShadowAppDatabase::class])
@@ -75,7 +74,7 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
     dataSharingStrategy = mockk()
     syncSenderHandler = mockk()
     p2PSenderViewModel =
-      spyk(P2PSenderViewModel(view, dataSharingStrategy, TestDispatcherProvider()))
+      spyk(P2PSenderViewModel(view, dataSharingStrategy, coroutinesTestRule.testDispatcherProvider))
     ReflectionHelpers.setField(p2PSenderViewModel, "syncSenderHandler", syncSenderHandler)
 
     p2pReceiverTransferDao = mockk()
@@ -270,11 +269,19 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
     every { wifiDirectDataSharingStrategy.setCoroutineScope(any()) } just runs
 
     Assert.assertNotNull(
-      P2PSenderViewModel.Factory(mockk(), wifiDirectDataSharingStrategy, TestDispatcherProvider())
+      P2PSenderViewModel.Factory(
+          mockk(),
+          wifiDirectDataSharingStrategy,
+          coroutinesTestRule.testDispatcherProvider
+        )
         .create(P2PSenderViewModel::class.java)
     )
     Assert.assertTrue(
-      P2PSenderViewModel.Factory(mockk(), wifiDirectDataSharingStrategy, TestDispatcherProvider())
+      P2PSenderViewModel.Factory(
+          mockk(),
+          wifiDirectDataSharingStrategy,
+          coroutinesTestRule.testDispatcherProvider
+        )
         .create(P2PSenderViewModel::class.java) is
         P2PSenderViewModel
     )

@@ -29,10 +29,12 @@ import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
+import org.smartregister.p2p.CoroutineTestRule
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.dao.P2pReceivedHistoryDao
 import org.smartregister.p2p.dao.ReceiverTransferDao
@@ -42,10 +44,11 @@ import org.smartregister.p2p.search.ui.P2PReceiverViewModel
 import org.smartregister.p2p.shadows.ShadowAppDatabase
 import org.smartregister.p2p.sync.DataType
 import org.smartregister.p2p.utils.Constants
-import org.smartregister.p2p.utils.TestDispatcherProvider
 
 @Config(shadows = [ShadowAppDatabase::class])
 class SyncReceiverHandlerTest : RobolectricTest() {
+
+  @get:Rule var coroutinesTestRule = CoroutineTestRule()
 
   private lateinit var dataType: DataType
   private lateinit var jsonArray: JSONArray
@@ -84,7 +87,10 @@ class SyncReceiverHandlerTest : RobolectricTest() {
 
     syncReceiverHandler =
       spyk(
-        SyncReceiverHandler(p2PReceiverViewModel = p2PReceiverViewModel, TestDispatcherProvider())
+        SyncReceiverHandler(
+          p2PReceiverViewModel = p2PReceiverViewModel,
+          coroutinesTestRule.testDispatcherProvider
+        )
       )
     ReflectionHelpers.setField(syncReceiverHandler, "currentManifest", manifest)
   }

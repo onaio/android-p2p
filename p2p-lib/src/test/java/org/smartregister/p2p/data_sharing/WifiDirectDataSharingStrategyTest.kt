@@ -49,8 +49,10 @@ import kotlinx.coroutines.test.TestCoroutineDispatcher
 import kotlinx.coroutines.test.TestCoroutineScope
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
+import org.smartregister.p2p.CoroutineTestRule
 import org.smartregister.p2p.WifiP2pBroadcastReceiver
 import org.smartregister.p2p.payload.BytePayload
 import org.smartregister.p2p.payload.PayloadContract
@@ -59,9 +61,10 @@ import org.smartregister.p2p.payload.SyncPayloadType
 import org.smartregister.p2p.robolectric.RobolectricTest
 import org.smartregister.p2p.search.contract.P2PManagerListener
 import org.smartregister.p2p.sync.DataType
-import org.smartregister.p2p.utils.TestDispatcherProvider
 
 class WifiDirectDataSharingStrategyTest : RobolectricTest() {
+
+  @get:Rule var coroutinesTestRule = CoroutineTestRule()
 
   private lateinit var wifiDirectDataSharingStrategy: WifiDirectDataSharingStrategy
   private lateinit var context: Activity
@@ -113,7 +116,7 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     wifiDirectDataSharingStrategy = spyk(recordPrivateCalls = true)
     wifiDirectDataSharingStrategy.setActivity(context)
     wifiDirectDataSharingStrategy.setCoroutineScope(coroutineScope = coroutineScope)
-    wifiDirectDataSharingStrategy.setDispatcherProvider(TestDispatcherProvider())
+    wifiDirectDataSharingStrategy.setDispatcherProvider(coroutinesTestRule.testDispatcherProvider)
     every { context.getSystemService(Context.WIFI_P2P_SERVICE) } returns wifiP2pManager
 
     wifiP2pDevice =

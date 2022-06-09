@@ -30,10 +30,12 @@ import kotlinx.coroutines.runBlocking
 import org.json.JSONArray
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
+import org.smartregister.p2p.CoroutineTestRule
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.dao.SenderTransferDao
 import org.smartregister.p2p.model.P2PReceivedHistory
@@ -44,10 +46,11 @@ import org.smartregister.p2p.search.ui.P2PSenderViewModel
 import org.smartregister.p2p.shadows.ShadowAppDatabase
 import org.smartregister.p2p.sync.DataType
 import org.smartregister.p2p.utils.Constants
-import org.smartregister.p2p.utils.TestDispatcherProvider
 
 @Config(shadows = [ShadowAppDatabase::class])
 class SyncSenderHandlerTest : RobolectricTest() {
+
+  @get:Rule var coroutinesTestRule = CoroutineTestRule()
 
   private lateinit var dataSyncOrder: TreeSet<DataType>
   private lateinit var p2PSenderViewModel: P2PSenderViewModel
@@ -119,7 +122,7 @@ class SyncSenderHandlerTest : RobolectricTest() {
           dataSyncOrder = dataSyncOrder,
           p2PSenderViewModel = p2PSenderViewModel,
           receivedHistory = receivedHistory,
-          dispatcherProvider = TestDispatcherProvider()
+          dispatcherProvider = coroutinesTestRule.testDispatcherProvider
           // dispatcherProvider = DefaultDispatcherProvider()
           )
       )
