@@ -123,8 +123,7 @@ class SyncSenderHandlerTest : RobolectricTest() {
           p2PSenderViewModel = p2PSenderViewModel,
           receivedHistory = receivedHistory,
           dispatcherProvider = coroutinesTestRule.testDispatcherProvider
-          // dispatcherProvider = DefaultDispatcherProvider()
-          )
+        )
       )
   }
 
