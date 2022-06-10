@@ -56,6 +56,7 @@ import org.smartregister.p2p.search.adapter.DeviceListAdapter
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
 import org.smartregister.p2p.utils.DefaultDispatcherProvider
 import org.smartregister.p2p.utils.getDeviceName
+import org.smartregister.p2p.utils.isAppDebuggable
 import org.smartregister.p2p.utils.startP2PScreen
 import timber.log.Timber
 
@@ -99,7 +100,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_p2_pdevice_search)
 
-    if (Timber.treeCount == 0) {
+    if (Timber.treeCount == 0 && isAppDebuggable(this)) {
       Timber.plant(Timber.DebugTree())
     }
 

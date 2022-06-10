@@ -15,8 +15,6 @@
  */
 package org.smartregister.p2p.data_sharing
 
-import androidx.annotation.NonNull
-import androidx.annotation.Nullable
 import java.util.TreeSet
 import kotlinx.coroutines.withContext
 import org.smartregister.p2p.P2PLibrary
@@ -31,9 +29,9 @@ import timber.log.Timber
 
 class SyncSenderHandler
 constructor(
-  @NonNull val p2PSenderViewModel: P2PSenderViewModel,
-  @NonNull val dataSyncOrder: TreeSet<DataType>,
-  @Nullable val receivedHistory: List<P2PReceivedHistory>,
+  val p2PSenderViewModel: P2PSenderViewModel,
+  val dataSyncOrder: TreeSet<DataType>,
+  val receivedHistory: List<P2PReceivedHistory>,
   private val dispatcherProvider: DispatcherProvider
 ) {
   private val remainingLastRecordIds = HashMap<String, Long>()
@@ -91,7 +89,7 @@ constructor(
       val jsonData =
         P2PLibrary.getInstance()
           .getSenderTransferDao()
-          ?.getJsonData(dataType, lastRecordId, batchSize)!!
+          .getJsonData(dataType, lastRecordId, batchSize)!!
 
       // send actual manifest
 

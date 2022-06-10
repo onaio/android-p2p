@@ -15,15 +15,13 @@
  */
 package org.smartregister.p2p.dao
 
-import androidx.annotation.NonNull
-import androidx.annotation.WorkerThread
 import java.util.TreeSet
 import org.json.JSONArray
 import org.smartregister.p2p.sync.DataType
 
 interface ReceiverTransferDao {
 
-  @WorkerThread fun getP2PDataTypes(): TreeSet<DataType>
+  fun getP2PDataTypes(): TreeSet<DataType>
 
-  @WorkerThread fun receiveJson(@NonNull type: DataType, @NonNull jsonArray: JSONArray): Long
+  fun receiveJson(type: DataType, jsonArray: JSONArray): Long
 }

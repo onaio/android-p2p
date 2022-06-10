@@ -54,4 +54,5 @@
     <string name="sending_data_to">Sending data to %s</string>
     <string name="receiving_data_from">Receiving data from %s</string>
     <string name="cancel">Cancel</string>
+    <string name="transferring_x_records">Transferring %,d records</string>
 </resources>

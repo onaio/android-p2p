@@ -4,9 +4,9 @@ name: Android CI with Gradle
 
 on:
   push:
-    branches: [ main, 1082-sending-receiving-data ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, 1082-sending-receiving-data ]
+    branches: [ main ]
 
 jobs:
   unit_tests:

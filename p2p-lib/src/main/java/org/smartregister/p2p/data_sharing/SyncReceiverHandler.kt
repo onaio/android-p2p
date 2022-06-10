@@ -15,10 +15,10 @@
  */
 package org.smartregister.p2p.data_sharing
 
-import androidx.annotation.NonNull
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.smartregister.p2p.P2PLibrary
+import org.smartregister.p2p.R
 import org.smartregister.p2p.dao.P2pReceivedHistoryDao
 import org.smartregister.p2p.model.P2PReceivedHistory
 import org.smartregister.p2p.search.ui.P2PReceiverViewModel
@@ -28,7 +28,7 @@ import timber.log.Timber
 
 class SyncReceiverHandler
 constructor(
-  @NonNull val p2PReceiverViewModel: P2PReceiverViewModel,
+  val p2PReceiverViewModel: P2PReceiverViewModel,
   private val dispatcherProvider: DispatcherProvider
 ) {
 
@@ -37,7 +37,7 @@ constructor(
   fun processManifest(manifest: Manifest) {
     currentManifest = manifest
     // update UI with number of records to expect
-    p2PReceiverViewModel.upDateProgress("Transferring %,d records", manifest.recordsSize)
+    p2PReceiverViewModel.updateProgress(R.string.transferring_x_records, manifest.recordsSize)
     if (manifest.dataType.name == Constants.SYNC_COMPLETE) {
       p2PReceiverViewModel.handleDataTransferCompleteManifest()
     } else {
@@ -56,16 +56,16 @@ constructor(
     p2PReceiverViewModel.processIncomingManifest()
   }
 
-  suspend fun addOrUpdateLastRecord(@NonNull entityType: String, lastUpdatedAt: Long) {
+  suspend fun addOrUpdateLastRecord(entityType: String, lastUpdatedAt: Long) {
     // Retrieve sending device details
     val sendingDeviceAppLifetimeKey = p2PReceiverViewModel.getSendingDeviceAppLifetimeKey()
 
     withContext(dispatcherProvider.io()) {
       if (sendingDeviceAppLifetimeKey.isNotBlank()) {
-        val p2pReceivedHistoryDao: P2pReceivedHistoryDao? = getP2pReceivedHistoryDao()
+        val p2pReceivedHistoryDao = getP2pReceivedHistoryDao()
 
         var receivedHistory: P2PReceivedHistory? =
-          p2pReceivedHistoryDao?.getHistory(sendingDeviceAppLifetimeKey, entityType)
+          p2pReceivedHistoryDao.getHistory(sendingDeviceAppLifetimeKey, entityType)
 
         if (receivedHistory == null) {
           receivedHistory = P2PReceivedHistory()
@@ -81,7 +81,7 @@ constructor(
     }
   }
 
-  private fun getP2pReceivedHistoryDao(): P2pReceivedHistoryDao? {
-    return P2PLibrary.getInstance()!!.getDb()?.p2pReceivedHistoryDao()
+  private fun getP2pReceivedHistoryDao(): P2pReceivedHistoryDao {
+    return P2PLibrary.getInstance().getDb().p2pReceivedHistoryDao()
   }
 }

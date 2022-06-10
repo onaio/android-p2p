@@ -56,9 +56,9 @@ class P2PSenderViewModel(
 
     val deviceDetailsMap: MutableMap<String, String?> = HashMap()
     deviceDetailsMap[Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY] =
-      P2PLibrary.getInstance()!!.getHashKey()
+      P2PLibrary.getInstance().getHashKey()
     deviceDetailsMap[Constants.BasicDeviceDetails.KEY_DEVICE_ID] =
-      P2PLibrary.getInstance()!!.getDeviceUniqueIdentifier()
+      P2PLibrary.getInstance().getDeviceUniqueIdentifier()
 
     dataSharingStrategy.send(
       device = dataSharingStrategy.getCurrentDevice(),
@@ -173,7 +173,7 @@ class P2PSenderViewModel(
           }
 
           override fun onFailure(device: DeviceInfo?, ex: Exception) {
-            Timber.i("manifest failed to send")
+            Timber.e(ex, "manifest failed to send")
           }
         }
       )

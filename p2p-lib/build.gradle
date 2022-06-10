@@ -208,12 +208,21 @@ afterEvaluate {
                 name = 'sonatype'
                 url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
                 credentials {
-                    //TODO figure out how to load credentials.
-                    username = 'test'
-                    password = 'test'
+                    username = getRepositoryUsername()
+                    password = getRepositoryPassword()
                 }
             }
 
         }
     }
+}
+
+
+
+def getRepositoryPassword() {
+    return hasProperty('sonatypePassword') ? sonatypePassword : ""
+}
+
+def getRepositoryUsername() {
+    return hasProperty('sonatypeUsername') ? sonatypeUsername : ""
 }

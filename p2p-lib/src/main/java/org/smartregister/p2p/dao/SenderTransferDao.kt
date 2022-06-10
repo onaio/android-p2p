@@ -15,17 +15,12 @@
  */
 package org.smartregister.p2p.dao
 
-import androidx.annotation.NonNull
-import androidx.annotation.Nullable
-import androidx.annotation.WorkerThread
 import java.util.TreeSet
 import org.smartregister.p2p.search.data.JsonData
 import org.smartregister.p2p.sync.DataType
 
 interface SenderTransferDao {
-  @WorkerThread @Nullable fun getP2PDataTypes(): TreeSet<DataType>
+  fun getP2PDataTypes(): TreeSet<DataType>
 
-  @WorkerThread
-  @Nullable
-  fun getJsonData(@NonNull dataType: DataType, lastRecordId: Long, batchSize: Int): JsonData?
+  fun getJsonData(dataType: DataType, lastRecordId: Long, batchSize: Int): JsonData?
 }

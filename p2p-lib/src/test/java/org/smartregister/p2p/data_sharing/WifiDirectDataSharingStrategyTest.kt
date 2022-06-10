@@ -623,14 +623,14 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   @Test
   fun `sendManifest() call dataOutputStream#writeUTF() and dataOutputStream#flush`() {
     val manifestString = Gson().toJson(expectedManifest)
-    every { dataOutputStream.writeUTF(SyncPayloadType.MANIFEST.name) } just runs
+    every { dataOutputStream.writeUTF("MANIFEST") } just runs
     every { dataOutputStream.writeUTF(manifestString) } just runs
     every { dataOutputStream.flush() } just runs
     every { operationListener.onSuccess(device) } just runs
 
     wifiDirectDataSharingStrategy.sendManifest(device, expectedManifest, operationListener)
 
-    verify { dataOutputStream.writeUTF(SyncPayloadType.MANIFEST.name) }
+    verify { dataOutputStream.writeUTF("MANIFEST") }
     verify { dataOutputStream.writeUTF(manifestString) }
     verify { dataOutputStream.flush() }
     verify { operationListener.onSuccess(device) }
@@ -751,8 +751,7 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   @Test
   fun `receiveManifest() call dataOutputStream#readUTF()`() {
     val manifestString = Gson().toJson(expectedManifest)
-    every { dataInputStream.readUTF() } returnsMany
-      (listOf(SyncPayloadType.MANIFEST.name, manifestString))
+    every { dataInputStream.readUTF() } returnsMany (listOf("MANIFEST", manifestString))
 
     val actualManifest = wifiDirectDataSharingStrategy.receiveManifest(device, operationListener)
 

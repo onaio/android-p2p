@@ -19,13 +19,14 @@ import org.smartregister.p2p.dao.P2pReceivedHistoryDao;
 public abstract class AppDatabase extends RoomDatabase {
 
     private static AppDatabase instance;
-    public static final String dbName = "p2p";
+    public static final String DB_NAME = "p2p";
 
+    @NonNull
     public static AppDatabase getInstance(@NonNull Context context, @NonNull String passphrase) {
         if (instance == null) {
             SupportFactory safeHelperFactory = new SupportFactory(SQLiteDatabase.getBytes(passphrase.toCharArray()));
             instance =
-                    Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, dbName)
+                    Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, DB_NAME)
                             .openHelperFactory(safeHelperFactory)
                             .build();
         }
@@ -33,5 +34,6 @@ public abstract class AppDatabase extends RoomDatabase {
         return instance;
     }
 
+    @NonNull
     public abstract P2pReceivedHistoryDao p2pReceivedHistoryDao();
 }

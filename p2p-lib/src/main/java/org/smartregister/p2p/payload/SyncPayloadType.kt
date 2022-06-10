@@ -18,6 +18,5 @@ package org.smartregister.p2p.payload
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 04-04-2022. */
 enum class SyncPayloadType {
   STRING,
-  BYTES,
-  MANIFEST
+  BYTES
 }

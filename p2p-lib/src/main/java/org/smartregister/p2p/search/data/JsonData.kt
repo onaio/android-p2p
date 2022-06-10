@@ -15,21 +15,19 @@
  */
 package org.smartregister.p2p.search.data
 
-import androidx.annotation.NonNull
 import org.json.JSONArray
 
 class JsonData {
   private var jsonArray: JSONArray? = null
   private var highestRecordId: Long = 0
 
-  constructor(@NonNull jsonArray: JSONArray?, highestRecordId: Long) {
+  constructor(jsonArray: JSONArray?, highestRecordId: Long) {
     this.jsonArray = jsonArray
     this.highestRecordId = highestRecordId
   }
 
   constructor()
 
-  @NonNull
   fun getJsonArray(): JSONArray? {
     return jsonArray
   }

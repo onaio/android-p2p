@@ -15,7 +15,6 @@
  */
 package org.smartregister.p2p.search.contract
 
-import androidx.annotation.NonNull
 import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
@@ -40,17 +39,26 @@ interface P2pModeSelectContract {
   }
 
   interface SenderViewModel {
-    fun sendManifest(@NonNull manifest: Manifest)
+
+    fun sendManifest(manifest: Manifest)
+
     fun getCurrentConnectedDevice(): DeviceInfo?
+
     fun processReceivedHistory(syncPayload: StringPayload)
+
     fun requestSyncParams(deviceInfo: DeviceInfo?)
+
     fun sendSyncComplete()
+
     fun sendChunkData(awaitingPayload: PayloadContract<out Any>)
   }
 
   interface ReceiverViewModel {
+
     fun getSendingDeviceAppLifetimeKey(): String
-    fun upDateProgress(msg: String, recordSize: Int)
+
+    fun updateProgress(resStringMsg: Int, recordSize: Int)
+
     fun sendLastReceivedRecords(receivedHistory: List<P2PReceivedHistory?>?)
   }
 }

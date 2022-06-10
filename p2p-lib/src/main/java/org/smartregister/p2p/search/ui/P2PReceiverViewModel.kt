@@ -57,12 +57,16 @@ class P2PReceiverViewModel(
           val deviceDetails = Gson().fromJson((payload as StringPayload).string, map.javaClass)
 
           // TODO: Fix possible crash here due to NPE
-          checkIfDeviceKeyHasChanged(
-            deviceDetails[Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY]!!
-          )
+          if (deviceDetails.containsKey(Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY)) {
+            checkIfDeviceKeyHasChanged(
+              deviceDetails[Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY]!!
+            )
 
-          viewModelScope.launch {
-            withContext(dispatcherProvider.main()) { view.showTransferProgressDialog() }
+            viewModelScope.launch {
+              withContext(dispatcherProvider.main()) { view.showTransferProgressDialog() }
+            }
+          } else {
+            Timber.e("An error occurred and the APP-LIFETIME-KEY was not sent")
           }
         }
       },
@@ -91,8 +95,8 @@ class P2PReceiverViewModel(
   fun getReceivedHistory(appLifetimeKey: String): List<P2PReceivedHistory?>? {
     return P2PLibrary.getInstance()
       .getDb()
-      ?.p2pReceivedHistoryDao()
-      ?.getDeviceReceivedHistory(appLifetimeKey)
+      .p2pReceivedHistoryDao()
+      .getDeviceReceivedHistory(appLifetimeKey)
   }
 
   override fun sendLastReceivedRecords(receivedHistory: List<P2PReceivedHistory?>?) {
@@ -124,20 +128,20 @@ class P2PReceiverViewModel(
                 }
 
                 override fun onFailure(device: DeviceInfo?, ex: Exception) {
-                  Timber.i("Failed to receive manifest")
+                  Timber.e(ex, "Failed to receive manifest")
                 }
               }
             )
 
           // Handle successfully received manifest
           if (receivedManifest != null) {
-            Timber.e("Manifest with data successfully received")
+            Timber.i("Manifest with data successfully received")
             syncReceiverHandler.processManifest(receivedManifest)
           }
         }
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
-          Timber.e("Failed to send the last received records")
+          Timber.e(ex, "Failed to send the last received records")
         }
       }
     )
@@ -165,7 +169,7 @@ class P2PReceiverViewModel(
         }
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
-          Timber.i("Failed to receive chunk data")
+          Timber.e(ex, "Failed to receive chunk data")
         }
       }
     )
@@ -190,11 +194,11 @@ class P2PReceiverViewModel(
         dataSharingStrategy.getCurrentDevice()!!,
         object : DataSharingStrategy.OperationListener {
           override fun onSuccess(device: DeviceInfo?) {
-            Timber.e("Diconnection successful")
+            Timber.i("Diconnection successful")
           }
 
           override fun onFailure(device: DeviceInfo?, ex: Exception) {
-            Timber.e("Diconnection failed")
+            Timber.e(ex, "P2P diconnection failed")
           }
         }
       )
@@ -208,11 +212,11 @@ class P2PReceiverViewModel(
         device = dataSharingStrategy.getCurrentDevice()!!,
         object : DataSharingStrategy.OperationListener {
           override fun onSuccess(device: DeviceInfo?) {
-            Timber.e("Manifest successfully received")
+            Timber.i("Manifest successfully received")
           }
 
           override fun onFailure(device: DeviceInfo?, ex: Exception) {
-            Timber.e("Failed to receive manifest")
+            Timber.e(ex, "Failed to receive manifest")
           }
         }
       )
@@ -223,7 +227,7 @@ class P2PReceiverViewModel(
     return sendingDeviceAppLifetimeKey
   }
 
-  override fun upDateProgress(msg: String, recordSize: Int) {
+  override fun updateProgress(resStringMsg: Int, recordSize: Int) {
     // TODO Update UI with record size
   }
 

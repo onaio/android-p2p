@@ -17,6 +17,7 @@ package org.smartregister.p2p.utils
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.os.Build
 import java.util.Locale
 import org.smartregister.p2p.search.ui.P2PDeviceSearchActivity
@@ -48,3 +49,6 @@ fun getDeviceModel(): String {
 fun String.capitalize(): String = replaceFirstChar {
   if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
 }
+
+fun isAppDebuggable(context: Context) =
+  0 != context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE

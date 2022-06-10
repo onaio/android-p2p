@@ -79,6 +79,8 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
   private lateinit var coroutineScope: CoroutineScope
 
+  private val MANIFEST = "MANIFEST"
+
   override fun setDispatcherProvider(dispatcherProvider: DispatcherProvider) {
     this.dispatcherProvider = dispatcherProvider
   }
@@ -253,11 +255,9 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       object : WifiP2pManager.ActionListener {
         override fun onSuccess() {
           logDebug("Discovering peers successful")
-          // handleP2pDiscoverySuccess()
         }
 
         override fun onFailure(reason: Int) {
-          // handleP2pDiscoveryFailure(reason)
           val exception = Exception("$reason: ${getWifiP2pReason(reason)}")
           onDeviceFound?.failed(exception)
           onSearchingFailed(exception)
@@ -373,10 +373,8 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
           when (syncPayload.getDataType()) {
             SyncPayloadType.STRING -> {
 
-              // TODO: Fix this to take it the [org.smartregister.p2p.payload.BytePayload]
-
               if (dataOutputStream != null) {
-                dataOutputStream!!.apply {
+                dataOutputStream?.apply {
                   writeUTF(SyncPayloadType.STRING.name)
                   flush()
 
@@ -390,9 +388,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
               }
             }
             SyncPayloadType.BYTES -> {
-              // TODO: Fix this to take it the [org.smartregister.p2p.payload.BytePayload]
 
-              String("".toByteArray())
               dataOutputStream?.apply {
                 val byteArray = syncPayload.getData() as ByteArray
 
@@ -417,6 +413,9 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
                 operationListener.onSuccess(device)
               }
+                ?: run {
+                  operationListener.onFailure(device, Exception("DataOutputStream is null"))
+                }
             }
           }
         } else {
@@ -437,7 +436,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     groupOwnerAddress: String,
     onSocketConnectionMade: (socket: Socket?) -> Unit
   ) {
-    var socketResult: Socket?
+    val socketResult: Socket?
     if (socket != null) {
       socketResult = socket
     } else if (wifiP2pInfo == null) {
@@ -481,7 +480,6 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
         Socket().apply {
           bind(null)
           connect(InetSocketAddress(groupOwnerAddress, PORT), SOCKET_TIMEOUT)
-          // transmit(sender, socket)
           constructStreamsFromSocket(this)
         }
       } catch (e: Exception) {
@@ -500,7 +498,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
     dataOutputStream?.apply {
       val manifestString = Gson().toJson(manifest)
-      writeUTF(SyncPayloadType.MANIFEST.name)
+      writeUTF(MANIFEST)
       writeUTF(manifestString)
       flush()
       operationListener.onSuccess(device = device)
@@ -577,7 +575,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     return dataInputStream?.run {
       val dataType = readUTF()
 
-      if (dataType == SyncPayloadType.MANIFEST.name) {
+      if (dataType == MANIFEST) {
 
         val manifestString = readUTF()
         Gson().fromJson(manifestString, Manifest::class.java)
@@ -779,7 +777,9 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
     override var strategySpecificDevice: Any
       get() = wifiP2pDevice
-      set(value) {}
+      set(value) {
+        wifiP2pDevice = value as WifiP2pDevice
+      }
 
     override fun getDisplayName(): String =
       "${wifiP2pDevice.deviceName} (${wifiP2pDevice.deviceAddress})"
@@ -791,9 +791,5 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     override fun address(): String {
       return wifiP2pDevice.deviceAddress
     }
-  }
-
-  class Discovery {
-    var isDiscovering = false
   }
 }

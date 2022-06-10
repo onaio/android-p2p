@@ -26,12 +26,5 @@ data class DataType(@NonNull val name: String, @NonNull val type: Filetype, val 
     JPEG("image/jpeg")
   }
 
-  override fun compareTo(other: DataType): Int {
-    if (position == other.position) {
-      return 0
-    } else if (position < other.position) {
-      return -1
-    }
-    return 1
-  }
+  override fun compareTo(other: DataType): Int = position.compareTo(other.position)
 }
