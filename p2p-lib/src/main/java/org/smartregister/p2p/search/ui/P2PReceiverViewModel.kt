@@ -56,8 +56,9 @@ class P2PReceiverViewModel(
           var map: MutableMap<String, String?> = HashMap()
           val deviceDetails = Gson().fromJson((payload as StringPayload).string, map.javaClass)
 
-          // TODO: Fix possible crash here due to NPE
-          if (deviceDetails.containsKey(Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY)) {
+          if (deviceDetails != null &&
+              deviceDetails.containsKey(Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY)
+          ) {
             checkIfDeviceKeyHasChanged(
               deviceDetails[Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY]!!
             )
