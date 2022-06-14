@@ -16,11 +16,49 @@
 package org.smartregister.p2p.search.contract
 
 import org.smartregister.p2p.authentication.model.DeviceRole
+import org.smartregister.p2p.data_sharing.DeviceInfo
+import org.smartregister.p2p.data_sharing.Manifest
+import org.smartregister.p2p.model.P2PReceivedHistory
+import org.smartregister.p2p.payload.PayloadContract
+import org.smartregister.p2p.payload.StringPayload
 
 /** Interface for functions used to make changes to the data transfer page UI */
 interface P2pModeSelectContract {
 
-  fun showP2PSelectPage(deviceRole: DeviceRole, deviceName: String)
+  interface View {
 
-  fun getDeviceRole(): DeviceRole
+    fun showP2PSelectPage(deviceRole: DeviceRole, deviceName: String)
+
+    fun getDeviceRole(): DeviceRole
+
+    fun showTransferCompleteDialog()
+
+    fun getCurrentConnectedDevice(): DeviceInfo?
+
+    fun senderSyncComplete(complete: Boolean)
+  }
+
+  interface SenderViewModel {
+
+    fun sendManifest(manifest: Manifest)
+
+    fun getCurrentConnectedDevice(): DeviceInfo?
+
+    fun processReceivedHistory(syncPayload: StringPayload)
+
+    fun requestSyncParams(deviceInfo: DeviceInfo?)
+
+    fun sendSyncComplete()
+
+    fun sendChunkData(awaitingPayload: PayloadContract<out Any>)
+  }
+
+  interface ReceiverViewModel {
+
+    fun getSendingDeviceAppLifetimeKey(): String
+
+    fun updateProgress(resStringMsg: Int, recordSize: Int)
+
+    fun sendLastReceivedRecords(receivedHistory: List<P2PReceivedHistory?>?)
+  }
 }

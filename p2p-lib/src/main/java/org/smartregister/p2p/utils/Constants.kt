@@ -29,5 +29,19 @@ interface Constants {
   companion object {
     const val DEFAULT_SHARE_BATCH_SIZE = 20
     const val DEFAULT_MIN_DEVICE_CONNECTION_RETRY_DURATION = 2 * 60 * 60
+    const val SEND_SYNC_PARAMS = "SEND-SYNC-PARAMS"
+    const val SYNC_COMPLETE = "SYNC-COMPLETE"
+  }
+
+  interface BasicDeviceDetails {
+    companion object {
+      const val KEY_DEVICE_ID = "device-id"
+      const val KEY_APP_LIFETIME_KEY = "app-lifetime-key"
+    }
+  }
+
+  enum class ConnectionLevel {
+    AUTHENTICATED,
+    RECEIPT_OF_RECEIVED_HISTORY
   }
 }

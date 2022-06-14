@@ -13,22 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartregister.p2p.model
+package org.smartregister.p2p.data_sharing
 
-import androidx.annotation.NonNull
-import androidx.room.ColumnInfo
-import androidx.room.Entity
+import java.lang.Exception
 
-/**
- * Model holding the a device-specific entity sync date. The [appLifetimeKey] holds the device
- * identifier.
- */
-@Entity(tableName = "p2p_received_history", primaryKeys = ["entity_type", "app_lifetime_key"])
-class P2PReceivedHistory {
+/** Created by Ephraim Kigamba - nek.eam@gmail.com on 21-03-2022. */
+interface OnDeviceFound {
 
-  @NonNull @ColumnInfo(name = "app_lifetime_key") lateinit var appLifetimeKey: String
+  fun deviceFound(devices: List<DeviceInfo>)
 
-  @NonNull @ColumnInfo(name = "entity_type") lateinit var entityType: String
-
-  @ColumnInfo(name = "last_updated_at") var lastUpdatedAt: Long = 0
+  fun failed(ex: Exception)
 }

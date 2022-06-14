@@ -15,15 +15,15 @@
  */
 package org.smartregister.p2p.utils
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.os.Build
 import java.util.Locale
 import org.smartregister.p2p.search.ui.P2PDeviceSearchActivity
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 25-02-2022. */
-fun startP2PScreen(context: Activity) {
+fun startP2PScreen(context: Context) {
   context.startActivity(Intent(context, P2PDeviceSearchActivity::class.java))
 }
 
@@ -49,3 +49,6 @@ fun getDeviceModel(): String {
 fun String.capitalize(): String = replaceFirstChar {
   if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
 }
+
+fun isAppDebuggable(context: Context) =
+  0 != context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE

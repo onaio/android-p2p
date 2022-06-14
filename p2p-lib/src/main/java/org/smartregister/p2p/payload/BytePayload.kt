@@ -13,23 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartregister.p2p
+package org.smartregister.p2p.payload
 
-import android.util.Log
-import java.net.Socket
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
+/** Created by Ephraim Kigamba - nek.eam@gmail.com on 04-04-2022. */
+class BytePayload(val payload: ByteArray) : PayloadContract<ByteArray> {
 
-class SocketReceiverSession(private val socket: Socket) : ReceiverSession {
-  override fun receive() {
-    val reader = socket.getInputStream().bufferedReader()
-    reader.forEachLine {
-      val decoded = Json.decodeFromString<SyncPayload>(it)
-      Log.d(this::class.simpleName, """Message received: $decoded""")
-    }
-  }
-}
+  override fun getDataType(): SyncPayloadType = SyncPayloadType.BYTES
 
-interface ReceiverSession {
-  fun receive()
+  override fun getData(): ByteArray = payload
 }

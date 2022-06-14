@@ -21,6 +21,7 @@ import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import org.smartregister.p2p.data_sharing.WifiDirectDataSharingStrategy
 import org.smartregister.p2p.robolectric.RobolectricTest
 
 internal class DeviceListAdapterTest : RobolectricTest() {
@@ -44,11 +45,12 @@ internal class DeviceListAdapterTest : RobolectricTest() {
   fun onBindViewHolderShouldUpdateViews() {
     val deviceAddress = "00:00:5e:00:53:af"
     val deviceName = "Google Pixel"
-    val device =
+    val wifiP2pDevice =
       WifiP2pDevice().apply {
         this.deviceName = deviceName
         this.deviceAddress = deviceAddress
       }
+    val device = WifiDirectDataSharingStrategy.WifiDirectDevice(wifiP2pDevice)
     val peerDevices = listOf(device)
     deviceListAdapter = DeviceListAdapter(peerDevices, {})
 
@@ -65,11 +67,13 @@ internal class DeviceListAdapterTest : RobolectricTest() {
   fun getItemCountShouldReturnActualCountDevices() {
     Assert.assertEquals(0, deviceListAdapter.itemCount)
 
-    val device =
+    val wifiP2pDevice =
       WifiP2pDevice().apply {
         deviceName = "Google Pixel"
         deviceAddress = "00:00:5e:00:53:af"
       }
+
+    val device = WifiDirectDataSharingStrategy.WifiDirectDevice(wifiP2pDevice)
     val peerDevices = listOf(device, device, device)
     deviceListAdapter = DeviceListAdapter(peerDevices, {})
 

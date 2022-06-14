@@ -13,22 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartregister.p2p.model
+package org.smartregister.p2p.payload
 
-import androidx.annotation.NonNull
-import androidx.room.ColumnInfo
-import androidx.room.Entity
+class StringPayload(val string: String) : PayloadContract<String> {
 
-/**
- * Model holding the a device-specific entity sync date. The [appLifetimeKey] holds the device
- * identifier.
- */
-@Entity(tableName = "p2p_received_history", primaryKeys = ["entity_type", "app_lifetime_key"])
-class P2PReceivedHistory {
+  override fun getDataType(): SyncPayloadType = SyncPayloadType.STRING
 
-  @NonNull @ColumnInfo(name = "app_lifetime_key") lateinit var appLifetimeKey: String
-
-  @NonNull @ColumnInfo(name = "entity_type") lateinit var entityType: String
-
-  @ColumnInfo(name = "last_updated_at") var lastUpdatedAt: Long = 0
+  override fun getData(): String = string
 }

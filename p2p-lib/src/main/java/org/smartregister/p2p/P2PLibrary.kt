@@ -17,11 +17,15 @@ package org.smartregister.p2p
 
 import android.content.Context
 import androidx.annotation.NonNull
-import androidx.annotation.Nullable
 import java.util.UUID
+import org.smartregister.p2p.dao.ReceiverTransferDao
+import org.smartregister.p2p.dao.SenderTransferDao
+import org.smartregister.p2p.data_sharing.DataSharingStrategy
+import org.smartregister.p2p.data_sharing.WifiDirectDataSharingStrategy
 import org.smartregister.p2p.model.AppDatabase
 import org.smartregister.p2p.utils.Constants
 import org.smartregister.p2p.utils.Settings
+import org.smartregister.p2p.utils.isAppDebuggable
 import timber.log.Timber
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 14-03-2022. */
@@ -30,44 +34,44 @@ class P2PLibrary private constructor() {
   private lateinit var options: Options
   private var hashKey: String? = null
   private var deviceUniqueIdentifier: String? = null
+  var dataSharingStrategy: DataSharingStrategy = WifiDirectDataSharingStrategy()
 
   companion object {
     private var instance: P2PLibrary? = null
 
-    @NonNull
-    fun getInstance(): P2PLibrary? {
+    fun getInstance(): P2PLibrary {
       checkNotNull(instance) {
-        ("Instance does not exist!!! Call P2PLibrary.init method" +
+        ("Instance does not exist!!! Call P2PLibrary.init(P2PLibrary.Options) method " +
           "in the onCreate method of " +
           "your Application class ")
       }
-      return instance
+      return instance!!
+    }
+
+    fun init(options: Options): P2PLibrary {
+      instance = P2PLibrary(options)
+      return instance!!
     }
   }
 
-  fun init(@NonNull options: Options) {
-    instance = P2PLibrary(options)
-  }
-
-  private constructor(@NonNull options: Options) : this() {
+  private constructor(options: Options) : this() {
     this.options = options
 
     // We should not override the host applications Timber trees
-    if (Timber.treeCount == 0) {
+    if (Timber.treeCount == 0 && isAppDebuggable(options.context)) {
       Timber.plant(Timber.DebugTree())
     }
+
     hashKey = getHashKey()
 
     // Start the DB
     AppDatabase.getInstance(getContext(), options.dbPassphrase)
   }
 
-  @NonNull
-  fun getDb(): AppDatabase? {
+  fun getDb(): AppDatabase {
     return AppDatabase.getInstance(getContext(), options.dbPassphrase)
   }
 
-  @NonNull
   fun getHashKey(): String? {
     if (hashKey == null) {
       val settings = Settings(getContext())
@@ -88,17 +92,14 @@ class P2PLibrary private constructor() {
     this.deviceUniqueIdentifier = deviceUniqueIdentifier
   }
 
-  @Nullable
   fun getDeviceUniqueIdentifier(): String? {
     return deviceUniqueIdentifier
   }
 
-  @NonNull
   fun getUsername(): String {
     return options.username
   }
 
-  @NonNull
   fun getContext(): Context {
     return options.context
   }
@@ -107,11 +108,21 @@ class P2PLibrary private constructor() {
     return options.batchSize
   }
 
+  fun getSenderTransferDao(): SenderTransferDao {
+    return options.senderTransferDao
+  }
+
+  fun getReceiverTransferDao(): ReceiverTransferDao {
+    return options.receiverTransferDao
+  }
+
   /** [P2PLibrary] configurability options an */
   class Options(
     val context: Context,
     val dbPassphrase: String,
     val username: String,
+    val senderTransferDao: SenderTransferDao,
+    val receiverTransferDao: ReceiverTransferDao
   ) {
     var batchSize: Int = Constants.DEFAULT_SHARE_BATCH_SIZE
   }

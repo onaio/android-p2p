@@ -13,24 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartregister.p2p
+package org.smartregister.p2p.sync
 
-import android.util.Log
-import java.net.Socket
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import androidx.annotation.NonNull
 
-class SocketSenderSession(private val socket: Socket) : SenderSession {
-  override fun send() {
-    val writer = socket.getOutputStream().bufferedWriter()
-    val encoded = Json.encodeToString(SyncPayload("Hello"))
-    writer.write(encoded)
-    writer.flush()
-    Log.d(this::class.simpleName, """Message sent: $encoded""")
-    socket.close()
+data class DataType(@NonNull val name: String, @NonNull val type: Filetype, val position: Int) :
+  Comparable<DataType> {
+
+  enum class Filetype(s: String) {
+    JSON("text/json"),
+    PNG("image/png"),
+    JPEG("image/jpeg")
   }
-}
 
-interface SenderSession {
-  fun send()
+  override fun compareTo(other: DataType): Int = position.compareTo(other.position)
 }

@@ -13,22 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartregister.p2p.model
+package org.smartregister.p2p.dao
 
-import androidx.annotation.NonNull
-import androidx.room.ColumnInfo
-import androidx.room.Entity
+import java.util.TreeSet
+import org.json.JSONArray
+import org.smartregister.p2p.sync.DataType
 
-/**
- * Model holding the a device-specific entity sync date. The [appLifetimeKey] holds the device
- * identifier.
- */
-@Entity(tableName = "p2p_received_history", primaryKeys = ["entity_type", "app_lifetime_key"])
-class P2PReceivedHistory {
+interface ReceiverTransferDao {
 
-  @NonNull @ColumnInfo(name = "app_lifetime_key") lateinit var appLifetimeKey: String
+  fun getP2PDataTypes(): TreeSet<DataType>
 
-  @NonNull @ColumnInfo(name = "entity_type") lateinit var entityType: String
-
-  @ColumnInfo(name = "last_updated_at") var lastUpdatedAt: Long = 0
+  fun receiveJson(type: DataType, jsonArray: JSONArray): Long
 }

@@ -20,6 +20,8 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito
+import org.smartregister.p2p.dao.ReceiverTransferDao
+import org.smartregister.p2p.dao.SenderTransferDao
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 14-03-2022. */
 class OptionsTest {
@@ -28,14 +30,19 @@ class OptionsTest {
   lateinit var context: Context
   lateinit var dbPassphrase: String
   lateinit var username: String
+  lateinit var senderTransferDao: SenderTransferDao
+  lateinit var receiverTransferDao: ReceiverTransferDao
 
   @Before
   fun setUp() {
     context = Mockito.mock(Context::class.java)
+    receiverTransferDao = Mockito.mock(ReceiverTransferDao::class.java)
+    senderTransferDao = Mockito.mock(SenderTransferDao::class.java)
     dbPassphrase = "some-db-passphrase"
     username = "john-doe"
 
-    options = P2PLibrary.Options(context, dbPassphrase, username)
+    options =
+      P2PLibrary.Options(context, dbPassphrase, username, senderTransferDao, receiverTransferDao)
   }
 
   @Test
@@ -43,5 +50,7 @@ class OptionsTest {
     Assert.assertEquals(options.context, context)
     Assert.assertEquals(options.dbPassphrase, dbPassphrase)
     Assert.assertEquals(options.username, username)
+    Assert.assertEquals(options.senderTransferDao, senderTransferDao)
+    Assert.assertEquals(options.receiverTransferDao, receiverTransferDao)
   }
 }

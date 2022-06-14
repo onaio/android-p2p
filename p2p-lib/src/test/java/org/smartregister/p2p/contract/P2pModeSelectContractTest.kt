@@ -13,25 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartregister.p2p
+package org.smartregister.p2p.contract
 
-import org.junit.Rule
+import io.mockk.every
+import io.mockk.mockk
+import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
-import org.junit.rules.ExpectedException
+import org.smartregister.p2p.authentication.model.DeviceRole
+import org.smartregister.p2p.search.contract.P2pModeSelectContract
 
-/** Created by Ephraim Kigamba - nek.eam@gmail.com on 14-03-2022. */
-internal class P2PLibraryTest {
+class P2pModeSelectContractTest {
+  private lateinit var view: P2pModeSelectContract.View
 
-  @get:Rule var thrown = ExpectedException.none()
+  @Before
+  fun setUp() {
+    view = mockk()
+  }
 
   @Test
-  fun getInstanceShouldThrowExceptionWhenInstanceIsNull() {
-    thrown.expect(IllegalStateException::class.java)
-    thrown.expectMessage(
-      "Instance does not exist!!! Call P2PLibrary.init(P2PLibrary.Options) method " +
-        "in the onCreate method of " +
-        "your Application class "
-    )
-    P2PLibrary.getInstance()
+  fun `view#getDeviceRole() returns correct value`() {
+    every { view.getDeviceRole() } returns DeviceRole.RECEIVER
+
+    Assert.assertEquals(DeviceRole.RECEIVER, view.getDeviceRole())
   }
 }

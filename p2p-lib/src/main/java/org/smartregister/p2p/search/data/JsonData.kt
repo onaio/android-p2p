@@ -13,9 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartregister.p2p
+package org.smartregister.p2p.search.data
 
-import kotlinx.serialization.Serializable
+import org.json.JSONArray
 
-/** Simple class containing message to sync using p2p */
-@Serializable data class SyncPayload(val message: String)
+class JsonData {
+  private var jsonArray: JSONArray? = null
+  private var highestRecordId: Long = 0
+
+  constructor(jsonArray: JSONArray?, highestRecordId: Long) {
+    this.jsonArray = jsonArray
+    this.highestRecordId = highestRecordId
+  }
+
+  constructor()
+
+  fun getJsonArray(): JSONArray? {
+    return jsonArray
+  }
+
+  fun getHighestRecordId(): Long {
+    return highestRecordId
+  }
+}
