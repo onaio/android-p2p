@@ -126,7 +126,17 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
         }
 
         override fun failed(ex: Exception) {
-          // TODO implement handling of search for devices failure
+          keepScreenOn(false)
+          Timber.e("Devices searching failed")
+          Timber.e(ex)
+          removeScanningDialog()
+
+          Toast.makeText(
+              this@P2PDeviceSearchActivity,
+              R.string.device_searching_failed,
+              Toast.LENGTH_LONG
+            )
+            .show()
         }
       },
       object : DataSharingStrategy.PairingListener {
@@ -144,7 +154,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
           keepScreenOn(false)
-          Timber.e("Devices searching failed")
+          Timber.e("Devices pairing failed")
           Timber.e(ex)
           removeScanningDialog()
         }
@@ -396,7 +406,15 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
         }
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
-          // TODO: Not yet implemented
+          Timber.e("Connecting to device %s", device?.getDisplayName() ?: "Unknown")
+          Timber.e(ex)
+
+          Toast.makeText(
+              this@P2PDeviceSearchActivity,
+              getString(R.string.connecting_to_device_failed),
+              Toast.LENGTH_LONG
+            )
+            .show()
         }
       }
     )

@@ -55,4 +55,6 @@
     <string name="receiving_data_from">Receiving data from %s</string>
     <string name="cancel">Cancel</string>
     <string name="transferring_x_records">Transferring %,d records</string>
+    <string name="device_searching_failed">Device searching failed! Please try again</string>
+    <string name="connecting_to_device_failed">Connecting to device failed! Please try again</string>
 </resources>
