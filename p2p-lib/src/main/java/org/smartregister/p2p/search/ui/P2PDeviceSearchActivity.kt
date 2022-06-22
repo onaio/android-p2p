@@ -35,6 +35,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
+import androidx.core.app.ActivityCompat.requestPermissions
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.common.api.ResolvableApiException
@@ -57,6 +58,7 @@ import org.smartregister.p2p.search.contract.P2pModeSelectContract
 import org.smartregister.p2p.utils.DefaultDispatcherProvider
 import org.smartregister.p2p.utils.getDeviceName
 import org.smartregister.p2p.utils.isAppDebuggable
+import org.smartregister.p2p.utils.isWifiTurnedOn
 import org.smartregister.p2p.utils.startP2PScreen
 import timber.log.Timber
 
@@ -206,7 +208,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
       OnSuccessListener<LocationSettingsResponse?> {
         // All location settings are satisfied. The client can initialize
         // location requests here.
-        startScanning()
+        checkWifiEnabled()
       }
     )
     result.addOnFailureListener(
@@ -232,6 +234,14 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     )
   }
 
+  fun checkWifiEnabled() {
+    if (isWifiTurnedOn(this)) {
+      startScanning()
+      Toast.makeText(this, "Connected", Toast.LENGTH_SHORT).show()
+    } else {
+      Toast.makeText(this, "Disconnected", Toast.LENGTH_SHORT).show()
+    }
+  }
   fun createLocationRequest(): LocationRequest {
     return LocationRequest.create().apply {
       interval = 3600000

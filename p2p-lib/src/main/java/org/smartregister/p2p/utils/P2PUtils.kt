@@ -18,6 +18,8 @@ package org.smartregister.p2p.utils
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Build
 import java.util.Locale
 import org.smartregister.p2p.search.ui.P2PDeviceSearchActivity
@@ -52,3 +54,32 @@ fun String.capitalize(): String = replaceFirstChar {
 
 fun isAppDebuggable(context: Context) =
   0 != context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE
+
+fun isWifiTurnedOn(context: Context): Boolean {
+
+  val connectivityManager =
+    context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+    // Returns a Network object corresponding to
+    // the currently active default data network.
+    val network = connectivityManager.activeNetwork ?: return false
+
+    // Representation of the capabilities of an active network.
+    val activeNetwork = connectivityManager.getNetworkCapabilities(network) ?: return false
+
+    return when {
+      // Indicates this network uses a Wi-Fi transport,
+      // or WiFi has network connectivity
+      activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+
+      // else return false
+      else -> false
+    }
+  } else {
+    // if the android version is below M
+    @Suppress("DEPRECATION") val networkInfo = connectivityManager.activeNetworkInfo ?: return false
+    @Suppress("DEPRECATION") return networkInfo.isConnected
+  }
+}
