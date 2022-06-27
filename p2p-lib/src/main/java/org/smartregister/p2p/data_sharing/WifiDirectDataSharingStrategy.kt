@@ -53,11 +53,11 @@ import timber.log.Timber
 class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
   lateinit var context: Activity
-  private val wifiP2pManager: WifiP2pManager by lazy(LazyThreadSafetyMode.NONE) {
+  val wifiP2pManager: WifiP2pManager by lazy(LazyThreadSafetyMode.NONE) {
     context.getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager
   }
   private val accessFineLocationPermissionRequestInt: Int = 12345
-  private var wifiP2pChannel: WifiP2pManager.Channel? = null
+  var wifiP2pChannel: WifiP2pManager.Channel? = null
   private var wifiP2pReceiver: BroadcastReceiver? = null
 
   private var wifiP2pInfo: WifiP2pInfo? = null
