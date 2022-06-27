@@ -22,5 +22,7 @@ import org.smartregister.p2p.sync.DataType
 interface SenderTransferDao {
   fun getP2PDataTypes(): TreeSet<DataType>
 
+  fun getTotalRecordCount(): Long
+
   fun getJsonData(dataType: DataType, lastRecordId: Long, batchSize: Int): JsonData?
 }

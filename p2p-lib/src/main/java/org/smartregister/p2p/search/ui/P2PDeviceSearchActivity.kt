@@ -573,6 +573,10 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     Timber.e("sender sync complete $isSenderSyncComplete")
   }
 
+  override fun showTransferProgress(recordsSent: Long, totalRecords: Long) {
+    showToast("$recordsSent records of $totalRecords sent")
+  }
+
   /**
    * Enables or disables the keep screen on flag to avoid the device going to sleep while there is a
    * sync happening

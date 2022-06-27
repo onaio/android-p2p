@@ -148,6 +148,7 @@ class P2PSenderViewModel(
       object : DataSharingStrategy.OperationListener {
         override fun onSuccess(device: DeviceInfo?) {
           Timber.i("Chunk data sent successfully")
+          syncSenderHandler.updateTotalSentRecordCount()
           viewModelScope.launch(dispatcherProvider.io()) { syncSenderHandler.sendNextManifest() }
         }
 
@@ -193,7 +194,9 @@ class P2PSenderViewModel(
       Gson().fromJson(syncPayload.string, receivedHistoryListType)
 
     var dataTypes = P2PLibrary.getInstance().getSenderTransferDao().getP2PDataTypes()
+    var totalRecordCount = P2PLibrary.getInstance().getSenderTransferDao().getTotalRecordCount()
     syncSenderHandler = createSyncSenderHandler(dataTypes, receivedHistory)
+    syncSenderHandler.setTotalRecordCount(totalRecordCount)
 
     if (!dataTypes.isEmpty()) {
       Timber.i("Process received history json data not null")
@@ -219,6 +222,12 @@ class P2PSenderViewModel(
   fun updateSenderSyncComplete(senderSyncComplete: Boolean) {
     viewModelScope.launch {
       withContext(dispatcherProvider.main()) { view.senderSyncComplete(senderSyncComplete) }
+    }
+  }
+
+  fun updateTransferProgress(recordsSent: Long, totalRecords: Long) {
+    viewModelScope.launch {
+      withContext(dispatcherProvider.main()) { view.showTransferProgress(recordsSent, totalRecords) }
     }
   }
 

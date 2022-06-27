@@ -228,7 +228,7 @@ class P2PReceiverViewModel(
     return sendingDeviceAppLifetimeKey
   }
 
-  override fun updateProgress(resStringMsg: Int, recordSize: Int) {
+  override fun updateProgress(resStringMsg: Int, recordSize: Long) {
     // TODO Update UI with record size
   }
 
