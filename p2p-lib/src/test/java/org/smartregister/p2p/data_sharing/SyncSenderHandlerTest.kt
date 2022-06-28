@@ -254,6 +254,17 @@ class SyncSenderHandlerTest : RobolectricTest() {
     Assert.assertFalse(sendingSyncCompleteManifest)
   }
 
+  @Test
+  fun `updateTotalSentRecordCount() calls p2PSenderViewModel#updateTransferProgress`() {
+    ReflectionHelpers.setField(syncSenderHandler, "awaitingDataTypeRecordsBatchSize", 25)
+    ReflectionHelpers.setField(syncSenderHandler, "totalSentRecordCount", 10)
+    ReflectionHelpers.setField(syncSenderHandler, "totalRecordCount", 40)
+    every { p2PSenderViewModel.updateTransferProgress(any(), any()) } just runs
+    syncSenderHandler.updateTotalSentRecordCount()
+
+    verify { p2PSenderViewModel.updateTransferProgress(35, 40) }
+  }
+
   fun getDataTypes(): TreeSet<DataType> =
     TreeSet<DataType>(
       listOf("Group").mapIndexed { index, resourceType ->

@@ -39,6 +39,7 @@ import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.p2p.CoroutineTestRule
 import org.smartregister.p2p.P2PLibrary
+import org.smartregister.p2p.R
 import org.smartregister.p2p.dao.ReceiverTransferDao
 import org.smartregister.p2p.dao.SenderTransferDao
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
@@ -290,5 +291,18 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
         .create(P2PSenderViewModel::class.java) is
         P2PSenderViewModel
     )
+  }
+
+  @Test
+  fun `updateTransferProgress() calls view#updateTransferProgress()`() {
+    p2PSenderViewModel.updateTransferProgress(totalSentRecords = 10, totalRecords = 40)
+
+    coVerify {
+      view.updateTransferProgress(
+        R.string.transferring_x_records,
+        percentageTransferred = 25,
+        totalRecords = 40
+      )
+    }
   }
 }

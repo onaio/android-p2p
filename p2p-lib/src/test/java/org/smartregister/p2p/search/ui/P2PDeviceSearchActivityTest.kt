@@ -827,6 +827,25 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
     )
   }
 
+  @Test
+  fun `updateTransferProgress() updates transfer description button`() {
+    p2PDeviceSearchActivity.interactiveDialog = mockk(relaxed = true)
+    val dialogDescription = mockk<TextView>(relaxed = true)
+    every {
+      p2PDeviceSearchActivity.interactiveDialog.findViewById<TextView>(
+        R.id.data_transfer_description
+      )
+    } returns dialogDescription
+
+    p2PDeviceSearchActivity.updateTransferProgress(
+      resStringId = R.string.transferring_x_records,
+      percentageTransferred = 25,
+      totalRecords = 40
+    )
+
+    verify { dialogDescription.setText("Transferring 25% of 40 records") }
+  }
+
   fun Dialog.isCancellable(): Boolean {
     return ReflectionHelpers.getField<Boolean>(this, "mCancelable")
   }
