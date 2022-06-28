@@ -55,6 +55,6 @@ fun isAppDebuggable(context: Context) =
 
 fun Long.divideToPercent(divideTo: Long): Int {
   return if (divideTo == 0L) 0
-  else (this / divideTo.toFloat()).toInt()
+  else ((this / divideTo.toFloat()) * 100).toInt()
 }
 
