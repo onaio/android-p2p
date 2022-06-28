@@ -53,7 +53,7 @@ constructor(
       P2PLibrary.getInstance().getReceiverTransferDao().receiveJson(currentManifest.dataType, data)
 
     totalSentRecordCount += data!!.length()
-    p2PReceiverViewModel.updateTransferProgress(recordsSent = totalSentRecordCount, totalRecords =  totalRecordCount)
+    p2PReceiverViewModel.updateTransferProgress(totalReceivedRecords = totalSentRecordCount, totalRecords =  totalRecordCount)
 
     addOrUpdateLastRecord(currentManifest.dataType.name, lastUpdatedAt = lastUpdatedAt)
 

@@ -144,6 +144,6 @@ constructor(
 
   open fun updateTotalSentRecordCount() {
     this.totalSentRecordCount = totalSentRecordCount + awaitingDataTypeRecordsBatchSize
-    p2PSenderViewModel.updateTransferProgress(recordsSent = totalSentRecordCount, totalRecords = this.totalRecordCount )
+    p2PSenderViewModel.updateTransferProgress(totalSentRecords = totalSentRecordCount, totalRecords = totalRecordCount )
   }
 }

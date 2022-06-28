@@ -25,6 +25,7 @@ import java.util.TreeSet
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.smartregister.p2p.P2PLibrary
+import org.smartregister.p2p.R
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
@@ -37,6 +38,7 @@ import org.smartregister.p2p.sync.DataType
 import org.smartregister.p2p.utils.Constants
 import org.smartregister.p2p.utils.DefaultDispatcherProvider
 import org.smartregister.p2p.utils.DispatcherProvider
+import org.smartregister.p2p.utils.divideToPercent
 import timber.log.Timber
 
 class P2PSenderViewModel(
@@ -225,9 +227,10 @@ class P2PSenderViewModel(
     }
   }
 
-  fun updateTransferProgress(recordsSent: Long, totalRecords: Long) {
+  override fun updateTransferProgress(totalSentRecords: Long, totalRecords: Long) {
+    var percentageSent = totalSentRecords.divideToPercent(totalRecords)
     viewModelScope.launch {
-      withContext(dispatcherProvider.main()) { view.updateTransferProgress(recordsSent, totalRecords) }
+      withContext(dispatcherProvider.main()) { view.updateTransferProgress(resStringId = R.string.transferring_x_records, percentageTransferred = percentageSent,  totalRecords = totalRecords) }
     }
   }
 

@@ -573,8 +573,11 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     Timber.e("sender sync complete $isSenderSyncComplete")
   }
 
-  override fun updateTransferProgress(recordsSent: Long, totalRecords: Long) {
-    showToast("$recordsSent records of $totalRecords sent")
+  override fun updateTransferProgress(resStringId: Int, percentageTransferred: Int, totalRecords: Long) {
+    //showToast(getString(resStringId, percentageTransferred, totalRecords))
+    interactiveDialog
+      .findViewById<TextView>(R.id.data_transfer_description)
+      ?.setText(getString(resStringId, percentageTransferred, totalRecords))
   }
 
   /**

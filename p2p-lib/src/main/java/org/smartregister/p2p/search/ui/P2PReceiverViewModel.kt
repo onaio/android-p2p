@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.smartregister.p2p.P2PLibrary
+import org.smartregister.p2p.R
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
@@ -35,6 +36,7 @@ import org.smartregister.p2p.search.contract.P2pModeSelectContract
 import org.smartregister.p2p.utils.Constants
 import org.smartregister.p2p.utils.DefaultDispatcherProvider
 import org.smartregister.p2p.utils.DispatcherProvider
+import org.smartregister.p2p.utils.divideToPercent
 import timber.log.Timber
 
 class P2PReceiverViewModel(
@@ -228,9 +230,10 @@ class P2PReceiverViewModel(
     return sendingDeviceAppLifetimeKey
   }
 
-  override fun updateTransferProgress(recordsSent: Long, totalRecords: Long) {
+  override fun updateTransferProgress(totalReceivedRecords: Long, totalRecords: Long) {
+    var percentageReceived = totalReceivedRecords.divideToPercent(totalRecords)
     viewModelScope.launch {
-      withContext(dispatcherProvider.main()) { view.updateTransferProgress(recordsSent, totalRecords) }
+      withContext(dispatcherProvider.main()) { view.updateTransferProgress(resStringId = R.string.receiving_x_records, percentageTransferred = percentageReceived,  totalRecords = totalRecords) }
     }
   }
 
