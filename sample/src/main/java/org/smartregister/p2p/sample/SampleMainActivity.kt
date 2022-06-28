@@ -27,6 +27,10 @@ class SampleMainActivity : AppCompatActivity() {
                     return TreeSet<DataType>()
                 }
 
+                override fun getTotalRecordCount(): Long {
+                    return 0
+                }
+
                 override fun getJsonData(
                     dataType: DataType,
                     lastRecordId: Long,
