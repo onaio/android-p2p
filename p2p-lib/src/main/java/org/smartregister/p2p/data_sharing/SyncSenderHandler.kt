@@ -37,8 +37,8 @@ constructor(
   private val remainingLastRecordIds = HashMap<String, Long>()
   private val batchSize = 25
   private var awaitingDataTypeRecordsBatchSize = 0
-  private var totalRecordCount:Long = 0
-  private var totalSentRecordCount:Long = 0
+  private var totalRecordCount: Long = 0
+  private var totalSentRecordCount: Long = 0
 
   private lateinit var awaitingPayload: PayloadContract<out Any>
   private var sendingSyncCompleteManifest = false
@@ -144,6 +144,9 @@ constructor(
 
   open fun updateTotalSentRecordCount() {
     this.totalSentRecordCount = totalSentRecordCount + awaitingDataTypeRecordsBatchSize
-    p2PSenderViewModel.updateTransferProgress(totalSentRecords = totalSentRecordCount, totalRecords = totalRecordCount )
+    p2PSenderViewModel.updateTransferProgress(
+      totalSentRecords = totalSentRecordCount,
+      totalRecords = totalRecordCount
+    )
   }
 }

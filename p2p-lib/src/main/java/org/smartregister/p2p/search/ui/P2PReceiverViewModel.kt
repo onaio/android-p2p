@@ -233,7 +233,13 @@ class P2PReceiverViewModel(
   override fun updateTransferProgress(totalReceivedRecords: Long, totalRecords: Long) {
     var percentageReceived = totalReceivedRecords.divideToPercent(totalRecords)
     viewModelScope.launch {
-      withContext(dispatcherProvider.main()) { view.updateTransferProgress(resStringId = R.string.receiving_x_records, percentageTransferred = percentageReceived,  totalRecords = totalRecords) }
+      withContext(dispatcherProvider.main()) {
+        view.updateTransferProgress(
+          resStringId = R.string.receiving_x_records,
+          percentageTransferred = percentageReceived,
+          totalRecords = totalRecords
+        )
+      }
     }
   }
 

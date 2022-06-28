@@ -94,7 +94,7 @@ class P2PUtilsTest : RobolectricTest() {
 
   @Test
   fun divideToPercentShouldReturnCorrectValues() {
-    var number:Long = 10
+    var number: Long = 10
     Assert.assertEquals(50, number.divideToPercent(20))
   }
 }

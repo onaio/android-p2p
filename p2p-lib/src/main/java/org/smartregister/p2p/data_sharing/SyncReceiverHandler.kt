@@ -18,7 +18,6 @@ package org.smartregister.p2p.data_sharing
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.smartregister.p2p.P2PLibrary
-import org.smartregister.p2p.R
 import org.smartregister.p2p.dao.P2pReceivedHistoryDao
 import org.smartregister.p2p.model.P2PReceivedHistory
 import org.smartregister.p2p.search.ui.P2PReceiverViewModel
@@ -33,12 +32,13 @@ constructor(
 ) {
 
   private lateinit var currentManifest: Manifest
-  private var totalRecordCount:Long = 0
-  private var totalSentRecordCount:Long = 0
+  private var totalRecordCount: Long = 0
+  private var totalSentRecordCount: Long = 0
 
   fun processManifest(manifest: Manifest) {
     currentManifest = manifest
-    totalRecordCount = if (manifest.totalRecordCount > 0) manifest.totalRecordCount else totalRecordCount
+    totalRecordCount =
+      if (manifest.totalRecordCount > 0) manifest.totalRecordCount else totalRecordCount
     if (manifest.dataType.name == Constants.SYNC_COMPLETE) {
       p2PReceiverViewModel.handleDataTransferCompleteManifest()
     } else {
@@ -53,7 +53,10 @@ constructor(
       P2PLibrary.getInstance().getReceiverTransferDao().receiveJson(currentManifest.dataType, data)
 
     totalSentRecordCount += data!!.length()
-    p2PReceiverViewModel.updateTransferProgress(totalReceivedRecords = totalSentRecordCount, totalRecords =  totalRecordCount)
+    p2PReceiverViewModel.updateTransferProgress(
+      totalReceivedRecords = totalSentRecordCount,
+      totalRecords = totalRecordCount
+    )
 
     addOrUpdateLastRecord(currentManifest.dataType.name, lastUpdatedAt = lastUpdatedAt)
 

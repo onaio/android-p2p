@@ -36,7 +36,6 @@ import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.p2p.CoroutineTestRule
 import org.smartregister.p2p.P2PLibrary
-import org.smartregister.p2p.R
 import org.smartregister.p2p.dao.P2pReceivedHistoryDao
 import org.smartregister.p2p.dao.ReceiverTransferDao
 import org.smartregister.p2p.model.P2PReceivedHistory
@@ -121,12 +120,12 @@ class SyncReceiverHandlerTest : RobolectricTest() {
   @Test
   fun `processData() calls addOrUpdateLastRecord(), updateTransferProgress() and p2PReceiverViewModel#processIncomingManifest()`() {
     every { p2PReceiverViewModel.processIncomingManifest() } just runs
-    every { p2PReceiverViewModel.updateTransferProgress(any(),any()) } just runs
+    every { p2PReceiverViewModel.updateTransferProgress(any(), any()) } just runs
     coEvery { syncReceiverHandler.addOrUpdateLastRecord(any(), any()) } just runs
     ReflectionHelpers.setField(syncReceiverHandler, "totalRecordCount", 2)
     runBlocking { syncReceiverHandler.processData(jsonArray) }
 
-    verify { p2PReceiverViewModel.updateTransferProgress(1L,2L) }
+    verify { p2PReceiverViewModel.updateTransferProgress(1L, 2L) }
     verify(exactly = 1) { p2PReceiverViewModel.processIncomingManifest() }
     coVerify(exactly = 1) { syncReceiverHandler.addOrUpdateLastRecord(any(), any()) }
   }
