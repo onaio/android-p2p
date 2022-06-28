@@ -66,7 +66,8 @@ constructor(
   }
 
   fun populateTotalRecordCount() {
-    totalRecordCount = P2PLibrary.getInstance().getSenderTransferDao().getTotalRecordCount(remainingLastRecordIds)
+    totalRecordCount =
+      P2PLibrary.getInstance().getSenderTransferDao().getTotalRecordCount(remainingLastRecordIds)
   }
 
   suspend fun sendNextManifest() {

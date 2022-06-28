@@ -10,7 +10,7 @@ class P2PSenderTransferDao() :SenderTransferDao {
         return TreeSet<DataType>()
     }
 
-    override fun getTotalRecordCount(): Long {
+    override fun getTotalRecordCount(highestRecordIdMap: HashMap<String, Long>): Long {
         return 0
     }
 
