@@ -33,11 +33,12 @@ constructor(
 ) {
 
   private lateinit var currentManifest: Manifest
+  private var totalRecordCount:Long = 0
+  private var totalSentRecordCount:Long = 0
 
   fun processManifest(manifest: Manifest) {
     currentManifest = manifest
-    // update UI with number of records to expect
-    p2PReceiverViewModel.updateProgress(R.string.transferring_x_records, manifest.recordsSize)
+    totalRecordCount = if (manifest.totalRecordCount > 0) manifest.totalRecordCount else totalRecordCount
     if (manifest.dataType.name == Constants.SYNC_COMPLETE) {
       p2PReceiverViewModel.handleDataTransferCompleteManifest()
     } else {
@@ -50,6 +51,9 @@ constructor(
 
     var lastUpdatedAt =
       P2PLibrary.getInstance().getReceiverTransferDao().receiveJson(currentManifest.dataType, data)
+
+    totalSentRecordCount += data!!.length()
+    p2PReceiverViewModel.updateTransferProgress(recordsSent = totalSentRecordCount, totalRecords =  totalRecordCount)
 
     addOrUpdateLastRecord(currentManifest.dataType.name, lastUpdatedAt = lastUpdatedAt)
 

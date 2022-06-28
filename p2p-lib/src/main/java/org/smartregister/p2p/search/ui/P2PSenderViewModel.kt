@@ -227,7 +227,7 @@ class P2PSenderViewModel(
 
   fun updateTransferProgress(recordsSent: Long, totalRecords: Long) {
     viewModelScope.launch {
-      withContext(dispatcherProvider.main()) { view.showTransferProgress(recordsSent, totalRecords) }
+      withContext(dispatcherProvider.main()) { view.updateTransferProgress(recordsSent, totalRecords) }
     }
   }
 

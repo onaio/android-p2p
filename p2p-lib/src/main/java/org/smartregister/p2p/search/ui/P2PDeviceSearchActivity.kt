@@ -573,7 +573,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     Timber.e("sender sync complete $isSenderSyncComplete")
   }
 
-  override fun showTransferProgress(recordsSent: Long, totalRecords: Long) {
+  override fun updateTransferProgress(recordsSent: Long, totalRecords: Long) {
     showToast("$recordsSent records of $totalRecords sent")
   }
 

@@ -37,7 +37,7 @@ interface P2pModeSelectContract {
 
     fun senderSyncComplete(complete: Boolean)
 
-    fun showTransferProgress(recordsSent: Long, totalRecords: Long)
+    fun updateTransferProgress(recordsSent: Long, totalRecords: Long)
   }
 
   interface SenderViewModel {
@@ -59,7 +59,7 @@ interface P2pModeSelectContract {
 
     fun getSendingDeviceAppLifetimeKey(): String
 
-    fun updateProgress(resStringMsg: Int, recordSize: Long)
+    fun updateTransferProgress(recordsSent: Long, totalRecords: Long)
 
     fun sendLastReceivedRecords(receivedHistory: List<P2PReceivedHistory?>?)
   }

@@ -228,8 +228,10 @@ class P2PReceiverViewModel(
     return sendingDeviceAppLifetimeKey
   }
 
-  override fun updateProgress(resStringMsg: Int, recordSize: Long) {
-    // TODO Update UI with record size
+  override fun updateTransferProgress(recordsSent: Long, totalRecords: Long) {
+    viewModelScope.launch {
+      withContext(dispatcherProvider.main()) { view.updateTransferProgress(recordsSent, totalRecords) }
+    }
   }
 
   class Factory(
