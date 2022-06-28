@@ -105,9 +105,6 @@ class SyncReceiverHandlerTest : RobolectricTest() {
 
     syncReceiverHandler.processManifest(manifest = manifest)
 
-    verify(exactly = 1) {
-      p2PReceiverViewModel.updateTransferProgress(R.string.receiving_x_records, manifest.recordsSize)
-    }
     verify(exactly = 1) { p2PReceiverViewModel.handleDataTransferCompleteManifest() }
   }
 
@@ -118,18 +115,18 @@ class SyncReceiverHandlerTest : RobolectricTest() {
 
     syncReceiverHandler.processManifest(manifest = manifest)
 
-    verify(exactly = 1) {
-      p2PReceiverViewModel.updateTransferProgress(R.string.transferring_x_records, manifest.recordsSize)
-    }
     verify(exactly = 1) { p2PReceiverViewModel.processChunkData() }
   }
 
   @Test
-  fun `processData() calls addOrUpdateLastRecord() and p2PReceiverViewModel#processIncomingManifest()`() {
+  fun `processData() calls addOrUpdateLastRecord(), updateTransferProgress() and p2PReceiverViewModel#processIncomingManifest()`() {
     every { p2PReceiverViewModel.processIncomingManifest() } just runs
+    every { p2PReceiverViewModel.updateTransferProgress(any(),any()) } just runs
     coEvery { syncReceiverHandler.addOrUpdateLastRecord(any(), any()) } just runs
+    ReflectionHelpers.setField(syncReceiverHandler, "totalRecordCount", 2)
     runBlocking { syncReceiverHandler.processData(jsonArray) }
 
+    verify { p2PReceiverViewModel.updateTransferProgress(1L,2L) }
     verify(exactly = 1) { p2PReceiverViewModel.processIncomingManifest() }
     coVerify(exactly = 1) { syncReceiverHandler.addOrUpdateLastRecord(any(), any()) }
   }
