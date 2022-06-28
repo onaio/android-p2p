@@ -196,9 +196,7 @@ class P2PSenderViewModel(
       Gson().fromJson(syncPayload.string, receivedHistoryListType)
 
     var dataTypes = P2PLibrary.getInstance().getSenderTransferDao().getP2PDataTypes()
-    var totalRecordCount = P2PLibrary.getInstance().getSenderTransferDao().getTotalRecordCount()
     syncSenderHandler = createSyncSenderHandler(dataTypes, receivedHistory)
-    syncSenderHandler.setTotalRecordCount(totalRecordCount)
 
     if (!dataTypes.isEmpty()) {
       Timber.i("Process received history json data not null")

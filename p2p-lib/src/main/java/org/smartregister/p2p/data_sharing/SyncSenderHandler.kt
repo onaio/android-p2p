@@ -46,6 +46,7 @@ constructor(
   suspend fun startSyncProcess() {
     Timber.i("Start sync process")
     generateRecordsToSend()
+    populateTotalRecordCount()
     sendNextManifest()
   }
 
@@ -62,6 +63,10 @@ constructor(
         remainingLastRecordIds[dataTypeHistory.entityType!!] = dataTypeHistory.lastUpdatedAt
       }
     }
+  }
+
+  fun populateTotalRecordCount() {
+    totalRecordCount = P2PLibrary.getInstance().getSenderTransferDao().getTotalRecordCount(remainingLastRecordIds)
   }
 
   suspend fun sendNextManifest() {
@@ -136,10 +141,6 @@ constructor(
     } else {
       p2PSenderViewModel.sendChunkData(awaitingPayload)
     }
-  }
-
-  open fun setTotalRecordCount(totalRecordCount: Long) {
-    this.totalRecordCount = totalRecordCount
   }
 
   open fun updateTotalSentRecordCount() {
