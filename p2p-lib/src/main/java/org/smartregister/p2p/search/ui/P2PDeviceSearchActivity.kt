@@ -16,11 +16,14 @@
 package org.smartregister.p2p.search.ui
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
+import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -35,6 +38,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
+import androidx.core.app.ActivityCompat.requestPermissions
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.common.api.ResolvableApiException
@@ -193,6 +197,22 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     checkLocationEnabled()
   }
 
+  fun checkEnableWifi() {
+    var wifiManager =
+      getApplicationContext().getSystemService(Context.WIFI_SERVICE) as (WifiManager)
+
+    if (!wifiManager.isWifiEnabled) {
+      if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+        wifiManager.setWifiEnabled(true)
+      } else {
+        var intent = Intent(Settings.Panel.ACTION_WIFI)
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        getApplicationContext().startActivity(intent)
+      }
+    }
+    startScanning()
+  }
+
   /**
    * Checks if location is currently enabled
    *
@@ -206,7 +226,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
       OnSuccessListener<LocationSettingsResponse?> {
         // All location settings are satisfied. The client can initialize
         // location requests here.
-        startScanning()
+        checkEnableWifi()
       }
     )
     result.addOnFailureListener(
