@@ -101,6 +101,9 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       requestAccessFineLocationIfNotGranted()
     }
 
+    // Check if already connected and disconnect
+    requestDeviceInfo2()
+
     wifiP2pChannel = wifiP2pManager.initialize(context, context.mainLooper, null)
     wifiP2pChannel?.also { channel ->
       wifiP2pReceiver =
@@ -183,7 +186,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
         )
     }
 
-    listenForWifiP2pIntents()
+    listenForWifiP2pEventsIntents()
     initiatePeerDiscovery(onDeviceFound)
   }
 
@@ -191,7 +194,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     wifiP2pManager.requestConnectionInfo(wifiP2pChannel) { onConnectionInfoAvailable(it, null) }
   }
 
-  private fun listenForWifiP2pIntents() {
+  private fun listenForWifiP2pEventsIntents() {
     wifiP2pReceiver?.also {
       context.registerReceiver(
         it,
@@ -266,6 +269,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     )
     Timber.d("Peer discovery initiated")
   }
+
   private fun requestDeviceInfo() {
     wifiP2pChannel?.also { wifiP2pChannel ->
       if (ActivityCompat.checkSelfPermission(
@@ -287,6 +291,51 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       }
     }
   }
+
+  private fun requestDeviceInfo2() {
+    wifiP2pChannel?.also { wifiP2pChannel ->
+      if (ActivityCompat.checkSelfPermission(
+          context,
+          android.Manifest.permission.ACCESS_FINE_LOCATION
+        ) != PackageManager.PERMISSION_GRANTED
+      ) {
+        return handleAccessFineLocationNotGranted()
+      }
+
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        wifiP2pManager.requestDeviceInfo(wifiP2pChannel) {
+          if (it != null && it.status == WifiP2pDevice.CONNECTED) {
+            disconnect(WifiDirectDevice(it), object: DataSharingStrategy.OperationListener {
+              override fun onSuccess(device: DeviceInfo?) {
+                Timber.e("Successfully connected from Wifi-Direct")
+              }
+
+              override fun onFailure(device: DeviceInfo?, ex: Exception) {
+                Timber.e(ex, "Successfully disconnect from Wifi-Direct")
+              }
+            })
+          }
+        }
+      } else {
+        wifiP2pManager.requestConnectionInfo(wifiP2pChannel) {
+          if (it != null && it.groupFormed) {
+            wifiP2pManager.removeGroup(
+              wifiP2pChannel,
+              object : WifiP2pManager.ActionListener {
+                override fun onSuccess() {
+                  Timber.e("Successfully connected from Wifi-Direct")
+                }
+
+                override fun onFailure(reason: Int) {
+                  Timber.e(Exception(getWifiP2pReason(reason)), "Successfully disconnect from Wifi-Direct")
+                }
+              })
+          }
+        }
+      }
+    }
+  }
+
   override fun connect(
     device: DeviceInfo,
     operationListener: DataSharingStrategy.OperationListener
@@ -632,7 +681,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
   override fun onResume(isScanning: Boolean) {
     if (isScanning) {
-      listenForWifiP2pIntents()
+      listenForWifiP2pEventsIntents()
       initiatePeerDiscoveryOnceAccessFineLocationGranted()
       requestDeviceInfo()
       requestConnectionInfo()
@@ -791,5 +840,25 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     override fun address(): String {
       return wifiP2pDevice.deviceAddress
     }
+  }
+
+  override fun onStop() {
+    closeSocketAndStreams()
+
+    requestedDisconnection = true
+    wifiP2pManager.removeGroup(
+      wifiP2pChannel,
+      object : WifiP2pManager.ActionListener {
+        override fun onSuccess() {
+          Timber.i("Device successfully disconnected")
+          paired = false
+        }
+
+        override fun onFailure(reason: Int) {
+          val exception = Exception("Error #$reason: ${getWifiP2pReason(reason)}")
+          Timber.e(exception)
+        }
+      }
+    )
   }
 }

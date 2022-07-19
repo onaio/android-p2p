@@ -104,6 +104,8 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
       Timber.plant(Timber.DebugTree())
     }
 
+    Timber.e("Just a random log message")
+
     title = getString(R.string.device_to_device_sync)
     supportActionBar?.setHomeAsUpIndicator(android.R.drawable.ic_menu_close_clear_cancel)
 
@@ -440,6 +442,8 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
       keepScreenOn(true)
       p2PSenderViewModel.sendDeviceDetails(getCurrentConnectedDevice())
       showTransferProgressDialog()
+
+      throw RuntimeException("Oh! An error occurred!")
     }
 
     interactiveDialog.setCancelable(false)
@@ -592,4 +596,11 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
       }
     }
   }
+
+  override fun onStop() {
+    super.onStop()
+
+    //dataSharingStrategy.onStop()
+  }
+
 }
