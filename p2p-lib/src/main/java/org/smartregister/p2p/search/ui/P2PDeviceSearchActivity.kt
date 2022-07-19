@@ -95,6 +95,13 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    if (Timber.treeCount == 0 && isAppDebuggable(this)) {
+      Timber.plant(Timber.DebugTree())
+    }
+
+    Timber.e("Just a random log message")
+
+    supportActionBar?.setHomeAsUpIndicator(android.R.drawable.ic_menu_close_clear_cancel)
 
     // Remaining setup for the DataSharingStrategy class
     dataSharingStrategy = P2PLibrary.getInstance().dataSharingStrategy
@@ -363,4 +370,11 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
         checkLocationEnabled()
     }
   }
+
+  override fun onStop() {
+    super.onStop()
+
+    dataSharingStrategy.onStop()
+  }
+
 }

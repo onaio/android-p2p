@@ -97,4 +97,6 @@ interface DataSharingStrategy {
   fun onPause()
 
   fun initChannel(onDeviceFound: OnDeviceFound, onConnected: DataSharingStrategy.PairingListener)
+
+  fun onStop()
 }
