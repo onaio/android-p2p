@@ -573,6 +573,16 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     Timber.e("sender sync complete $isSenderSyncComplete")
   }
 
+  override fun updateTransferProgress(
+    resStringId: Int,
+    percentageTransferred: Int,
+    totalRecords: Long
+  ) {
+    interactiveDialog
+      .findViewById<TextView>(R.id.data_transfer_description)
+      ?.setText(getString(resStringId, percentageTransferred, totalRecords))
+  }
+
   /**
    * Enables or disables the keep screen on flag to avoid the device going to sleep while there is a
    * sync happening

@@ -128,9 +128,11 @@ class SyncSenderHandlerTest : RobolectricTest() {
   }
 
   @Test
-  fun `startSyncProcess() calls generateRecordsToSend() and sendNextManifest()`() {
+  fun `startSyncProcess() calls generateRecordsToSend(), populateTotalRecordCount() and sendNextManifest()`() {
+    every { syncSenderHandler.populateTotalRecordCount() } just runs
     runBlocking { syncSenderHandler.startSyncProcess() }
     verify(exactly = 1) { syncSenderHandler.generateRecordsToSend() }
+    verify(exactly = 1) { syncSenderHandler.populateTotalRecordCount() }
     coVerify(exactly = 1) { syncSenderHandler.sendNextManifest() }
   }
 
@@ -252,6 +254,17 @@ class SyncSenderHandlerTest : RobolectricTest() {
     val sendingSyncCompleteManifest =
       ReflectionHelpers.getField<Boolean>(syncSenderHandler, "sendingSyncCompleteManifest")
     Assert.assertFalse(sendingSyncCompleteManifest)
+  }
+
+  @Test
+  fun `updateTotalSentRecordCount() calls p2PSenderViewModel#updateTransferProgress`() {
+    ReflectionHelpers.setField(syncSenderHandler, "awaitingDataTypeRecordsBatchSize", 25)
+    ReflectionHelpers.setField(syncSenderHandler, "totalSentRecordCount", 10)
+    ReflectionHelpers.setField(syncSenderHandler, "totalRecordCount", 40)
+    every { p2PSenderViewModel.updateTransferProgress(any(), any()) } just runs
+    syncSenderHandler.updateTotalSentRecordCount()
+
+    verify { p2PSenderViewModel.updateTransferProgress(35, 40) }
   }
 
   fun getDataTypes(): TreeSet<DataType> =
