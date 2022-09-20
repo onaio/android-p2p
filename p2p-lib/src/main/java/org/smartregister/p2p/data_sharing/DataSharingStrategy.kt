@@ -95,4 +95,6 @@ interface DataSharingStrategy {
   fun onResume(isScanning: Boolean = false)
 
   fun onPause()
+
+  fun initChannel(onDeviceFound: OnDeviceFound, onConnected: DataSharingStrategy.PairingListener)
 }
