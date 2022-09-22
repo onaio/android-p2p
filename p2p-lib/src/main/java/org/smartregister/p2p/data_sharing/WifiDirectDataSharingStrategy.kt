@@ -102,12 +102,11 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     }
 
     // Check if already connected and disconnect
-    requestDeviceInfo2()
+    disconnect(onDeviceFound = onDeviceFound, onConnected = onConnected)
 
-    initChannel(onDeviceFound = onDeviceFound, onConnected = onConnected)
-
+/*    initChannel(onDeviceFound = onDeviceFound, onConnected = onConnected)
     listenForWifiP2pEventsIntents()
-    initiatePeerDiscovery(onDeviceFound)
+    initiatePeerDiscovery(onDeviceFound)*/
   }
 
   private fun requestConnectionInfo() {
@@ -212,7 +211,8 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     }
   }
 
-  private fun requestDeviceInfo2() {
+  private fun disconnect(onDeviceFound: OnDeviceFound,
+                         onConnected: DataSharingStrategy.PairingListener) {
     wifiP2pChannel?.also { wifiP2pChannel ->
       if (ActivityCompat.checkSelfPermission(
           context,
@@ -227,11 +227,14 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
           if (it != null && it.status == WifiP2pDevice.CONNECTED) {
             disconnect(WifiDirectDevice(it), object: DataSharingStrategy.OperationListener {
               override fun onSuccess(device: DeviceInfo?) {
-                Timber.e("Successfully connected from Wifi-Direct")
+                Timber.e("Successfully disconnected from Wifi-Direct")
+                initChannel(onDeviceFound = onDeviceFound, onConnected = onConnected)
+                listenForWifiP2pEventsIntents()
+                initiatePeerDiscovery(onDeviceFound)
               }
 
               override fun onFailure(device: DeviceInfo?, ex: Exception) {
-                Timber.e(ex, "Successfully disconnect from Wifi-Direct")
+                Timber.e(ex, "Failed to disconnect from Wifi-Direct")
               }
             })
           }
@@ -243,11 +246,14 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
               wifiP2pChannel,
               object : WifiP2pManager.ActionListener {
                 override fun onSuccess() {
-                  Timber.e("Successfully connected from Wifi-Direct")
+                  Timber.e("Successfully disconnected from Wifi-Direct")
+                  initChannel(onDeviceFound = onDeviceFound, onConnected = onConnected)
+                  listenForWifiP2pEventsIntents()
+                  initiatePeerDiscovery(onDeviceFound)
                 }
 
                 override fun onFailure(reason: Int) {
-                  Timber.e(Exception(getWifiP2pReason(reason)), "Successfully disconnect from Wifi-Direct")
+                  Timber.e(Exception(getWifiP2pReason(reason)), "Failed to disconnect from Wifi-Direct")
                 }
               })
           }
