@@ -303,7 +303,11 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
 
   override fun onResume() {
     super.onResume()
+    initChannel()
+    dataSharingStrategy.onResume(isScanning = scanning)
+  }
 
+  fun initChannel() {
     dataSharingStrategy.initChannel(
       object : OnDeviceFound {
         override fun deviceFound(devices: List<DeviceInfo>) {
@@ -362,10 +366,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
         }
       }
     )
-
-    dataSharingStrategy.onResume(isScanning = scanning)
   }
-
   override fun onPause() {
     super.onPause()
 
