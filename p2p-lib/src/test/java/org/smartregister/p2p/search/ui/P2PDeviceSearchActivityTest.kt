@@ -876,6 +876,39 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
   }
 
   @Test
+  fun `OnDeviceFound passed to initChannel should call removeScanningDialog() when onDeviceFound#failed is called`() {
+    every { p2PDeviceSearchActivity.removeScanningDialog() } just runs
+
+    val onDeviceFoundSlot = slot<OnDeviceFound>()
+    every { dataSharingStrategy.initChannel(capture(onDeviceFoundSlot), any()) } just runs
+
+    p2PDeviceSearchActivity.initChannel()
+
+    onDeviceFoundSlot.captured.failed(Exception())
+    verify { p2PDeviceSearchActivity.removeScanningDialog() }
+  }
+
+  @Test
+  fun `OnDeviceFound passed to initChannel should call showTransferCompleteDialog() when pairing#onDisconnected is called and requestDisconnection is false and isSenderSyncComplete is true`() {
+    every { p2PDeviceSearchActivity.keepScreenOn(true) } just runs
+    every { p2PDeviceSearchActivity.showScanningDialog() } just runs
+    every { p2PDeviceSearchActivity.removeScanningDialog() } just runs
+    every { p2PDeviceSearchActivity.showToast(any()) } just runs
+    every { p2PDeviceSearchActivity.showTransferCompleteDialog() } just runs
+    every { dataSharingStrategy.getCurrentDevice() } returns deviceInfo
+    val pairingListenerSlot = slot<DataSharingStrategy.PairingListener>()
+    every { dataSharingStrategy.initChannel(any(), capture(pairingListenerSlot)) } just runs
+
+    p2PDeviceSearchActivity.initChannel()
+
+    p2PDeviceSearchActivity.requestDisconnection = false
+    ReflectionHelpers.setField(p2PDeviceSearchActivity, "isSenderSyncComplete", true)
+    pairingListenerSlot.captured.onDisconnected()
+
+    verify { p2PDeviceSearchActivity.showTransferCompleteDialog() }
+  }
+
+  @Test
   fun `PairingListener passed to initChannel() should call showP2PSelectPage() and update currentConnectedDevice when pairing#onSuccess is called`() {
     every { p2PDeviceSearchActivity.keepScreenOn(true) } just runs
     every { p2PDeviceSearchActivity.showScanningDialog() } just runs
@@ -895,6 +928,23 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
       deviceInfo,
       ReflectionHelpers.getField(p2PDeviceSearchActivity, "currentConnectedDevice")
     )
+  }
+
+  @Test
+  fun `PairingListener passed to initChannel() should call removeScanningDialog() and keepScreenOn() when pairing#onFailure is called`() {
+    every { p2PDeviceSearchActivity.keepScreenOn(true) } just runs
+    every { p2PDeviceSearchActivity.showScanningDialog() } just runs
+    every { p2PDeviceSearchActivity.removeScanningDialog() } just runs
+    every { dataSharingStrategy.getCurrentDevice() } returns deviceInfo
+    val pairingListenerSlot = slot<DataSharingStrategy.PairingListener>()
+    every { dataSharingStrategy.initChannel(any(), capture(pairingListenerSlot)) } just runs
+
+    p2PDeviceSearchActivity.initChannel()
+
+    pairingListenerSlot.captured.onFailure(deviceInfo, Exception(""))
+
+    verify { p2PDeviceSearchActivity.removeScanningDialog() }
+    verify { p2PDeviceSearchActivity.keepScreenOn(false) }
   }
 
   fun Dialog.isCancellable(): Boolean {
