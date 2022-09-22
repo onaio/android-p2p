@@ -37,6 +37,8 @@ constructor(
   private val remainingLastRecordIds = HashMap<String, Long>()
   private val batchSize = 25
   private var awaitingDataTypeRecordsBatchSize = 0
+  private var totalRecordCount: Long = 0
+  private var totalSentRecordCount: Long = 0
 
   private lateinit var awaitingPayload: PayloadContract<out Any>
   private var sendingSyncCompleteManifest = false
@@ -44,6 +46,7 @@ constructor(
   suspend fun startSyncProcess() {
     Timber.i("Start sync process")
     generateRecordsToSend()
+    populateTotalRecordCount()
     sendNextManifest()
   }
 
@@ -60,6 +63,11 @@ constructor(
         remainingLastRecordIds[dataTypeHistory.entityType!!] = dataTypeHistory.lastUpdatedAt
       }
     }
+  }
+
+  fun populateTotalRecordCount() {
+    totalRecordCount =
+      P2PLibrary.getInstance().getSenderTransferDao().getTotalRecordCount(remainingLastRecordIds)
   }
 
   suspend fun sendNextManifest() {
@@ -113,7 +121,8 @@ constructor(
             Manifest(
               dataType = dataType,
               recordsSize = awaitingDataTypeRecordsBatchSize,
-              payloadSize = recordsJsonString.length
+              payloadSize = recordsJsonString.length,
+              totalRecordCount = totalRecordCount
             )
 
           p2PSenderViewModel.sendManifest(manifest = manifest)
@@ -133,5 +142,13 @@ constructor(
     } else {
       p2PSenderViewModel.sendChunkData(awaitingPayload)
     }
+  }
+
+  open fun updateTotalSentRecordCount() {
+    this.totalSentRecordCount = totalSentRecordCount + awaitingDataTypeRecordsBatchSize
+    p2PSenderViewModel.updateTransferProgress(
+      totalSentRecords = totalSentRecordCount,
+      totalRecords = totalRecordCount
+    )
   }
 }

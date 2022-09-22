@@ -52,3 +52,7 @@ fun String.capitalize(): String = replaceFirstChar {
 
 fun isAppDebuggable(context: Context) =
   0 != context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE
+
+fun Long.divideToPercent(divideTo: Long): Int {
+  return if (divideTo == 0L) 0 else ((this / divideTo.toFloat()) * 100).toInt()
+}

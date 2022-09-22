@@ -36,6 +36,8 @@ interface P2pModeSelectContract {
     fun getCurrentConnectedDevice(): DeviceInfo?
 
     fun senderSyncComplete(complete: Boolean)
+
+    fun updateTransferProgress(resStringId: Int, percentageTransferred: Int, totalRecords: Long)
   }
 
   interface SenderViewModel {
@@ -51,13 +53,15 @@ interface P2pModeSelectContract {
     fun sendSyncComplete()
 
     fun sendChunkData(awaitingPayload: PayloadContract<out Any>)
+
+    fun updateTransferProgress(totalSentRecords: Long, totalRecords: Long)
   }
 
   interface ReceiverViewModel {
 
     fun getSendingDeviceAppLifetimeKey(): String
 
-    fun updateProgress(resStringMsg: Int, recordSize: Int)
+    fun updateTransferProgress(totalSentRecords: Long, totalRecords: Long)
 
     fun sendLastReceivedRecords(receivedHistory: List<P2PReceivedHistory?>?)
   }

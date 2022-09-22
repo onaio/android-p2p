@@ -36,7 +36,6 @@ import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.p2p.CoroutineTestRule
 import org.smartregister.p2p.P2PLibrary
-import org.smartregister.p2p.R
 import org.smartregister.p2p.dao.P2pReceivedHistoryDao
 import org.smartregister.p2p.dao.ReceiverTransferDao
 import org.smartregister.p2p.model.P2PReceivedHistory
@@ -100,36 +99,33 @@ class SyncReceiverHandlerTest : RobolectricTest() {
   fun `processManifest() calls p2PReceiverViewModel#handleDataTransferCompleteManifest() when data type name is sync complete`() {
     dataType = DataType(name = Constants.SYNC_COMPLETE, type = DataType.Filetype.JSON, position = 0)
     val manifest = Manifest(dataType = dataType, recordsSize = 25, payloadSize = 50)
-    every { p2PReceiverViewModel.updateProgress(any(), any()) } just runs
+    every { p2PReceiverViewModel.updateTransferProgress(any(), any()) } just runs
     every { p2PReceiverViewModel.handleDataTransferCompleteManifest() } just runs
 
     syncReceiverHandler.processManifest(manifest = manifest)
 
-    verify(exactly = 1) {
-      p2PReceiverViewModel.updateProgress(R.string.transferring_x_records, manifest.recordsSize)
-    }
     verify(exactly = 1) { p2PReceiverViewModel.handleDataTransferCompleteManifest() }
   }
 
   @Test
   fun `processManifest() calls p2PReceiverViewModel#processChunkData() when manifest has does not have sync complete data type name`() {
-    every { p2PReceiverViewModel.updateProgress(any(), any()) } just runs
+    every { p2PReceiverViewModel.updateTransferProgress(any(), any()) } just runs
     every { p2PReceiverViewModel.processChunkData() } just runs
 
     syncReceiverHandler.processManifest(manifest = manifest)
 
-    verify(exactly = 1) {
-      p2PReceiverViewModel.updateProgress(R.string.transferring_x_records, manifest.recordsSize)
-    }
     verify(exactly = 1) { p2PReceiverViewModel.processChunkData() }
   }
 
   @Test
-  fun `processData() calls addOrUpdateLastRecord() and p2PReceiverViewModel#processIncomingManifest()`() {
+  fun `processData() calls addOrUpdateLastRecord(), updateTransferProgress() and p2PReceiverViewModel#processIncomingManifest()`() {
     every { p2PReceiverViewModel.processIncomingManifest() } just runs
+    every { p2PReceiverViewModel.updateTransferProgress(any(), any()) } just runs
     coEvery { syncReceiverHandler.addOrUpdateLastRecord(any(), any()) } just runs
+    ReflectionHelpers.setField(syncReceiverHandler, "totalRecordCount", 2)
     runBlocking { syncReceiverHandler.processData(jsonArray) }
 
+    verify { p2PReceiverViewModel.updateTransferProgress(1L, 2L) }
     verify(exactly = 1) { p2PReceiverViewModel.processIncomingManifest() }
     coVerify(exactly = 1) { syncReceiverHandler.addOrUpdateLastRecord(any(), any()) }
   }
