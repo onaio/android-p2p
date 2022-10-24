@@ -17,10 +17,12 @@ package org.smartregister.p2p.search.ui
 
 import android.app.Activity
 import android.app.Dialog
+import android.content.Context
 import android.content.Intent
 import android.net.wifi.WifiManager
 import android.net.wifi.p2p.WifiP2pDevice
 import android.os.Build
+import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -979,6 +981,29 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
     p2PDeviceSearchActivity.checkEnableWifi()
 
     verify { androidWifiManager.setWifiEnabled(true) }
+  }
+
+  @Test
+  fun `checkEnableWifi should calls startActivity`() {
+
+    ReflectionHelpers.setStaticField(Build.VERSION::class.java, "SDK_INT", 29)
+    p2PDeviceSearchActivity = spyk(p2PDeviceSearchActivity)
+
+    val androidWifiManager = mockk<WifiManager>()
+    every { androidWifiManager.isWifiEnabled } returns false
+    every { androidWifiManager.setWifiEnabled(any()) } returns (null == true)
+    every { p2PDeviceSearchActivity.getAndroidWifiManager() } returns androidWifiManager
+    every { p2PDeviceSearchActivity.startScanning() } just runs
+
+    val applicationContextMock = mockk<Context>()
+    every { p2PDeviceSearchActivity.applicationContext } returns applicationContextMock
+    every { applicationContextMock.startActivity(any()) } just runs
+
+    p2PDeviceSearchActivity.checkEnableWifi()
+
+    val intentSlot = slot<Intent>()
+    verify { applicationContextMock.startActivity(capture(intentSlot)) }
+    Assert.assertEquals(Settings.Panel.ACTION_WIFI, intentSlot.captured.action)
   }
 
   fun Dialog.isCancellable(): Boolean {
