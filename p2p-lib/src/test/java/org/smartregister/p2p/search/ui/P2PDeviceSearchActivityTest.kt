@@ -18,7 +18,9 @@ package org.smartregister.p2p.search.ui
 import android.app.Activity
 import android.app.Dialog
 import android.content.Intent
+import android.net.wifi.WifiManager
 import android.net.wifi.p2p.WifiP2pDevice
+import android.os.Build
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -945,6 +947,38 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
 
     verify { p2PDeviceSearchActivity.removeScanningDialog() }
     verify { p2PDeviceSearchActivity.keepScreenOn(false) }
+  }
+
+  @Test
+  fun `checkEnableWifi calls startScanning() when wifi is enabled`() {
+
+    p2PDeviceSearchActivity = spyk(p2PDeviceSearchActivity)
+
+    val androidWifiManager = mockk<WifiManager>()
+    every { androidWifiManager.isWifiEnabled } returns true
+    every { p2PDeviceSearchActivity.getAndroidWifiManager() } returns androidWifiManager
+    every { p2PDeviceSearchActivity.startScanning() } just runs
+
+    p2PDeviceSearchActivity.checkEnableWifi()
+
+    verify { p2PDeviceSearchActivity.startScanning() }
+  }
+
+  @Test
+  fun `checkEnableWifi should call wifiManager#setWifiEnabled`() {
+
+    ReflectionHelpers.setStaticField(Build.VERSION::class.java, "SDK_INT", 28)
+    p2PDeviceSearchActivity = spyk(p2PDeviceSearchActivity)
+
+    val androidWifiManager = mockk<WifiManager>()
+    every { androidWifiManager.isWifiEnabled } returns false
+    every { androidWifiManager.setWifiEnabled(any()) } returns (null == true)
+    every { p2PDeviceSearchActivity.getAndroidWifiManager() } returns androidWifiManager
+    every { p2PDeviceSearchActivity.startScanning() } just runs
+
+    p2PDeviceSearchActivity.checkEnableWifi()
+
+    verify { androidWifiManager.setWifiEnabled(true) }
   }
 
   fun Dialog.isCancellable(): Boolean {

@@ -38,7 +38,6 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
-import androidx.core.app.ActivityCompat.requestPermissions
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.common.api.ResolvableApiException
@@ -198,19 +197,22 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
   }
 
   fun checkEnableWifi() {
-    var wifiManager =
-      getApplicationContext().getSystemService(Context.WIFI_SERVICE) as (WifiManager)
+    val androidWifiManager = getAndroidWifiManager()
 
-    if (!wifiManager.isWifiEnabled) {
+    if (!androidWifiManager.isWifiEnabled) {
       if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-        wifiManager.setWifiEnabled(true)
+        androidWifiManager.setWifiEnabled(true)
       } else {
         var intent = Intent(Settings.Panel.ACTION_WIFI)
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        getApplicationContext().startActivity(intent)
+        applicationContext.startActivity(intent)
       }
     }
     startScanning()
+  }
+
+  fun getAndroidWifiManager(): WifiManager {
+    return applicationContext.getSystemService(Context.WIFI_SERVICE) as (WifiManager)
   }
 
   /**
