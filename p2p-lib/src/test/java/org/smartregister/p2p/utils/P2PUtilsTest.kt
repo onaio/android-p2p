@@ -91,4 +91,10 @@ class P2PUtilsTest : RobolectricTest() {
   fun capitalShouldCapitalizedMixedcase() {
     Assert.assertEquals("DeMO", "deMO".capitalize())
   }
+
+  @Test
+  fun divideToPercentShouldReturnCorrectValues() {
+    var number: Long = 10
+    Assert.assertEquals(50, number.divideToPercent(20))
+  }
 }

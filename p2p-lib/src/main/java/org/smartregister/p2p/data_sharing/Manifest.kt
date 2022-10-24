@@ -18,4 +18,9 @@ package org.smartregister.p2p.data_sharing
 import org.smartregister.p2p.sync.DataType
 
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 21-03-2022. */
-data class Manifest(val dataType: DataType, val recordsSize: Int, val payloadSize: Int)
+data class Manifest(
+  val dataType: DataType,
+  val recordsSize: Int,
+  val payloadSize: Int,
+  val totalRecordCount: Long = 0
+)

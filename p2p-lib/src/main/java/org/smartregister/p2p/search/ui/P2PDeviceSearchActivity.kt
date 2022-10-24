@@ -323,10 +323,70 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
 
   override fun onResume() {
     super.onResume()
-
+    initChannel()
     dataSharingStrategy.onResume(isScanning = scanning)
   }
 
+  fun initChannel() {
+    dataSharingStrategy.initChannel(
+      object : OnDeviceFound {
+        override fun deviceFound(devices: List<DeviceInfo>) {
+          showDevicesList(devices)
+        }
+
+        override fun failed(ex: Exception) {
+          keepScreenOn(false)
+          Timber.e("Devices searching failed")
+          Timber.e(ex)
+          removeScanningDialog()
+
+          Toast.makeText(
+              this@P2PDeviceSearchActivity,
+              R.string.device_searching_failed,
+              Toast.LENGTH_LONG
+            )
+            .show()
+        }
+      },
+      object : DataSharingStrategy.PairingListener {
+
+        override fun onSuccess(device: DeviceInfo?) {
+
+          if (currentConnectedDevice == null) {
+            Timber.e("Devices paired with another: DeviceInfo is null")
+          }
+
+          currentConnectedDevice = device
+          val displayName = device?.getDisplayName() ?: "Unknown"
+          showP2PSelectPage(getDeviceRole(), displayName)
+        }
+
+        override fun onFailure(device: DeviceInfo?, ex: Exception) {
+          keepScreenOn(false)
+          Timber.e("Devices pairing failed")
+          Timber.e(ex)
+          removeScanningDialog()
+        }
+
+        override fun onDisconnected() {
+          if (!requestDisconnection) {
+            removeScanningDialog()
+            showToast("Connection was disconnected")
+
+            keepScreenOn(false)
+
+            if (isSenderSyncComplete) {
+              showTransferCompleteDialog()
+            }
+
+            Timber.e("Successful on disconnect")
+            Timber.e("isSenderSyncComplete $isSenderSyncComplete")
+            // But use a flag to determine if sync was completed
+          }
+        }
+      }
+    )
+  }
   override fun onPause() {
     super.onPause()
 
@@ -591,6 +651,16 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
   override fun senderSyncComplete(complete: Boolean) {
     isSenderSyncComplete = complete
     Timber.e("sender sync complete $isSenderSyncComplete")
+  }
+
+  override fun updateTransferProgress(
+    resStringId: Int,
+    percentageTransferred: Int,
+    totalRecords: Long
+  ) {
+    interactiveDialog
+      .findViewById<TextView>(R.id.data_transfer_description)
+      ?.setText(getString(resStringId, percentageTransferred, totalRecords))
   }
 
   /**
