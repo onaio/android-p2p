@@ -151,29 +151,30 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     verify {
       wifiDirectDataSharingStrategy invoke
         "disconnect" withArguments
-        listOf(any<OnDeviceFound>(), any<DataSharingStrategy.PairingListener>())
+        listOf(onDeviceFound, pairingListener)
     }
 
   }
 
   @Test
-  fun `searchDevices() initializes wifiP2pBroadcastReceiver`() {
+  fun `searchDevices() calls wifiDirectDataSharingStrategy#disconnect`() {
     mockkConstructor(WifiP2pBroadcastReceiver::class)
     every { context.checkPermission(any(), any(), any()) } returns PackageManager.PERMISSION_GRANTED
     every { wifiP2pManager.initialize(context, context.mainLooper, null) } returns wifiP2pChannel
     every { context.registerReceiver(any(), any()) } returns null
     every { wifiP2pManager.discoverPeers(any(), any()) } just runs
+    every {
+      wifiDirectDataSharingStrategy invoke
+        "disconnect" withArguments
+        listOf(any<OnDeviceFound>(), any<DataSharingStrategy.PairingListener>())
+    } returns null
 
     wifiDirectDataSharingStrategy.searchDevices(onDeviceFound, pairingListener)
 
-    val p2PManagerListenerSlot = slot<P2PManagerListener>()
     verify {
-      constructedWith<WifiP2pBroadcastReceiver>(
-        EqMatcher(wifiP2pManager),
-        EqMatcher(wifiP2pChannel),
-        CapturingSlotMatcher(p2PManagerListenerSlot, P2PManagerListener::class),
-        EqMatcher(context)
-      )
+      wifiDirectDataSharingStrategy invoke
+        "disconnect" withArguments
+        listOf(onDeviceFound, pairingListener)
     }
   }
 
