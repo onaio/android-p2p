@@ -135,14 +135,25 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   }
 
   @Test
-  fun `searchDevices() calls wifiP2pManager#initialize()`() {
+  fun `searchDevices() calls wifiDirectDataSharingStrategy#disconnect()`() {
     every { context.checkPermission(any(), any(), any()) } returns PackageManager.PERMISSION_GRANTED
     every { wifiP2pManager.initialize(context, context.mainLooper, null) } returns wifiP2pChannel
     every { context.registerReceiver(any(), any()) } returns null
     every { wifiP2pManager.discoverPeers(any(), any()) } just runs
+    every {
+      wifiDirectDataSharingStrategy invoke
+        "disconnect" withArguments
+        listOf(any<OnDeviceFound>(), any<DataSharingStrategy.PairingListener>())
+    } returns null
+
     wifiDirectDataSharingStrategy.searchDevices(onDeviceFound, pairingListener)
 
-    verify { wifiP2pManager.initialize(context, context.mainLooper, null) }
+    verify {
+      wifiDirectDataSharingStrategy invoke
+        "disconnect" withArguments
+        listOf(any<OnDeviceFound>(), any<DataSharingStrategy.PairingListener>())
+    }
+
   }
 
   @Test
@@ -177,11 +188,11 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   }
 
   @Test
-  fun `listenForWifiP2pIntents() calls context#registerReceiver() with correct intent filter actions`() {
+  fun `listenForWifiP2pEventsIntents() calls context#registerReceiver() with correct intent filter actions`() {
     every { context.registerReceiver(any(), any()) } returns null
     ReflectionHelpers.callInstanceMethod<WifiDirectDataSharingStrategy>(
       wifiDirectDataSharingStrategy,
-      "listenForWifiP2pIntents"
+      "listenForWifiP2pEventsIntents"
     )
 
     val broadcastReceiverSlot = slot<BroadcastReceiver>()
@@ -799,8 +810,8 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   }
 
   @Test
-  fun `onResume() calls listenForWifiP2pIntents(), initiatePeerDiscoveryOnceAccessFineLocationGranted(), requestDeviceInfo() and requestConnectionInfo() when isScanning is true`() {
-    every { wifiDirectDataSharingStrategy invokeNoArgs "listenForWifiP2pIntents" } returns null
+  fun `onResume() calls listenForWifiP2pEventsIntents(), initiatePeerDiscoveryOnceAccessFineLocationGranted(), requestDeviceInfo() and requestConnectionInfo() when isScanning is true`() {
+    every { wifiDirectDataSharingStrategy invokeNoArgs "listenForWifiP2pEventsIntents" } returns null
     every {
       wifiDirectDataSharingStrategy invokeNoArgs
         "initiatePeerDiscoveryOnceAccessFineLocationGranted"
@@ -810,7 +821,7 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
 
     wifiDirectDataSharingStrategy.onResume(isScanning = true)
 
-    verify { wifiDirectDataSharingStrategy invokeNoArgs "listenForWifiP2pIntents" }
+    verify { wifiDirectDataSharingStrategy invokeNoArgs "listenForWifiP2pEventsIntents" }
     verify {
       wifiDirectDataSharingStrategy invokeNoArgs
         "initiatePeerDiscoveryOnceAccessFineLocationGranted"
