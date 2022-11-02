@@ -31,6 +31,7 @@
     <string name="wifi_p2p_connection_label">Connected to:</string>
     <string name="wifi_p2p_connection_failed_value">Failed: %s</string>
     <string name="device_to_device_sync">Device to device sync</string>
+    <string name="device_to_device_sync_logo">Device to device sync logo</string>
     <string name="scan_for_devices">Scan for devices</string>
     <string name="make_sure_both_devices_are_unlocked_close_together_and_have_wifi_turned_on">Make sure both devices are unlocked, close together and have wifi turned on</string>
     <string name="nearby_devices">Nearby devices</string>
@@ -58,4 +59,5 @@
     <string name="transferring_x_records">Transferring %1$d%% of %2$d records</string>
     <string name="device_searching_failed">Device searching failed! Please try again</string>
     <string name="connecting_to_device_failed">Connecting to device failed! Please try again</string>
+    <string name="tap_to_send_data_msg">Tap to start sending data to nearby device</string>
 </resources>
