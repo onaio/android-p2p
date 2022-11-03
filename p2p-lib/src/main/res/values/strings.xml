@@ -60,4 +60,7 @@
     <string name="device_searching_failed">Device searching failed! Please try again</string>
     <string name="connecting_to_device_failed">Connecting to device failed! Please try again</string>
     <string name="tap_to_send_data_msg">Tap to start sending data to nearby device</string>
+    <string name="receive_data">Receive Data</string>
+    <string name="transfer_data">Transfer Data</string>
+    <string name="tap_to_receive_data_msg">Tap to start receiving data from nearby device</string>
 </resources>

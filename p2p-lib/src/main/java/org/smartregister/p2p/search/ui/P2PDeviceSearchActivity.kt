@@ -30,6 +30,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -54,6 +55,8 @@ import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.OnDeviceFound
 import org.smartregister.p2p.search.adapter.DeviceListAdapter
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
+import org.smartregister.p2p.search.ui.p2p.P2PScreen
+import org.smartregister.p2p.search.ui.theme.AppTheme
 import org.smartregister.p2p.utils.DefaultDispatcherProvider
 import org.smartregister.p2p.utils.getDeviceName
 import org.smartregister.p2p.utils.isAppDebuggable
@@ -98,23 +101,25 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContentView(R.layout.activity_p2_pdevice_search)
+    //setContentView(R.layout.activity_p2_pdevice_search)
+    // use compose
+    setContent { AppTheme { P2PScreen() } }
 
     if (Timber.treeCount == 0 && isAppDebuggable(this)) {
       Timber.plant(Timber.DebugTree())
     }
 
     title = getString(R.string.device_to_device_sync)
-    supportActionBar?.setHomeAsUpIndicator(android.R.drawable.ic_menu_close_clear_cancel)
+   // supportActionBar?.setHomeAsUpIndicator(android.R.drawable.ic_menu_close_clear_cancel)
 
     // Remaining setup for the DataSharingStrategy class
     dataSharingStrategy = P2PLibrary.getInstance().dataSharingStrategy
     dataSharingStrategy.setActivity(this)
 
-    findViewById<Button>(R.id.scanDevicesBtn).setOnClickListener {
+   /* findViewById<Button>(R.id.scanDevicesBtn).setOnClickListener {
       scanning = true
       requestLocationPermissionsAndEnableLocation()
-    }
+    }*/
   }
 
   fun startScanning() {

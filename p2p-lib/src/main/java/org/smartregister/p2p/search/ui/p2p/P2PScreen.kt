@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -41,7 +42,9 @@ fun P2PScreen(
     topBar = {
       TopAppBar(
         modifier = modifier.testTag(P2P_SCREEN_TOP_BAR_TEST_TAG),
-        title = {"Transfer Data"},
+        title = {Text(stringResource(id = R.string.transfer_data))},
+        backgroundColor =  colorResource(id = R.color.top_appbar_bg),
+        contentColor = colorResource(id = R.color.white),
         navigationIcon = {
           IconButton(onClick = {  }) {
             Icon(
@@ -74,17 +77,32 @@ fun P2PScreen(
         )
 
         Spacer(modifier = modifier.height(40.dp))
-
-        Row(modifier = modifier
-          .fillMaxSize()) {
-          Column() {
-            Text(text = stringResource(id = R.string.send_data))
-            Text(text = stringResource(id = R.string.tap_to_send_data_msg))
-          }
-        }
+        TransferComponent(modifier = modifier, title = stringResource(id = R.string.send_data) , description = stringResource(id = R.string.tap_to_send_data_msg))
+        Spacer(modifier = modifier.height(20.dp))
+        TransferComponent(modifier = modifier, title = stringResource(id = R.string.receive_data) , description = stringResource(id = R.string.tap_to_receive_data_msg))
       }
     }
 
+  }
+}
+
+@Composable
+fun TransferComponent(modifier: Modifier, title:String, description:String) {
+  Row(modifier = modifier
+    ) {
+    Column() {
+      Image(
+        painter = painterResource(R.drawable.ic_p2p),
+        contentDescription = stringResource(id = R.string.device_to_device_sync_logo),
+        modifier =
+        modifier
+          .align(Alignment.CenterHorizontally)
+      )
+    }
+    Column() {
+      Text(text = title)
+      Text(text = description)
+    }
   }
 }
 
