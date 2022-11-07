@@ -63,4 +63,6 @@
     <string name="receive_data">Receive Data</string>
     <string name="transfer_data">Transfer Data</string>
     <string name="tap_to_receive_data_msg">Tap to start receiving data from nearby device</string>
+    <string name="select_recipient_device">SELECT RECIPIENT DEVICE</string>
+    <string name="pair">Pair</string>
 </resources>

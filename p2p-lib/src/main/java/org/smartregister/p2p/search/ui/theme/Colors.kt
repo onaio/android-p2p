@@ -8,6 +8,7 @@ val DangerColor = Color(0xFFFF333F)
 val InfoColor = Color(0xFF006EB8)
 val DefaultColor = Color(0xFF6F7274)
 val ProfileBackgroundColor = Color(0xFFF2F4F7)
+val SuccessColor = Color(0xFF1DB11B)
 
 private val PrimaryColor = Color(0xFF005084)
 private val PrimaryVariantColor = Color(0xFF003D66)
