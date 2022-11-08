@@ -11,6 +11,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,7 +52,7 @@ fun PairDeviceRow(modifier: Modifier = Modifier) {
       .padding(horizontal = 16.dp)
   ) {
     Icon(
-      imageVector = Icons.Filled.Image,
+      imageVector = Icons.Filled.Phone,
       contentDescription = null,
       tint = DefaultColor.copy(0.8f)
     )

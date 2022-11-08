@@ -18,6 +18,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.SendToMobile
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,6 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.smartregister.p2p.R
+import org.smartregister.p2p.search.ui.theme.DefaultColor
 
 const val P2P_SCREEN_TOP_BAR_TEST_TAG = "p2pScreenTopBarTestTag"
 const val P2P_SCREEN_TOP_BAR_ICON_TEST_TAG = "p2pScreenTopBarIconTestTag"
@@ -90,18 +92,16 @@ fun P2PScreen(
 fun TransferComponent(modifier: Modifier, title:String, description:String) {
   Row(modifier = modifier
     ) {
-    Column() {
-      Image(
-        painter = painterResource(R.drawable.ic_p2p),
-        contentDescription = stringResource(id = R.string.device_to_device_sync_logo),
-        modifier =
-        modifier
-          .align(Alignment.CenterHorizontally)
+    Column(modifier = modifier.padding(end = 10.dp), verticalArrangement = Arrangement.Center) {
+      Icon(
+        imageVector = Icons.Filled.SendToMobile,
+        contentDescription = null,
+        tint = DefaultColor.copy(0.8f),
       )
     }
     Column() {
       Text(text = title)
-      Text(text = description)
+      Text(text = description, color = DefaultColor)
     }
   }
 }

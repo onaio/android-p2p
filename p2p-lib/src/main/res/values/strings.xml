@@ -65,4 +65,7 @@
     <string name="tap_to_receive_data_msg">Tap to start receiving data from nearby device</string>
     <string name="select_recipient_device">SELECT RECIPIENT DEVICE</string>
     <string name="pair">Pair</string>
+    <string name="decline">Decline</string>
+    <string name="waiting_to_receive_data">Waiting to receive data</string>
+    <string name="waiting_for_sender_to_initiate_data_sync">Waiting for sender to initiate data sync</string>
 </resources>
