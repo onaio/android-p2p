@@ -101,7 +101,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    //setContentView(R.layout.activity_p2_pdevice_search)
+    // setContentView(R.layout.activity_p2_pdevice_search)
     // use compose
     setContent { AppTheme { P2PScreen() } }
 
@@ -110,13 +110,13 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     }
 
     title = getString(R.string.device_to_device_sync)
-   // supportActionBar?.setHomeAsUpIndicator(android.R.drawable.ic_menu_close_clear_cancel)
+    // supportActionBar?.setHomeAsUpIndicator(android.R.drawable.ic_menu_close_clear_cancel)
 
     // Remaining setup for the DataSharingStrategy class
     dataSharingStrategy = P2PLibrary.getInstance().dataSharingStrategy
     dataSharingStrategy.setActivity(this)
 
-   /* findViewById<Button>(R.id.scanDevicesBtn).setOnClickListener {
+    /* findViewById<Button>(R.id.scanDevicesBtn).setOnClickListener {
       scanning = true
       requestLocationPermissionsAndEnableLocation()
     }*/

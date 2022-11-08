@@ -13,11 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartregister.p2p.search.ui.p2p
+package org.smartregister.p2p.model
 
-sealed class P2PEvent {
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import org.smartregister.p2p.search.ui.theme.WhiteColor
 
-  object ReceiveData : P2PEvent()
-
-  object SendData : P2PEvent()
-}
+data class ActionableButtonData(
+  val title: String = "",
+  val description: String = "",
+  val contentColor: Color = WhiteColor,
+  val iconStart: ImageVector = Icons.Filled.Add
+)
