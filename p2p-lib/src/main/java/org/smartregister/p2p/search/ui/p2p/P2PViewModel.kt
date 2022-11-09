@@ -17,7 +17,18 @@ package org.smartregister.p2p.search.ui.p2p
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 
 class P2PViewModel() : ViewModel() {
   val p2PUiState = mutableStateOf(P2PUiState())
+  fun setP2PUiState() {
+    // Set UI state
+    p2PUiState.value = P2PUiState()
+  }
+
+  class Factory() : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+      return P2PViewModel() as T
+    }
+  }
 }

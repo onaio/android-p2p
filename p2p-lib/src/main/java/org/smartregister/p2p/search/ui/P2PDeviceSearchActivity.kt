@@ -56,6 +56,7 @@ import org.smartregister.p2p.data_sharing.OnDeviceFound
 import org.smartregister.p2p.search.adapter.DeviceListAdapter
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
 import org.smartregister.p2p.search.ui.p2p.P2PScreen
+import org.smartregister.p2p.search.ui.p2p.P2PViewModel
 import org.smartregister.p2p.search.ui.theme.AppTheme
 import org.smartregister.p2p.utils.DefaultDispatcherProvider
 import org.smartregister.p2p.utils.getDeviceName
@@ -84,6 +85,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
       DefaultDispatcherProvider()
     )
   }
+  private val p2PViewModel by viewModels<P2PViewModel> { P2PViewModel.Factory() }
   private var isSender = false
   private var scanning = false
   private var isSenderSyncComplete = false
@@ -102,8 +104,10 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     // setContentView(R.layout.activity_p2_pdevice_search)
+
     // use compose
-    setContent { AppTheme { P2PScreen() } }
+    p2PViewModel.apply { setP2PUiState() }
+    setContent { AppTheme { P2PScreen(p2PViewModel = p2PViewModel) } }
 
     if (Timber.treeCount == 0 && isAppDebuggable(this)) {
       Timber.plant(Timber.DebugTree())

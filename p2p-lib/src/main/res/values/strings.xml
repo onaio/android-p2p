@@ -67,7 +67,10 @@
     <string name="pair">Pair</string>
     <string name="decline">Decline</string>
     <string name="waiting_to_receive_data">Waiting to receive data</string>
+    <string name="waiting_to_pair">Waiting to pair...</string>
     <string name="waiting_for_sender_to_initiate_data_sync">Waiting for sender to initiate data sync</string>
     <string name="searching_for_nearby_recipient">Searching for nearby recipient</string>
+    <string name="searching_nearby_device_as">Searching nearby device as</string>
+    <string name="waiting_to_pair_with_sender">Waiting to be paired with sender as</string>
     <string name="x_records_received"> %1$d%% records received successfully from %1$s </string>
 </resources>

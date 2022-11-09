@@ -53,17 +53,19 @@ fun ProgressStatusIndicator(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun ProgressStatusText(modifier: Modifier = Modifier) {
+fun ProgressStatusText(modifier: Modifier = Modifier, title: String?, message: String?) {
   Column(modifier = modifier.wrapContentWidth(Alignment.CenterHorizontally).fillMaxWidth()) {
-    Text(
-      text = stringResource(id = R.string.device_data_successfully_sent),
-      fontWeight = FontWeight.Bold
-    )
-    Text(
-      text = stringResource(id = R.string.x_records_received),
-      color = DefaultColor,
-      modifier = modifier.wrapContentWidth(Alignment.Start)
-    )
+    if (!title.isNullOrBlank()) {
+      Text(text = title!!, fontWeight = FontWeight.Bold)
+    }
+
+    if (!message.isNullOrBlank()) {
+      Text(
+        text = message,
+        color = DefaultColor,
+        modifier = modifier.wrapContentWidth(Alignment.Start)
+      )
+    }
   }
 }
 
@@ -92,7 +94,7 @@ fun PreviewProgressStatusIndicator() {
 @Preview(showBackground = true)
 @Composable
 fun PreviewProgressStatusText() {
-  ProgressStatusText()
+  ProgressStatusText(title = "sample title", message = "sample message")
 }
 
 @Preview(showBackground = true)

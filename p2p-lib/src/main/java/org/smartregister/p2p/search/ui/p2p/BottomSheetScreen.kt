@@ -44,17 +44,37 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.smartregister.p2p.R
+import org.smartregister.p2p.authentication.model.DeviceRole
+import org.smartregister.p2p.search.ui.p2p.components.ProgressStatusIndicator
+import org.smartregister.p2p.search.ui.p2p.components.ProgressStatusText
 import org.smartregister.p2p.search.ui.theme.DefaultColor
 
-@SuppressLint("UnusedMaterialScaffoldPaddingParameter", "CoroutineCreationDuringComposition")
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun BottomSheetScreen(modifier: Modifier = Modifier) {
-
-  val modalBottomSheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
+fun BottomSheetScreen(
+  modifier: Modifier = Modifier,
+  p2PViewModel: P2PViewModel,
+  deviceRole: DeviceRole,
+) {
   val coroutineScope = rememberCoroutineScope()
+  val modalBottomSheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
 
   Scaffold(modifier.fillMaxWidth()) {
+    var bottomSheetTitle = ""
+    var progressStatusTitle: String? = null
+    var progressStatusMsg: String? = null
+    when (deviceRole) {
+      DeviceRole.SENDER -> {
+        bottomSheetTitle = stringResource(id = R.string.searching_for_nearby_recipient)
+        progressStatusMsg = stringResource(id = R.string.searching_nearby_device_as)
+      }
+      DeviceRole.RECEIVER -> {
+        bottomSheetTitle = stringResource(id = R.string.waiting_to_pair)
+        progressStatusMsg = stringResource(id = R.string.waiting_to_pair_with_sender)
+      }
+    }
+
     Column(modifier = modifier.fillMaxWidth()) {
       Row(
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -66,7 +86,7 @@ fun BottomSheetScreen(modifier: Modifier = Modifier) {
             .padding(horizontal = 16.dp, vertical = 16.dp)
       ) {
         Text(
-          text = stringResource(id = R.string.searching_for_nearby_recipient),
+          text = bottomSheetTitle,
           textAlign = TextAlign.Start,
           fontWeight = FontWeight.Bold,
           fontSize = 20.sp,
@@ -83,6 +103,10 @@ fun BottomSheetScreen(modifier: Modifier = Modifier) {
             }
         )
       }
+
+      ProgressStatusIndicator()
+
+      ProgressStatusText(title = progressStatusTitle, message = progressStatusMsg)
     }
   }
 }
@@ -90,5 +114,5 @@ fun BottomSheetScreen(modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 fun PreviewBottomSheetScreen() {
-  BottomSheetScreen()
+  // BottomSheetScreen(deviceRole = DeviceRole.SENDER)
 }

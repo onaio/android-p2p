@@ -38,7 +38,11 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.SendToMobile
 import androidx.compose.material.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -49,6 +53,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import org.smartregister.p2p.R
+import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.model.ActionableButtonData
 import org.smartregister.p2p.search.ui.p2p.components.ActionableButton
 import org.smartregister.p2p.search.ui.theme.DefaultColor
@@ -60,13 +65,16 @@ const val P2P_SYNC_IMAGE_TEST_TAG = "p2pSyncImageTestTag"
 @OptIn(ExperimentalMaterialApi::class)
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
-fun P2PScreen(modifier: Modifier = Modifier) {
+fun P2PScreen(modifier: Modifier = Modifier, p2PViewModel: P2PViewModel) {
 
   val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
   val coroutineScope = rememberCoroutineScope()
 
+  // bottom sheet updated
+  var deviceRole by remember { mutableStateOf(DeviceRole.SENDER) }
+
   BottomSheetScaffold(
-    sheetContent = { BottomSheetScreen() },
+    sheetContent = { BottomSheetScreen(p2PViewModel = p2PViewModel, deviceRole = deviceRole) },
     scaffoldState = bottomSheetScaffoldState,
     sheetPeekHeight = 0.dp,
     sheetGesturesEnabled = true
@@ -116,6 +124,7 @@ fun P2PScreen(modifier: Modifier = Modifier) {
                 description = stringResource(id = R.string.tap_to_send_data_msg)
               ),
             onAction = { _, _ ->
+              deviceRole = DeviceRole.SENDER
               coroutineScope.launch { bottomSheetScaffoldState.bottomSheetState.expand() }
             }
           )
@@ -127,6 +136,7 @@ fun P2PScreen(modifier: Modifier = Modifier) {
                 description = stringResource(id = R.string.tap_to_receive_data_msg)
               ),
             onAction = { _, _ ->
+              deviceRole = DeviceRole.RECEIVER
               coroutineScope.launch { bottomSheetScaffoldState.bottomSheetState.expand() }
             }
           )
@@ -157,5 +167,5 @@ fun TransferComponent(modifier: Modifier, title: String, description: String) {
 @Preview(showBackground = true)
 @Composable
 private fun PreviewP2PScreen() {
-  P2PScreen()
+  // P2PScreen()
 }
