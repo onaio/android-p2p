@@ -21,6 +21,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import org.smartregister.p2p.R
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.OnDeviceFound
@@ -34,7 +35,6 @@ class P2PViewModel(
   private val dispatcherProvider: DispatcherProvider
 ) : ViewModel() {
   val p2PUiState = mutableStateOf(P2PUiState())
-  private var currentConnectedDevice: DeviceInfo? = null
 
   private val _deviceList = MutableLiveData<List<DeviceInfo>>()
   val deviceList: LiveData<List<DeviceInfo>>
@@ -53,6 +53,10 @@ class P2PViewModel(
       }
       is P2PEvent.PairDevicesFound -> {
         // display list of pairing devices
+      }
+      is P2PEvent.PairWithDevice -> {
+        // initiate pairing with device
+        connectToDevice(event.device)
       }
     }
   }
@@ -85,11 +89,11 @@ class P2PViewModel(
 
         override fun onSuccess(device: DeviceInfo?) {
 
-          if (currentConnectedDevice == null) {
+          if (view.getCurrentConnectedDevice() == null) {
             Timber.e("Devices paired with another: DeviceInfo is null")
           }
 
-          currentConnectedDevice = device
+          view.currentConnectedDevice = device
           val displayName = device?.getDisplayName() ?: "Unknown"
           // showP2PSelectPage(getDeviceRole(), displayName)
         }
@@ -121,6 +125,34 @@ class P2PViewModel(
     )
 
     // showScanningDialog()
+  }
+
+  fun connectToDevice(device: DeviceInfo) {
+    view.isSender = true
+    dataSharingStrategy.connect(
+      device,
+      object : DataSharingStrategy.OperationListener {
+        override fun onSuccess(device: DeviceInfo?) {
+          // scanning = false
+          view.currentConnectedDevice = device
+          Timber.e("Connecting to device %s success", device?.getDisplayName() ?: "Unknown")
+          // showP2PSelectPage(getDeviceRole(), currentConnectedDevice!!.getDisplayName())
+        }
+
+        override fun onFailure(device: DeviceInfo?, ex: Exception) {
+          Timber.e("Connecting to device %s failure", device?.getDisplayName() ?: "Unknown")
+          Timber.e(ex)
+
+          view.showToast(view.getString(R.string.connecting_to_device_failed))
+          /*          Toast.makeText(
+            this@P2PDeviceSearchActivity,
+            getString(R.string.connecting_to_device_failed),
+            Toast.LENGTH_LONG
+          )
+            .show()*/
+        }
+      }
+    )
   }
 
   class Factory(

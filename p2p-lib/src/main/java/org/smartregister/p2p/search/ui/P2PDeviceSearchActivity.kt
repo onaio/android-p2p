@@ -92,11 +92,11 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
       DefaultDispatcherProvider()
     )
   }
-  private var isSender = false
+  internal var isSender = false
   private var scanning = false
   private var isSenderSyncComplete = false
   internal lateinit var interactiveDialog: BottomSheetDialog
-  private var currentConnectedDevice: DeviceInfo? = null
+  internal var currentConnectedDevice: DeviceInfo? = null
 
   private lateinit var dataSharingStrategy: DataSharingStrategy
 
@@ -485,11 +485,12 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
         override fun onSuccess(device: DeviceInfo?) {
           scanning = false
           currentConnectedDevice = device
-          showP2PSelectPage(getDeviceRole(), currentConnectedDevice!!.getDisplayName())
+          Timber.e("Connecting to device %s success", device?.getDisplayName() ?: "Unknown")
+          // showP2PSelectPage(getDeviceRole(), currentConnectedDevice!!.getDisplayName())
         }
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
-          Timber.e("Connecting to device %s", device?.getDisplayName() ?: "Unknown")
+          Timber.e("Connecting to device %s failure", device?.getDisplayName() ?: "Unknown")
           Timber.e(ex)
 
           Toast.makeText(

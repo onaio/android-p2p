@@ -65,7 +65,8 @@ fun BottomSheetScreen(
   modifier: Modifier = Modifier,
   p2PUiState: P2PUiState,
   deviceRole: DeviceRole,
-  p2PViewModel: P2PViewModel
+  p2PViewModel: P2PViewModel,
+  onEvent: (P2PEvent) -> Unit
 ) {
   val coroutineScope = rememberCoroutineScope()
   val modalBottomSheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
@@ -125,7 +126,7 @@ fun BottomSheetScreen(
           modifier = Modifier.fillMaxWidth().testTag(P2P_BOTTOM_SHEET_LIST)
         ) {
           itemsIndexed(deviceList) { index, item ->
-            PairDeviceRow(deviceName = item.getDisplayName())
+            PairDeviceRow(device = item, onEvent = onEvent)
           }
         }
       }

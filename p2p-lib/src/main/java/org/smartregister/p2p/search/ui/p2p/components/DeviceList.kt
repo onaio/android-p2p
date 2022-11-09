@@ -34,6 +34,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.smartregister.p2p.R
+import org.smartregister.p2p.data_sharing.DeviceInfo
+import org.smartregister.p2p.search.ui.p2p.P2PEvent
 import org.smartregister.p2p.search.ui.theme.DefaultColor
 
 @Composable
@@ -55,7 +57,7 @@ fun DeviceList(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun PairDeviceRow(modifier: Modifier = Modifier, deviceName: String = "") {
+fun PairDeviceRow(modifier: Modifier = Modifier, device: DeviceInfo?, onEvent: (P2PEvent) -> Unit) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
     verticalAlignment = Alignment.CenterVertically,
@@ -67,14 +69,16 @@ fun PairDeviceRow(modifier: Modifier = Modifier, deviceName: String = "") {
       tint = DefaultColor.copy(0.8f)
     )
     Column(modifier = modifier.wrapContentWidth(Alignment.Start)) {
-      Text(text = "$deviceName Phone")
+      Text(text = "${device?.name()} Phone")
       Text(
         text = stringResource(id = R.string.pairing),
         color = DefaultColor,
         modifier = modifier.wrapContentWidth(Alignment.Start)
       )
     }
-    Button(onClick = { /*TODO*/}) { Text(text = stringResource(id = R.string.pair)) }
+    Button(onClick = { device?.let { P2PEvent.PairWithDevice(it) }?.let { onEvent(it) } }) {
+      Text(text = stringResource(id = R.string.pair))
+    }
   }
 }
 
@@ -87,5 +91,5 @@ fun PreviewDeviceList() {
 @Preview(showBackground = true)
 @Composable
 fun PreviewPairDeviceRow() {
-  PairDeviceRow()
+  PairDeviceRow(onEvent = {}, device = null)
 }

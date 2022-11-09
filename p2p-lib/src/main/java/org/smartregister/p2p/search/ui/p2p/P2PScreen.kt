@@ -83,7 +83,8 @@ fun P2PScreen(
       BottomSheetScreen(
         p2PUiState = p2PUiState,
         deviceRole = deviceRole,
-        p2PViewModel = p2PViewModel
+        p2PViewModel = p2PViewModel,
+        onEvent = onEvent
       )
     },
     scaffoldState = bottomSheetScaffoldState,
