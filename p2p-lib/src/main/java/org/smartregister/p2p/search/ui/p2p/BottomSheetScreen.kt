@@ -54,7 +54,7 @@ import org.smartregister.p2p.search.ui.theme.DefaultColor
 @Composable
 fun BottomSheetScreen(
   modifier: Modifier = Modifier,
-  p2PViewModel: P2PViewModel,
+  p2PUiState: P2PUiState,
   deviceRole: DeviceRole,
 ) {
   val coroutineScope = rememberCoroutineScope()

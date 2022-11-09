@@ -65,7 +65,7 @@ const val P2P_SYNC_IMAGE_TEST_TAG = "p2pSyncImageTestTag"
 @OptIn(ExperimentalMaterialApi::class)
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
-fun P2PScreen(modifier: Modifier = Modifier, p2PViewModel: P2PViewModel) {
+fun P2PScreen(modifier: Modifier = Modifier, p2PUiState: P2PUiState, onEvent: (P2PEvent) -> Unit) {
 
   val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
   val coroutineScope = rememberCoroutineScope()
@@ -74,7 +74,7 @@ fun P2PScreen(modifier: Modifier = Modifier, p2PViewModel: P2PViewModel) {
   var deviceRole by remember { mutableStateOf(DeviceRole.SENDER) }
 
   BottomSheetScaffold(
-    sheetContent = { BottomSheetScreen(p2PViewModel = p2PViewModel, deviceRole = deviceRole) },
+    sheetContent = { BottomSheetScreen(p2PUiState = p2PUiState, deviceRole = deviceRole) },
     scaffoldState = bottomSheetScaffoldState,
     sheetPeekHeight = 0.dp,
     sheetGesturesEnabled = true
@@ -125,6 +125,7 @@ fun P2PScreen(modifier: Modifier = Modifier, p2PViewModel: P2PViewModel) {
               ),
             onAction = { _, _ ->
               deviceRole = DeviceRole.SENDER
+              onEvent(P2PEvent.StartScanning)
               coroutineScope.launch { bottomSheetScaffoldState.bottomSheetState.expand() }
             }
           )

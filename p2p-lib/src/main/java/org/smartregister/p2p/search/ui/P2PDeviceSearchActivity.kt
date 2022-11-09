@@ -85,7 +85,13 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
       DefaultDispatcherProvider()
     )
   }
-  private val p2PViewModel by viewModels<P2PViewModel> { P2PViewModel.Factory() }
+  private val p2PViewModel by viewModels<P2PViewModel> {
+    P2PViewModel.Factory(
+      context = this,
+      dataSharingStrategy = dataSharingStrategy,
+      DefaultDispatcherProvider()
+    )
+  }
   private var isSender = false
   private var scanning = false
   private var isSenderSyncComplete = false
@@ -105,9 +111,17 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     super.onCreate(savedInstanceState)
     // setContentView(R.layout.activity_p2_pdevice_search)
 
+    // Remaining setup for the DataSharingStrategy class
+    dataSharingStrategy = P2PLibrary.getInstance().dataSharingStrategy
+    dataSharingStrategy.setActivity(this)
+
     // use compose
     p2PViewModel.apply { setP2PUiState() }
-    setContent { AppTheme { P2PScreen(p2PViewModel = p2PViewModel) } }
+    setContent {
+      AppTheme {
+        P2PScreen(p2PUiState = p2PViewModel.p2PUiState.value, onEvent = p2PViewModel::onEvent)
+      }
+    }
 
     if (Timber.treeCount == 0 && isAppDebuggable(this)) {
       Timber.plant(Timber.DebugTree())
@@ -115,10 +129,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
 
     title = getString(R.string.device_to_device_sync)
     // supportActionBar?.setHomeAsUpIndicator(android.R.drawable.ic_menu_close_clear_cancel)
-
-    // Remaining setup for the DataSharingStrategy class
-    dataSharingStrategy = P2PLibrary.getInstance().dataSharingStrategy
-    dataSharingStrategy.setActivity(this)
 
     /* findViewById<Button>(R.id.scanDevicesBtn).setOnClickListener {
       scanning = true

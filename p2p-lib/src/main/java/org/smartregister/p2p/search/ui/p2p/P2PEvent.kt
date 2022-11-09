@@ -15,9 +15,9 @@
  */
 package org.smartregister.p2p.search.ui.p2p
 
+import org.smartregister.p2p.data_sharing.DeviceInfo
+
 sealed class P2PEvent {
-
-  object ReceiveData : P2PEvent()
-
-  object SendData : P2PEvent()
+  object StartScanning : P2PEvent()
+  data class PairDevicesFound(val devices: List<DeviceInfo>) : P2PEvent()
 }
