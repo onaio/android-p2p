@@ -15,6 +15,7 @@
  */
 package org.smartregister.p2p.search.ui.p2p
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -25,6 +26,7 @@ import org.smartregister.p2p.R
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.OnDeviceFound
+import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.search.ui.P2PDeviceSearchActivity
 import org.smartregister.p2p.utils.DispatcherProvider
 import timber.log.Timber
@@ -35,10 +37,13 @@ class P2PViewModel(
   private val dispatcherProvider: DispatcherProvider
 ) : ViewModel() {
   val p2PUiState = mutableStateOf(P2PUiState())
-
   private val _deviceList = MutableLiveData<List<DeviceInfo>>()
   val deviceList: LiveData<List<DeviceInfo>>
     get() = _deviceList
+
+  private val _p2PState = MutableLiveData<P2PState>()
+  val p2PState: LiveData<P2PState>
+    get() = _p2PState
 
   fun setP2PUiState() {
     // Set UI state
@@ -136,6 +141,7 @@ class P2PViewModel(
           // scanning = false
           view.currentConnectedDevice = device
           Timber.e("Connecting to device %s success", device?.getDisplayName() ?: "Unknown")
+          _p2PState.postValue(P2PState.TRANSFERRING_DATA)
           // showP2PSelectPage(getDeviceRole(), currentConnectedDevice!!.getDisplayName())
         }
 

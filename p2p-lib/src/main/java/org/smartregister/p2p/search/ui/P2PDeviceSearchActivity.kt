@@ -486,7 +486,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
           scanning = false
           currentConnectedDevice = device
           Timber.e("Connecting to device %s success", device?.getDisplayName() ?: "Unknown")
-          // showP2PSelectPage(getDeviceRole(), currentConnectedDevice!!.getDisplayName())
+          showP2PSelectPage(getDeviceRole(), currentConnectedDevice!!.getDisplayName())
         }
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {

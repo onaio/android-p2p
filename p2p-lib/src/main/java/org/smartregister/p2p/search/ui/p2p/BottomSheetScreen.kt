@@ -51,6 +51,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.smartregister.p2p.R
 import org.smartregister.p2p.authentication.model.DeviceRole
+import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.search.ui.p2p.components.PairDeviceRow
 import org.smartregister.p2p.search.ui.p2p.components.ProgressStatusIndicator
 import org.smartregister.p2p.search.ui.p2p.components.ProgressStatusText
@@ -71,6 +72,7 @@ fun BottomSheetScreen(
   val coroutineScope = rememberCoroutineScope()
   val modalBottomSheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
   val deviceList by p2PViewModel.deviceList.observeAsState(initial = listOf())
+  val p2PState by p2PViewModel.p2PState.observeAsState(initial = P2PState.SEARCHING_FOR_RECIPIENT)
 
   Scaffold(modifier.fillMaxWidth()) {
     var bottomSheetTitle = ""
