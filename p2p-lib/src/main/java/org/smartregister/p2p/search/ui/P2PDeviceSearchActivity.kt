@@ -119,7 +119,11 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     p2PViewModel.apply { setP2PUiState() }
     setContent {
       AppTheme {
-        P2PScreen(p2PUiState = p2PViewModel.p2PUiState.value, onEvent = p2PViewModel::onEvent)
+        P2PScreen(
+          p2PUiState = p2PViewModel.p2PUiState.value,
+          onEvent = p2PViewModel::onEvent,
+          p2PViewModel = p2PViewModel
+        )
       }
     }
 

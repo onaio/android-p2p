@@ -55,7 +55,7 @@ fun DeviceList(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun PairDeviceRow(modifier: Modifier = Modifier) {
+fun PairDeviceRow(modifier: Modifier = Modifier, deviceName: String = "") {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
     verticalAlignment = Alignment.CenterVertically,
@@ -67,7 +67,7 @@ fun PairDeviceRow(modifier: Modifier = Modifier) {
       tint = DefaultColor.copy(0.8f)
     )
     Column(modifier = modifier.wrapContentWidth(Alignment.Start)) {
-      Text(text = "James Phone")
+      Text(text = "$deviceName Phone")
       Text(
         text = stringResource(id = R.string.pairing),
         color = DefaultColor,

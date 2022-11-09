@@ -16,6 +16,8 @@
 package org.smartregister.p2p.search.ui.p2p
 
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -33,6 +35,10 @@ class P2PViewModel(
 ) : ViewModel() {
   val p2PUiState = mutableStateOf(P2PUiState())
   private var currentConnectedDevice: DeviceInfo? = null
+
+  private val _deviceList = MutableLiveData<List<DeviceInfo>>()
+  val deviceList: LiveData<List<DeviceInfo>>
+    get() = _deviceList
 
   fun setP2PUiState() {
     // Set UI state
@@ -57,6 +63,7 @@ class P2PViewModel(
       object : OnDeviceFound {
         override fun deviceFound(devices: List<DeviceInfo>) {
           // showDevicesList(devices)
+          _deviceList.postValue(devices)
           Timber.e("Devices searching succeeded. Found ${devices.size} devices")
         }
 

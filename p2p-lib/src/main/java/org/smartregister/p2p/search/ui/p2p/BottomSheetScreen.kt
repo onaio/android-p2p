@@ -20,10 +20,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.ModalBottomSheetValue
@@ -33,9 +36,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -45,9 +51,12 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.smartregister.p2p.R
 import org.smartregister.p2p.authentication.model.DeviceRole
+import org.smartregister.p2p.search.ui.p2p.components.PairDeviceRow
 import org.smartregister.p2p.search.ui.p2p.components.ProgressStatusIndicator
 import org.smartregister.p2p.search.ui.p2p.components.ProgressStatusText
 import org.smartregister.p2p.search.ui.theme.DefaultColor
+
+const val P2P_BOTTOM_SHEET_LIST = "p2PBottomSheetList"
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterialApi::class)
@@ -56,9 +65,11 @@ fun BottomSheetScreen(
   modifier: Modifier = Modifier,
   p2PUiState: P2PUiState,
   deviceRole: DeviceRole,
+  p2PViewModel: P2PViewModel
 ) {
   val coroutineScope = rememberCoroutineScope()
   val modalBottomSheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
+  val deviceList by p2PViewModel.deviceList.observeAsState(initial = listOf())
 
   Scaffold(modifier.fillMaxWidth()) {
     var bottomSheetTitle = ""
@@ -107,6 +118,17 @@ fun BottomSheetScreen(
       ProgressStatusIndicator()
 
       ProgressStatusText(title = progressStatusTitle, message = progressStatusMsg)
+
+      if (deviceRole == DeviceRole.SENDER) {
+        LazyColumn(
+          contentPadding = PaddingValues(vertical = 8.dp),
+          modifier = Modifier.fillMaxWidth().testTag(P2P_BOTTOM_SHEET_LIST)
+        ) {
+          itemsIndexed(deviceList) { index, item ->
+            PairDeviceRow(deviceName = item.getDisplayName())
+          }
+        }
+      }
     }
   }
 }
