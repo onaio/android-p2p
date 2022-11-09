@@ -118,11 +118,25 @@ fun P2PScreen(
           coroutineScope.launch { bottomSheetScaffoldState.bottomSheetState.collapse() }
           TransferProgressScreen(
             title = null,
-            message = stringResource(id = R.string.transferring_x_records)
+            message = stringResource(id = R.string.transferring_x_records),
+            showCancelButton = true,
+            onEvent = onEvent
           )
         }
         P2PState.TRANSFER_COMPLETE -> {
           coroutineScope.launch { bottomSheetScaffoldState.bottomSheetState.expand() }
+        }
+        P2PState.RECEIVING_DATA -> {
+          coroutineScope.launch { bottomSheetScaffoldState.bottomSheetState.collapse() }
+          TransferProgressScreen(
+            title = null,
+            message = stringResource(id = R.string.receiving_x_records),
+            showCancelButton = true,
+            onEvent = onEvent
+          )
+        }
+        P2PState.TRANSFER_CANCELLED -> {
+          coroutineScope.launch { bottomSheetScaffoldState.bottomSheetState.collapse() }
         }
         else -> {
           Column(
@@ -164,6 +178,7 @@ fun P2PScreen(
                   ),
                 onAction = { _, _ ->
                   deviceRole = DeviceRole.RECEIVER
+                  onEvent(P2PEvent.StartScanning)
                   coroutineScope.launch { bottomSheetScaffoldState.bottomSheetState.expand() }
                 }
               )
@@ -237,7 +252,8 @@ fun TransferProgressScreen(
   modifier: Modifier = Modifier,
   title: String?,
   message: String?,
-  showButton: Boolean = false
+  showCancelButton: Boolean = false,
+  onEvent: (P2PEvent) -> Unit
 ) {
   Column(
     modifier = modifier.fillMaxSize().padding(16.dp),
@@ -246,8 +262,10 @@ fun TransferProgressScreen(
   ) {
     ProgressStatusIndicator()
     ProgressStatusText(title = title, message = message)
-    if (showButton) {
-      Button(onClick = { /*TODO*/}) { Text(text = stringResource(id = R.string.cancel)) }
+    if (showCancelButton) {
+      Button(onClick = { onEvent(P2PEvent.CancelDataTransfer) }) {
+        Text(text = stringResource(id = R.string.cancel))
+      }
     }
   }
 }
@@ -258,6 +276,7 @@ private fun PreviewTransferProgressScreen() {
   TransferProgressScreen(
     title = "Waiting to receive data",
     message = "Waiting for sender to initiate data sync",
-    showButton = true
+    showCancelButton = true,
+    onEvent = {}
   )
 }

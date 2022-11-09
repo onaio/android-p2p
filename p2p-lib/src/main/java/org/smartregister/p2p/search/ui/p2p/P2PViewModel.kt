@@ -21,6 +21,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.smartregister.p2p.R
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
@@ -62,6 +64,10 @@ class P2PViewModel(
         // initiate pairing with device
         connectToDevice(event.device)
       }
+      is P2PEvent.CancelDataTransfer -> {
+        // cancel data transfer
+        cancelTransfer()
+      }
     }
   }
 
@@ -97,9 +103,16 @@ class P2PViewModel(
             Timber.e("Devices paired with another: DeviceInfo is null")
           }
 
+          Timber.e("Devices paired with another: DeviceInfo is +++++")
+
           view.currentConnectedDevice = device
           val displayName = device?.getDisplayName() ?: "Unknown"
           // showP2PSelectPage(getDeviceRole(), displayName)
+
+          // find better way to track this
+          if (!view.isSender) {
+            _p2PState.postValue(P2PState.RECEIVING_DATA)
+          }
         }
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
@@ -192,6 +205,26 @@ class P2PViewModel(
 
     interactiveDialog.setCancelable(false)
     interactiveDialog.show()*/
+  }
+
+  private fun cancelTransfer() {
+    Timber.e("Connection terminated by user")
+    viewModelScope.launch {
+      withContext(dispatcherProvider.main()) { view.showTransferCompleteDialog() }
+      dataSharingStrategy.disconnect(
+        dataSharingStrategy.getCurrentDevice()!!,
+        object : DataSharingStrategy.OperationListener {
+          override fun onSuccess(device: DeviceInfo?) {
+            Timber.i("Diconnection successful")
+            _p2PState.postValue(P2PState.TRANSFER_CANCELLED)
+          }
+
+          override fun onFailure(device: DeviceInfo?, ex: Exception) {
+            Timber.e(ex, "P2P diconnection failed")
+          }
+        }
+      )
+    }
   }
 
   class Factory(
