@@ -42,13 +42,18 @@ import org.smartregister.p2p.search.ui.theme.DefaultColor
 import org.smartregister.p2p.search.ui.theme.SuccessColor
 
 @Composable
-fun ProgressStatusIndicator(modifier: Modifier = Modifier) {
+fun ProgressStatusIndicator(
+  modifier: Modifier = Modifier,
+  showCircularProgressIndicator: Boolean = true
+) {
   Box(
     contentAlignment = Alignment.Center,
     modifier = modifier.fillMaxWidth().background(SuccessColor.copy(alpha = 0.2F)),
   ) {
     Icon(imageVector = Icons.Filled.Done, contentDescription = null, tint = DefaultColor.copy(0.8f))
-    CircularProgressIndicator(modifier = modifier.size(40.dp), strokeWidth = 2.dp)
+    if (showCircularProgressIndicator) {
+      CircularProgressIndicator(modifier = modifier.size(40.dp), strokeWidth = 2.dp)
+    }
   }
 }
 

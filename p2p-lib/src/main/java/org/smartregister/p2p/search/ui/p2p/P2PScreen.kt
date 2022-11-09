@@ -113,13 +113,75 @@ fun P2PScreen(
         )
       }
     ) {
-      if (p2PState == P2PState.TRANSFERRING_DATA) {
+      when (p2PState) {
+        P2PState.TRANSFERRING_DATA -> {
+          coroutineScope.launch { bottomSheetScaffoldState.bottomSheetState.collapse() }
+          TransferProgressScreen(
+            title = null,
+            message = stringResource(id = R.string.transferring_x_records)
+          )
+        }
+        P2PState.TRANSFER_COMPLETE -> {
+          coroutineScope.launch { bottomSheetScaffoldState.bottomSheetState.expand() }
+        }
+        else -> {
+          Column(
+            modifier = modifier.fillMaxSize().padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+          ) {
+            Column(modifier = modifier.padding(4.dp), verticalArrangement = Arrangement.Center) {
+              Image(
+                painter = painterResource(R.drawable.ic_p2p),
+                contentDescription = stringResource(id = R.string.device_to_device_sync_logo),
+                modifier =
+                  modifier
+                    .align(Alignment.CenterHorizontally)
+                    .requiredHeight(120.dp)
+                    .requiredWidth(140.dp)
+                    .testTag(P2P_SYNC_IMAGE_TEST_TAG),
+              )
+
+              Spacer(modifier = modifier.height(40.dp))
+              ActionableButton(
+                actionableButtonData =
+                  ActionableButtonData(
+                    title = stringResource(id = R.string.send_data),
+                    description = stringResource(id = R.string.tap_to_send_data_msg)
+                  ),
+                onAction = { _, _ ->
+                  deviceRole = DeviceRole.SENDER
+                  onEvent(P2PEvent.StartScanning)
+                  coroutineScope.launch { bottomSheetScaffoldState.bottomSheetState.expand() }
+                }
+              )
+              Spacer(modifier = modifier.height(20.dp))
+              ActionableButton(
+                actionableButtonData =
+                  ActionableButtonData(
+                    title = stringResource(id = R.string.receive_data),
+                    description = stringResource(id = R.string.tap_to_receive_data_msg)
+                  ),
+                onAction = { _, _ ->
+                  deviceRole = DeviceRole.RECEIVER
+                  coroutineScope.launch { bottomSheetScaffoldState.bottomSheetState.expand() }
+                }
+              )
+              Spacer(modifier = modifier.height(20.dp))
+            }
+          }
+        }
+      }
+      /*      if (p2PState == P2PState.TRANSFERRING_DATA) {
         coroutineScope.launch { bottomSheetScaffoldState.bottomSheetState.collapse() }
         TransferProgressScreen(
           title = null,
           message = stringResource(id = R.string.transferring_x_records)
         )
-      } else {
+      } else if(p2PState == P2PState.TRANSFER_COMPLETE) {
+        coroutineScope.launch { bottomSheetScaffoldState.bottomSheetState.expand() }
+      }
+      else {
         Column(
           modifier = modifier.fillMaxSize().padding(16.dp),
           horizontalAlignment = Alignment.CenterHorizontally,
@@ -165,7 +227,7 @@ fun P2PScreen(
             Spacer(modifier = modifier.height(20.dp))
           }
         }
-      }
+      }*/
     }
   }
 }

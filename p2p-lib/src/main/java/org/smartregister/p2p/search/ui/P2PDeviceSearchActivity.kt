@@ -587,7 +587,8 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
   }
 
   override fun showTransferCompleteDialog() {
-    while (keepScreenOnCounter > 0) {
+    p2PViewModel.showTransferCompleteDialog()
+    /*while (keepScreenOnCounter > 0) {
       keepScreenOn(false)
     }
 
@@ -614,7 +615,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     }
 
     interactiveDialog.setCancelable(false)
-    interactiveDialog.show()
+    interactiveDialog.show()*/
   }
 
   private fun initInteractiveDialog() {

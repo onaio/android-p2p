@@ -15,7 +15,6 @@
  */
 package org.smartregister.p2p.search.ui.p2p
 
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -125,6 +124,7 @@ class P2PViewModel(
             Timber.e("isSenderSyncComplete $isSenderSyncComplete")
             // But use a flag to determine if sync was completed
           }*/
+          _p2PState.postValue(P2PState.TRANSFER_COMPLETE)
         }
       }
     )
@@ -159,6 +159,39 @@ class P2PViewModel(
         }
       }
     )
+  }
+
+  fun showTransferCompleteDialog() {
+    _p2PState.postValue(P2PState.TRANSFER_COMPLETE)
+
+    /*while (keepScreenOnCounter > 0) {
+      keepScreenOn(false)
+    }
+
+    initInteractiveDialog()
+    interactiveDialog.setContentView(R.layout.data_transfer_bottom_sheet)
+
+    interactiveDialog
+      .findViewById<TextView>(R.id.data_transfer_title)
+      ?.setText(getString(R.string.data_transfer_comlete))
+
+    interactiveDialog
+      .findViewById<TextView>(R.id.data_transfer_description)
+      ?.setText(String.format(getString(R.string.device_data_successfully_sent)))
+
+    interactiveDialog.findViewById<ImageButton>(R.id.data_transfer_dialog_close)
+      ?.setOnClickListener { interactiveDialog.cancel() }
+
+    interactiveDialog.findViewById<Button>(R.id.dataTransferBtn)?.apply {
+      setOnClickListener {
+        // close wifi direct connection
+        finish()
+      }
+      setText(getString(R.string.okay))
+    }
+
+    interactiveDialog.setCancelable(false)
+    interactiveDialog.show()*/
   }
 
   class Factory(

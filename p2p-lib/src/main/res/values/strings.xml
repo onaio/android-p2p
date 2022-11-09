@@ -73,4 +73,5 @@
     <string name="searching_nearby_device_as">Searching nearby device as</string>
     <string name="waiting_to_pair_with_sender">Waiting to be paired with sender as</string>
     <string name="x_records_received"> %1$d%% records received successfully from %1$s </string>
+    <string name="x_records_sent"> %1$d%% records sent successfully to %1$s </string>
 </resources>
