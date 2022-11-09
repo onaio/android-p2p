@@ -112,6 +112,7 @@ class P2PViewModel(
           // find better way to track this
           if (!view.isSender) {
             _p2PState.postValue(P2PState.RECEIVING_DATA)
+            view.processSenderDeviceDetails()
           }
         }
 
@@ -155,6 +156,7 @@ class P2PViewModel(
           view.currentConnectedDevice = device
           Timber.e("Connecting to device %s success", device?.getDisplayName() ?: "Unknown")
           _p2PState.postValue(P2PState.TRANSFERRING_DATA)
+          view.sendDeviceDetails()
           // showP2PSelectPage(getDeviceRole(), currentConnectedDevice!!.getDisplayName())
         }
 

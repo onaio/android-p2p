@@ -530,6 +530,10 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     interactiveDialog.show()
   }
 
+  fun sendDeviceDetails() {
+    p2PSenderViewModel.sendDeviceDetails(getCurrentConnectedDevice())
+  }
+
   fun showReceiverDialog() {
     initInteractiveDialog()
     interactiveDialog.setContentView(R.layout.data_transfer_bottom_sheet)
@@ -554,6 +558,10 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
 
     // listen for messages
     keepScreenOn(true)
+    p2PReceiverViewModel.processSenderDeviceDetails()
+  }
+
+  fun processSenderDeviceDetails() {
     p2PReceiverViewModel.processSenderDeviceDetails()
   }
 
