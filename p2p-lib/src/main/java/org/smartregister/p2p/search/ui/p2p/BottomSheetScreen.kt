@@ -25,16 +25,16 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
-import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -67,14 +67,14 @@ fun BottomSheetScreen(
   p2PUiState: P2PUiState,
   deviceRole: DeviceRole,
   p2PViewModel: P2PViewModel,
-  onEvent: (P2PEvent) -> Unit
+  onEvent: (P2PEvent) -> Unit,
+  modalBottomSheetState: ModalBottomSheetState
 ) {
   val coroutineScope = rememberCoroutineScope()
-  val modalBottomSheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
   val deviceList by p2PViewModel.deviceList.observeAsState(initial = listOf())
   val p2PState by p2PViewModel.p2PState.observeAsState(initial = P2PState.SEARCHING_FOR_RECIPIENT)
 
-  Scaffold(modifier.fillMaxWidth()) {
+  Scaffold(modifier.wrapContentHeight(Alignment.CenterVertically)) {
     var bottomSheetTitle = ""
     var progressStatusTitle: String? = null
     var progressStatusMsg: String? = null
@@ -99,7 +99,7 @@ fun BottomSheetScreen(
       else -> {}
     }
 
-    Column(modifier = modifier.fillMaxWidth()) {
+    Column(modifier = modifier.wrapContentHeight(Alignment.CenterVertically)) {
       Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,

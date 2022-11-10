@@ -25,17 +25,19 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredWidth
-import androidx.compose.material.BottomSheetScaffold
 import androidx.compose.material.Button
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.rememberBottomSheetScaffoldState
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -74,24 +76,24 @@ fun P2PScreen(
   onEvent: (P2PEvent) -> Unit
 ) {
 
-  val bottomSheetScaffoldState = rememberBottomSheetScaffoldState()
+  val modalBottomSheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
   val coroutineScope = rememberCoroutineScope()
   val p2PState by p2PViewModel.p2PState.observeAsState(initial = P2PState.SEARCHING_FOR_RECIPIENT)
   // bottom sheet updated
   var deviceRole by remember { mutableStateOf(DeviceRole.SENDER) }
 
-  BottomSheetScaffold(
+  ModalBottomSheetLayout(
     sheetContent = {
       BottomSheetScreen(
         p2PUiState = p2PUiState,
         deviceRole = deviceRole,
         p2PViewModel = p2PViewModel,
-        onEvent = onEvent
+        onEvent = onEvent,
+        modalBottomSheetState = modalBottomSheetState
       )
     },
-    scaffoldState = bottomSheetScaffoldState,
-    sheetPeekHeight = 0.dp,
-    sheetGesturesEnabled = true
+    sheetState = modalBottomSheetState,
+    sheetShape = MaterialTheme.shapes.large
   ) {
     Scaffold(
       topBar = {
@@ -115,7 +117,7 @@ fun P2PScreen(
     ) {
       when (p2PState) {
         P2PState.TRANSFERRING_DATA -> {
-          coroutineScope.launch { bottomSheetScaffoldState.bottomSheetState.collapse() }
+          coroutineScope.launch { modalBottomSheetState.hide() }
           TransferProgressScreen(
             title = null,
             message = stringResource(id = R.string.transferring_x_records),
@@ -124,10 +126,10 @@ fun P2PScreen(
           )
         }
         P2PState.TRANSFER_COMPLETE -> {
-          coroutineScope.launch { bottomSheetScaffoldState.bottomSheetState.expand() }
+          coroutineScope.launch { modalBottomSheetState.show() }
         }
         P2PState.RECEIVING_DATA -> {
-          coroutineScope.launch { bottomSheetScaffoldState.bottomSheetState.collapse() }
+          coroutineScope.launch { modalBottomSheetState.hide() }
           TransferProgressScreen(
             title = null,
             message = stringResource(id = R.string.receiving_x_records),
@@ -136,7 +138,7 @@ fun P2PScreen(
           )
         }
         P2PState.TRANSFER_CANCELLED -> {
-          coroutineScope.launch { bottomSheetScaffoldState.bottomSheetState.collapse() }
+          coroutineScope.launch { modalBottomSheetState.hide() }
         }
         else -> {
           Column(
@@ -166,7 +168,9 @@ fun P2PScreen(
                 onAction = { _, _ ->
                   deviceRole = DeviceRole.SENDER
                   onEvent(P2PEvent.StartScanning)
-                  coroutineScope.launch { bottomSheetScaffoldState.bottomSheetState.expand() }
+                  coroutineScope.launch {
+                    modalBottomSheetState.animateTo(ModalBottomSheetValue.HalfExpanded)
+                  }
                 }
               )
               Spacer(modifier = modifier.height(20.dp))
@@ -179,7 +183,9 @@ fun P2PScreen(
                 onAction = { _, _ ->
                   deviceRole = DeviceRole.RECEIVER
                   onEvent(P2PEvent.StartScanning)
-                  coroutineScope.launch { bottomSheetScaffoldState.bottomSheetState.expand() }
+                  coroutineScope.launch {
+                    modalBottomSheetState.animateTo(ModalBottomSheetValue.HalfExpanded)
+                  }
                 }
               )
               Spacer(modifier = modifier.height(20.dp))
@@ -187,62 +193,6 @@ fun P2PScreen(
           }
         }
       }
-      /*      if (p2PState == P2PState.TRANSFERRING_DATA) {
-        coroutineScope.launch { bottomSheetScaffoldState.bottomSheetState.collapse() }
-        TransferProgressScreen(
-          title = null,
-          message = stringResource(id = R.string.transferring_x_records)
-        )
-      } else if(p2PState == P2PState.TRANSFER_COMPLETE) {
-        coroutineScope.launch { bottomSheetScaffoldState.bottomSheetState.expand() }
-      }
-      else {
-        Column(
-          modifier = modifier.fillMaxSize().padding(16.dp),
-          horizontalAlignment = Alignment.CenterHorizontally,
-          verticalArrangement = Arrangement.Center
-        ) {
-          Column(modifier = modifier.padding(4.dp), verticalArrangement = Arrangement.Center) {
-            Image(
-              painter = painterResource(R.drawable.ic_p2p),
-              contentDescription = stringResource(id = R.string.device_to_device_sync_logo),
-              modifier =
-                modifier
-                  .align(Alignment.CenterHorizontally)
-                  .requiredHeight(120.dp)
-                  .requiredWidth(140.dp)
-                  .testTag(P2P_SYNC_IMAGE_TEST_TAG),
-            )
-
-            Spacer(modifier = modifier.height(40.dp))
-            ActionableButton(
-              actionableButtonData =
-                ActionableButtonData(
-                  title = stringResource(id = R.string.send_data),
-                  description = stringResource(id = R.string.tap_to_send_data_msg)
-                ),
-              onAction = { _, _ ->
-                deviceRole = DeviceRole.SENDER
-                onEvent(P2PEvent.StartScanning)
-                coroutineScope.launch { bottomSheetScaffoldState.bottomSheetState.expand() }
-              }
-            )
-            Spacer(modifier = modifier.height(20.dp))
-            ActionableButton(
-              actionableButtonData =
-                ActionableButtonData(
-                  title = stringResource(id = R.string.receive_data),
-                  description = stringResource(id = R.string.tap_to_receive_data_msg)
-                ),
-              onAction = { _, _ ->
-                deviceRole = DeviceRole.RECEIVER
-                coroutineScope.launch { bottomSheetScaffoldState.bottomSheetState.expand() }
-              }
-            )
-            Spacer(modifier = modifier.height(20.dp))
-          }
-        }
-      }*/
     }
   }
 }
