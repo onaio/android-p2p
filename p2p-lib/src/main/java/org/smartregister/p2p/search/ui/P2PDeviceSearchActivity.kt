@@ -16,11 +16,16 @@
 package org.smartregister.p2p.search.ui
 
 import android.Manifest
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
+import android.net.wifi.p2p.WifiP2pDevice
+import android.net.wifi.p2p.WifiP2pManager
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -52,6 +57,7 @@ import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.OnDeviceFound
+import org.smartregister.p2p.data_sharing.WifiDirectDataSharingStrategy
 import org.smartregister.p2p.search.adapter.DeviceListAdapter
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
 import org.smartregister.p2p.utils.DefaultDispatcherProvider
@@ -87,7 +93,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
   internal lateinit var interactiveDialog: BottomSheetDialog
   private var currentConnectedDevice: DeviceInfo? = null
 
-  private lateinit var dataSharingStrategy: DataSharingStrategy
+  private lateinit var dataSharingStrategy: WifiDirectDataSharingStrategy
 
   private var keepScreenOnCounter = 0
 
@@ -108,12 +114,13 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     supportActionBar?.setHomeAsUpIndicator(android.R.drawable.ic_menu_close_clear_cancel)
 
     // Remaining setup for the DataSharingStrategy class
-    dataSharingStrategy = P2PLibrary.getInstance().dataSharingStrategy
+    dataSharingStrategy = P2PLibrary.getInstance().dataSharingStrategy as WifiDirectDataSharingStrategy
     dataSharingStrategy.setActivity(this)
 
     findViewById<Button>(R.id.scanDevicesBtn).setOnClickListener {
-      scanning = true
-      requestLocationPermissionsAndEnableLocation()
+      //scanning = true
+      //requestLocationPermissionsAndEnableLocation()
+      renameWifiDirectName()
     }
   }
 
@@ -248,7 +255,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     }
   }
 
-  /* DO NOT DELETE THIS ->> FOR USE LATER
+  //DO NOT DELETE THIS ->> FOR USE LATER
   fun renameWifiDirectName() {
     val deviceName = getDeviceName(this)
 
@@ -269,15 +276,15 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
       startActivity(turnWifiOn)
     } else {
       val setDeviceNameMethod =
-        wifiP2pManager.javaClass.getMethod(
+        dataSharingStrategy.wifiP2pManager.javaClass.getMethod(
           "setDeviceName",
-          wifiP2pChannel!!.javaClass,
+          dataSharingStrategy.wifiP2pChannel!!.javaClass,
           String::class.java,
           WifiP2pManager.ActionListener::class.java
         )
       setDeviceNameMethod.invoke(
-        wifiP2pManager,
-        wifiP2pChannel,
+        dataSharingStrategy.wifiP2pManager,
+        dataSharingStrategy.wifiP2pChannel,
         deviceName,
         object : WifiP2pManager.ActionListener {
           override fun onSuccess() {
@@ -290,7 +297,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
         }
       )
     }
-  }*/
+  }
 
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
     if (item.itemId == android.R.id.home) {
