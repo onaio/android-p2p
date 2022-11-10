@@ -23,7 +23,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
@@ -48,7 +50,8 @@ fun ProgressStatusIndicator(
 ) {
   Box(
     contentAlignment = Alignment.Center,
-    modifier = modifier.fillMaxWidth().background(SuccessColor.copy(alpha = 0.2F)),
+    modifier =
+      modifier.wrapContentSize().background(SuccessColor.copy(alpha = 0.2F), shape = CircleShape),
   ) {
     Icon(imageVector = Icons.Filled.Done, contentDescription = null, tint = DefaultColor.copy(0.8f))
     if (showCircularProgressIndicator) {
@@ -59,7 +62,7 @@ fun ProgressStatusIndicator(
 
 @Composable
 fun ProgressStatusText(modifier: Modifier = Modifier, title: String?, message: String?) {
-  Column(modifier = modifier.wrapContentWidth(Alignment.CenterHorizontally).fillMaxWidth()) {
+  Column(modifier = modifier.wrapContentWidth(Alignment.CenterHorizontally)) {
     if (!title.isNullOrBlank()) {
       Text(text = title!!, fontWeight = FontWeight.Bold)
     }

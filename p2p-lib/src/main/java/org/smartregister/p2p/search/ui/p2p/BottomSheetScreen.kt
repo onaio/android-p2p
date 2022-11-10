@@ -22,10 +22,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.ExperimentalMaterialApi
@@ -99,7 +102,11 @@ fun BottomSheetScreen(
       else -> {}
     }
 
-    Column(modifier = modifier.wrapContentHeight(Alignment.CenterVertically)) {
+    Column(
+      modifier = modifier.wrapContentSize(),
+      horizontalAlignment = Alignment.CenterHorizontally,
+      verticalArrangement = Arrangement.Center
+    ) {
       Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
@@ -128,10 +135,13 @@ fun BottomSheetScreen(
         )
       }
 
+      Spacer(modifier = Modifier.size(5.dp))
       ProgressStatusIndicator(showCircularProgressIndicator = showCircularProgressIndicator)
 
+      Spacer(modifier = Modifier.size(5.dp))
       ProgressStatusText(title = progressStatusTitle, message = progressStatusMsg)
 
+      Spacer(modifier = Modifier.size(5.dp))
       if (deviceRole == DeviceRole.SENDER) {
         LazyColumn(
           contentPadding = PaddingValues(vertical = 8.dp),

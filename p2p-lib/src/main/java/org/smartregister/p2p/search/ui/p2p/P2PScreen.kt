@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.Button
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
@@ -210,8 +211,11 @@ fun TransferProgressScreen(
     horizontalAlignment = Alignment.CenterHorizontally,
     verticalArrangement = Arrangement.Center
   ) {
+    Spacer(modifier = Modifier.size(20.dp))
     ProgressStatusIndicator()
+    Spacer(modifier = Modifier.size(20.dp))
     ProgressStatusText(title = title, message = message)
+    Spacer(modifier = Modifier.size(20.dp))
     if (showCancelButton) {
       Button(onClick = { onEvent(P2PEvent.CancelDataTransfer) }) {
         Text(text = stringResource(id = R.string.cancel))
