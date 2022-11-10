@@ -23,7 +23,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.smartregister.p2p.P2PLibrary
-import org.smartregister.p2p.R
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
@@ -66,7 +65,10 @@ class P2PReceiverViewModel(
             )
 
             viewModelScope.launch {
-              withContext(dispatcherProvider.main()) { view.showTransferProgressDialog() }
+              withContext(dispatcherProvider.main()) {
+                // TODO update to use compose
+                // view.showTransferProgressDialog()
+              }
             }
           } else {
             Timber.e("An error occurred and the APP-LIFETIME-KEY was not sent")
@@ -234,11 +236,13 @@ class P2PReceiverViewModel(
     var percentageReceived = totalReceivedRecords.divideToPercent(totalRecords)
     viewModelScope.launch {
       withContext(dispatcherProvider.main()) {
+        // TODO update to use compose
+        /*
         view.updateTransferProgress(
           resStringId = R.string.receiving_x_records,
           percentageTransferred = percentageReceived,
           totalRecords = totalRecords
-        )
+        )*/
       }
     }
   }

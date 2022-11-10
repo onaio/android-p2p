@@ -21,6 +21,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import java.util.Timer
+import kotlin.concurrent.schedule
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.smartregister.p2p.R
@@ -31,6 +33,8 @@ import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.search.ui.P2PDeviceSearchActivity
 import org.smartregister.p2p.utils.DispatcherProvider
 import timber.log.Timber
+
+const val START_DATA_TRANSFER_DELAY: Long = 5000
 
 class P2PViewModel(
   private val view: P2PDeviceSearchActivity,
@@ -156,7 +160,12 @@ class P2PViewModel(
           view.currentConnectedDevice = device
           Timber.e("Connecting to device %s success", device?.getDisplayName() ?: "Unknown")
           _p2PState.postValue(P2PState.TRANSFERRING_DATA)
-          view.sendDeviceDetails()
+
+          Timber.e("calling sleep before sending")
+          Timer().schedule(START_DATA_TRANSFER_DELAY) {
+            view.sendDeviceDetails()
+            Timber.e("sending called after sleep")
+          }
           // showP2PSelectPage(getDeviceRole(), currentConnectedDevice!!.getDisplayName())
         }
 

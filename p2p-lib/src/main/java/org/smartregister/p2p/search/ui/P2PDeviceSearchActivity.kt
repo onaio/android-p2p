@@ -523,7 +523,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
       // initiate data transfer
       keepScreenOn(true)
       p2PSenderViewModel.sendDeviceDetails(getCurrentConnectedDevice())
-      showTransferProgressDialog()
+      // showTransferProgressDialog()
     }
 
     interactiveDialog.setCancelable(false)
