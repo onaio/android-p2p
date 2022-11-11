@@ -140,7 +140,11 @@ fun P2PScreen(
           coroutineScope.launch { modalBottomSheetState.hide() }
           TransferProgressScreen(
             title = null,
-            message = stringResource(id = R.string.receiving_x_records),
+            message =
+              stringResource(
+                id = R.string.receiving_x_records,
+                p2PUiState.transferProgress.transferredRecordCount
+              ),
             showCancelButton = true,
             onEvent = onEvent,
             p2PUiState = p2PUiState

@@ -245,6 +245,10 @@ class P2PViewModel(
     p2PUiState.value = p2PUiState.value.copy(transferProgress = transferProgress)
   }
 
+  fun getCurrentConnectedDevice(): DeviceInfo? {
+    return dataSharingStrategy.getCurrentDevice()
+  }
+
   class Factory(
     private val context: P2PDeviceSearchActivity,
     private val dataSharingStrategy: DataSharingStrategy,

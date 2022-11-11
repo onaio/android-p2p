@@ -85,21 +85,35 @@ fun BottomSheetScreen(
     var progressStatusTitle: String? = null
     var progressStatusMsg: String? = null
     var showCircularProgressIndicator: Boolean = true
+    var transferCompleteMsg = ""
+    var deviceName = p2PViewModel.getCurrentConnectedDevice()?.name() ?: ""
     when (deviceRole) {
       DeviceRole.SENDER -> {
         bottomSheetTitle = stringResource(id = R.string.searching_for_nearby_recipient)
         progressStatusMsg = stringResource(id = R.string.searching_nearby_device_as)
+        transferCompleteMsg =
+          stringResource(
+            id = R.string.x_records_sent,
+            p2PUiState.transferProgress.totalRecordCount,
+            deviceName
+          )
       }
       DeviceRole.RECEIVER -> {
         bottomSheetTitle = stringResource(id = R.string.waiting_to_pair)
         progressStatusMsg = stringResource(id = R.string.waiting_to_pair_with_sender)
+        transferCompleteMsg =
+          stringResource(
+            id = R.string.x_records_received,
+            p2PUiState.transferProgress.totalRecordCount,
+            deviceName
+          )
       }
     }
 
     when (p2PState) {
       P2PState.TRANSFER_COMPLETE -> {
         bottomSheetTitle = stringResource(id = R.string.device_data_successfully_sent)
-        progressStatusMsg = stringResource(id = R.string.x_records_sent)
+        progressStatusMsg = transferCompleteMsg
         showCircularProgressIndicator = false
       }
       else -> {}
