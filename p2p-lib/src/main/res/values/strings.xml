@@ -66,6 +66,7 @@
     <string name="select_recipient_device">SELECT RECIPIENT DEVICE</string>
     <string name="pair">Pair</string>
     <string name="decline">Decline</string>
+    <string name="yes_exit">YES, EXIT</string>
     <string name="waiting_to_receive_data">Waiting to receive data</string>
     <string name="waiting_to_pair">Waiting to pair...</string>
     <string name="waiting_for_sender_to_initiate_data_sync">Waiting for sender to initiate data sync</string>
@@ -74,4 +75,6 @@
     <string name="waiting_to_pair_with_sender">Waiting to be paired with sender as</string>
     <string name="x_records_received"> %1$d%% records received successfully from %1$s </string>
     <string name="x_records_sent"> %1$d%% records sent successfully to %1$s </string>
+    <string name="connection_break_title">Connection break!</string>
+    <string name="connection_break_msg">Devices might get unpaired if you exit, any data sharing in progress will be cancelled</string>
 </resources>

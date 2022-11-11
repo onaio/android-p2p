@@ -50,11 +50,6 @@ class P2PViewModel(
   val p2PState: LiveData<P2PState>
     get() = _p2PState
 
-  fun setP2PUiState() {
-    // Set UI state
-    p2PUiState.value = P2PUiState()
-  }
-
   fun onEvent(event: P2PEvent) {
     when (event) {
       is P2PEvent.StartScanning -> {
@@ -69,8 +64,15 @@ class P2PViewModel(
         connectToDevice(event.device)
       }
       is P2PEvent.CancelDataTransfer -> {
+        // show cancel transfer dialog
+        p2PUiState.value = p2PUiState.value.copy(showP2PDialog = true)
+      }
+      P2PEvent.ConnectionBreakConfirmed -> {
         // cancel data transfer
-        cancelTransfer()
+        cancelTransfer(P2PState.INITIATE_DATA_TRANSFER)
+      }
+      P2PEvent.DismissConnectionBreakDialog -> {
+        p2PUiState.value = p2PUiState.value.copy(showP2PDialog = false)
       }
     }
   }
@@ -218,7 +220,7 @@ class P2PViewModel(
     interactiveDialog.show()*/
   }
 
-  private fun cancelTransfer() {
+  private fun cancelTransfer(p2PState: P2PState = P2PState.TRANSFER_CANCELLED) {
     Timber.e("Connection terminated by user")
     viewModelScope.launch {
       withContext(dispatcherProvider.main()) { view.showTransferCompleteDialog() }
@@ -227,7 +229,7 @@ class P2PViewModel(
         object : DataSharingStrategy.OperationListener {
           override fun onSuccess(device: DeviceInfo?) {
             Timber.i("Diconnection successful")
-            _p2PState.postValue(P2PState.TRANSFER_CANCELLED)
+            _p2PState.postValue(p2PState)
           }
 
           override fun onFailure(device: DeviceInfo?, ex: Exception) {

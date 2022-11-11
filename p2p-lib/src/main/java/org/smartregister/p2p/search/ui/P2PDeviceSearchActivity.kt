@@ -116,7 +116,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     dataSharingStrategy.setActivity(this)
 
     // use compose
-    p2PViewModel.apply { setP2PUiState() }
     setContent {
       AppTheme {
         P2PScreen(

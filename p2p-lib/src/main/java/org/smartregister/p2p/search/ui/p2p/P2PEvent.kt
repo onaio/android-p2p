@@ -20,6 +20,8 @@ import org.smartregister.p2p.data_sharing.DeviceInfo
 sealed class P2PEvent {
   object StartScanning : P2PEvent()
   object CancelDataTransfer : P2PEvent()
+  object ConnectionBreakConfirmed : P2PEvent()
+  object DismissConnectionBreakDialog : P2PEvent()
   data class PairDevicesFound(val devices: List<DeviceInfo>) : P2PEvent()
   data class PairWithDevice(val device: DeviceInfo) : P2PEvent()
 }

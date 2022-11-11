@@ -17,4 +17,16 @@ package org.smartregister.p2p.search.ui.p2p
 
 import org.smartregister.p2p.authentication.model.DeviceRole
 
-data class P2PUiState(val state: String = "", val deviceRole: DeviceRole = DeviceRole.SENDER)
+data class P2PUiState(
+  val state: String = "",
+  val deviceRole: DeviceRole = DeviceRole.SENDER,
+  val showP2PDialog: Boolean = true
+)
+
+fun p2PUiStateOf(
+  state: String = "",
+  deviceRole: DeviceRole = DeviceRole.SENDER,
+  showP2PDialog: Boolean = true
+): P2PUiState {
+  return P2PUiState(state = state, deviceRole = deviceRole, showP2PDialog = showP2PDialog)
+}

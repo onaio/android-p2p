@@ -61,6 +61,7 @@ import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.model.ActionableButtonData
 import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.search.ui.p2p.components.ActionableButton
+import org.smartregister.p2p.search.ui.p2p.components.P2PDialog
 import org.smartregister.p2p.search.ui.p2p.components.ProgressStatusIndicator
 import org.smartregister.p2p.search.ui.p2p.components.ProgressStatusText
 
@@ -140,14 +141,20 @@ fun P2PScreen(
           )
         }
         P2PState.TRANSFER_CANCELLED -> {
-          coroutineScope.launch { modalBottomSheetState.hide() }
+          if (modalBottomSheetState.isVisible) {
+            coroutineScope.launch { modalBottomSheetState.hide() }
+          }
         }
         P2PState.INITIATE_DATA_TRANSFER -> {
           DefaultScreen(
             onEvent = onEvent,
             modalBottomSheetState = modalBottomSheetState,
-            updateDeviceRole = { deviceRole = it }
+            updateDeviceRole = { deviceRole = it },
+            p2PUiState = p2PUiState
           )
+          if (modalBottomSheetState.isVisible) {
+            coroutineScope.launch { modalBottomSheetState.hide() }
+          }
         }
         else -> {
           // DefaultScreen(onEvent = onEvent, modalBottomSheetState = modalBottomSheetState,
@@ -164,7 +171,8 @@ fun DefaultScreen(
   modifier: Modifier = Modifier,
   onEvent: (P2PEvent) -> Unit,
   modalBottomSheetState: ModalBottomSheetState,
-  updateDeviceRole: (DeviceRole) -> Unit
+  updateDeviceRole: (DeviceRole) -> Unit,
+  p2PUiState: P2PUiState
 ) {
   val coroutineScope = rememberCoroutineScope()
   Column(
@@ -215,6 +223,10 @@ fun DefaultScreen(
         }
       )
       Spacer(modifier = modifier.height(20.dp))
+
+      if (p2PUiState.showP2PDialog) {
+        P2PDialog(onEvent = onEvent)
+      }
     }
   }
 }
@@ -261,5 +273,10 @@ private fun PreviewTransferProgressScreen() {
 @Composable
 private fun PreviewDefaultScreen() {
   val modalBottomSheetState = rememberModalBottomSheetState(ModalBottomSheetValue.HalfExpanded)
-  DefaultScreen(onEvent = {}, modalBottomSheetState = modalBottomSheetState, updateDeviceRole = {})
+  DefaultScreen(
+    onEvent = {},
+    modalBottomSheetState = modalBottomSheetState,
+    updateDeviceRole = {},
+    p2PUiState = P2PUiState()
+  )
 }
