@@ -53,6 +53,7 @@ import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.OnDeviceFound
+import org.smartregister.p2p.model.TransferProgress
 import org.smartregister.p2p.search.adapter.DeviceListAdapter
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
 import org.smartregister.p2p.search.ui.p2p.P2PScreen
@@ -665,14 +666,8 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     Timber.e("sender sync complete $isSenderSyncComplete")
   }
 
-  override fun updateTransferProgress(
-    resStringId: Int,
-    percentageTransferred: Int,
-    totalRecords: Long
-  ) {
-    interactiveDialog
-      .findViewById<TextView>(R.id.data_transfer_description)
-      ?.setText(getString(resStringId, percentageTransferred, totalRecords))
+  override fun updateTransferProgress(transferProgress: TransferProgress) {
+    p2PViewModel.updateTransferProgress(transferProgress = transferProgress)
   }
 
   /**

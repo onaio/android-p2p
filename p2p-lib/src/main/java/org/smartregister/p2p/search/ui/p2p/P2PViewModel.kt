@@ -30,6 +30,7 @@ import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.OnDeviceFound
 import org.smartregister.p2p.model.P2PState
+import org.smartregister.p2p.model.TransferProgress
 import org.smartregister.p2p.search.ui.P2PDeviceSearchActivity
 import org.smartregister.p2p.utils.DispatcherProvider
 import timber.log.Timber
@@ -238,6 +239,10 @@ class P2PViewModel(
         }
       )
     }
+  }
+
+  fun updateTransferProgress(transferProgress: TransferProgress) {
+    p2PUiState.value = p2PUiState.value.copy(transferProgress = transferProgress)
   }
 
   class Factory(

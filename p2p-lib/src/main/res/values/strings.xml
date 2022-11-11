@@ -55,8 +55,8 @@
     <string name="sending_data_to">Sending data to %s</string>
     <string name="receiving_data_from">Receiving data from %s</string>
     <string name="cancel">Cancel</string>
-    <string name="receiving_x_records">Receiving %1$d%% of %2$d records</string>
-    <string name="transferring_x_records">Transferring %1$d%% of %2$d records</string>
+    <string name="receiving_x_records">Receiving %1$d records</string>
+    <string name="transferring_x_records">Transferring %1$d records</string>
     <string name="device_searching_failed">Device searching failed! Please try again</string>
     <string name="connecting_to_device_failed">Connecting to device failed! Please try again</string>
     <string name="tap_to_send_data_msg">Tap to start sending data to nearby device</string>

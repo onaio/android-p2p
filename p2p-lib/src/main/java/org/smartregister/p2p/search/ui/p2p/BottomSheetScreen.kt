@@ -139,7 +139,10 @@ fun BottomSheetScreen(
       }
 
       Spacer(modifier = Modifier.size(5.dp))
-      ProgressStatusIndicator(showCircularProgressIndicator = showCircularProgressIndicator)
+      ProgressStatusIndicator(
+        showCircularProgressIndicator = showCircularProgressIndicator,
+        p2PUiState = p2PUiState
+      )
 
       Spacer(modifier = Modifier.size(5.dp))
       ProgressStatusText(title = progressStatusTitle, message = progressStatusMsg)

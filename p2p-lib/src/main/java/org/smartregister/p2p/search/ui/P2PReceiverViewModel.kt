@@ -28,6 +28,7 @@ import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
 import org.smartregister.p2p.data_sharing.SyncReceiverHandler
 import org.smartregister.p2p.model.P2PReceivedHistory
+import org.smartregister.p2p.model.TransferProgress
 import org.smartregister.p2p.payload.BytePayload
 import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.payload.StringPayload
@@ -236,13 +237,13 @@ class P2PReceiverViewModel(
     var percentageReceived = totalReceivedRecords.divideToPercent(totalRecords)
     viewModelScope.launch {
       withContext(dispatcherProvider.main()) {
-        // TODO update to use compose
-        /*
         view.updateTransferProgress(
-          resStringId = R.string.receiving_x_records,
-          percentageTransferred = percentageReceived,
-          totalRecords = totalRecords
-        )*/
+          TransferProgress(
+            totalRecordCount = totalRecords,
+            transferredRecordCount = totalReceivedRecords,
+            percentageTransferred = percentageReceived.toFloat()
+          )
+        )
       }
     }
   }

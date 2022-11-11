@@ -30,8 +30,6 @@ import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Done
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,20 +38,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.smartregister.p2p.R
+import org.smartregister.p2p.search.ui.p2p.P2PUiState
 import org.smartregister.p2p.search.ui.theme.DefaultColor
-import org.smartregister.p2p.search.ui.theme.SuccessColor
 
 @Composable
 fun ProgressStatusIndicator(
   modifier: Modifier = Modifier,
-  showCircularProgressIndicator: Boolean = true
+  showCircularProgressIndicator: Boolean = true,
+  p2PUiState: P2PUiState
 ) {
   Box(
     contentAlignment = Alignment.Center,
     modifier =
-      modifier.wrapContentSize().background(SuccessColor.copy(alpha = 0.2F), shape = CircleShape),
+      modifier
+        .wrapContentSize()
+        .background(p2PUiState.progressIndicator.backgroundColor, shape = CircleShape),
   ) {
-    Icon(imageVector = Icons.Filled.Done, contentDescription = null, tint = DefaultColor.copy(0.8f))
+    Icon(
+      imageVector = p2PUiState.progressIndicator.icon,
+      contentDescription = null,
+      tint = DefaultColor.copy(0.8f)
+    )
     if (showCircularProgressIndicator) {
       CircularProgressIndicator(modifier = modifier.size(40.dp), strokeWidth = 2.dp)
     }
@@ -96,7 +101,7 @@ fun DeclineAcceptAction(modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 fun PreviewProgressStatusIndicator() {
-  ProgressStatusIndicator()
+  ProgressStatusIndicator(p2PUiState = P2PUiState())
 }
 
 @Preview(showBackground = true)

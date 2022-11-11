@@ -16,17 +16,29 @@
 package org.smartregister.p2p.search.ui.p2p
 
 import org.smartregister.p2p.authentication.model.DeviceRole
+import org.smartregister.p2p.model.ProgressIndicator
+import org.smartregister.p2p.model.TransferProgress
 
 data class P2PUiState(
   val state: String = "",
   val deviceRole: DeviceRole = DeviceRole.SENDER,
-  val showP2PDialog: Boolean = true
+  val showP2PDialog: Boolean = false,
+  val progressIndicator: ProgressIndicator = ProgressIndicator(),
+  val transferProgress: TransferProgress = TransferProgress()
 )
 
 fun p2PUiStateOf(
   state: String = "",
   deviceRole: DeviceRole = DeviceRole.SENDER,
-  showP2PDialog: Boolean = true
+  showP2PDialog: Boolean = true,
+  progressIndicator: ProgressIndicator,
+  transferProgress: TransferProgress
 ): P2PUiState {
-  return P2PUiState(state = state, deviceRole = deviceRole, showP2PDialog = showP2PDialog)
+  return P2PUiState(
+    state = state,
+    deviceRole = deviceRole,
+    showP2PDialog = showP2PDialog,
+    progressIndicator = progressIndicator,
+    transferProgress = transferProgress
+  )
 }

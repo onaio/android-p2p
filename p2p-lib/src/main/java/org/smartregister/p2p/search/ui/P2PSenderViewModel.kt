@@ -30,6 +30,7 @@ import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
 import org.smartregister.p2p.data_sharing.SyncSenderHandler
 import org.smartregister.p2p.model.P2PReceivedHistory
+import org.smartregister.p2p.model.TransferProgress
 import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.payload.StringPayload
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
@@ -227,14 +228,15 @@ class P2PSenderViewModel(
   override fun updateTransferProgress(totalSentRecords: Long, totalRecords: Long) {
     var percentageSent = totalSentRecords.divideToPercent(totalRecords)
     viewModelScope.launch {
-      // TODO update to use compose
-      /*   withContext(dispatcherProvider.main()) {
+      withContext(dispatcherProvider.main()) {
         view.updateTransferProgress(
-          resStringId = R.string.transferring_x_records,
-          percentageTransferred = percentageSent,
-          totalRecords = totalRecords
+          TransferProgress(
+            totalRecordCount = totalRecords,
+            transferredRecordCount = totalSentRecords,
+            percentageTransferred = percentageSent.toFloat()
+          )
         )
-      }*/
+      }
     }
   }
 
