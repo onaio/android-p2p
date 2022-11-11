@@ -121,7 +121,8 @@ class P2PViewModel(
 
           // find better way to track this
           if (!view.isSender) {
-            _p2PState.postValue(P2PState.RECEIVING_DATA)
+            // _p2PState.postValue(P2PState.RECEIVING_DATA)
+            _p2PState.postValue(P2PState.WAITING_TO_RECEIVE_DATA)
             view.processSenderDeviceDetails()
           }
         }
@@ -165,7 +166,8 @@ class P2PViewModel(
           // scanning = false
           view.currentConnectedDevice = device
           Timber.e("Connecting to device %s success", device?.getDisplayName() ?: "Unknown")
-          _p2PState.postValue(P2PState.TRANSFERRING_DATA)
+          // _p2PState.postValue(P2PState.TRANSFERRING_DATA)
+          _p2PState.postValue(P2PState.PREPARING_TO_SEND_DATA)
 
           Timber.e("calling sleep before sending")
           Timer().schedule(START_DATA_TRANSFER_DELAY) {

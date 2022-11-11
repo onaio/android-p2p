@@ -77,4 +77,6 @@
     <string name="x_records_sent"> %1$d records sent successfully to %1$s </string>
     <string name="connection_break_title">Connection break!</string>
     <string name="connection_break_msg">Devices might get unpaired if you exit, any data sharing in progress will be cancelled</string>
+    <string name="preparing_to_send_data_to">Preparing to send data to %1$s</string>
+    <string name="waiting_for_sender_to_initiate_sync">Waiting for sender to initiate data sync</string>
 </resources>

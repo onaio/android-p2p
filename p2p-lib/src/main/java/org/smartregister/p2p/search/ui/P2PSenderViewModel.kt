@@ -25,6 +25,7 @@ import java.util.TreeSet
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.smartregister.p2p.P2PLibrary
+import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
@@ -238,6 +239,10 @@ class P2PSenderViewModel(
         )
       }
     }
+  }
+
+  fun notifyDataTransferStarting() {
+    view.notifyDataTransferStarting(DeviceRole.SENDER)
   }
 
   class Factory(

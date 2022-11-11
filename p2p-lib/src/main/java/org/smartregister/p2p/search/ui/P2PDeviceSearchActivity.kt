@@ -53,6 +53,7 @@ import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.OnDeviceFound
+import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.model.TransferProgress
 import org.smartregister.p2p.search.adapter.DeviceListAdapter
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
@@ -668,6 +669,13 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
 
   override fun updateTransferProgress(transferProgress: TransferProgress) {
     p2PViewModel.updateTransferProgress(transferProgress = transferProgress)
+  }
+
+  override fun notifyDataTransferStarting(deviceRole: DeviceRole) {
+    when (deviceRole) {
+      DeviceRole.SENDER -> p2PViewModel.updateP2PState(P2PState.TRANSFERRING_DATA)
+      DeviceRole.RECEIVER -> p2PViewModel.updateP2PState(P2PState.RECEIVING_DATA)
+    }
   }
 
   /**

@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.smartregister.p2p.P2PLibrary
+import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
@@ -142,6 +143,8 @@ class P2PReceiverViewModel(
           // Handle successfully received manifest
           if (receivedManifest != null) {
             Timber.i("Manifest with data successfully received")
+            // notify UI data transfer is starting
+            view.notifyDataTransferStarting(DeviceRole.RECEIVER)
             syncReceiverHandler.processManifest(receivedManifest)
           }
         }

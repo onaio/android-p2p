@@ -133,8 +133,29 @@ fun P2PScreen(
             p2PUiState = p2PUiState
           )
         }
+        P2PState.PREPARING_TO_SEND_DATA -> {
+          coroutineScope.launch { modalBottomSheetState.hide() }
+          var deviceName = p2PViewModel.getCurrentConnectedDevice()?.name() ?: ""
+          TransferProgressScreen(
+            title = null,
+            message = stringResource(id = R.string.preparing_to_send_data_to, deviceName),
+            showCancelButton = false,
+            onEvent = onEvent,
+            p2PUiState = p2PUiState
+          )
+        }
         P2PState.TRANSFER_COMPLETE -> {
           coroutineScope.launch { modalBottomSheetState.show() }
+        }
+        P2PState.WAITING_TO_RECEIVE_DATA -> {
+          coroutineScope.launch { modalBottomSheetState.hide() }
+          TransferProgressScreen(
+            title = stringResource(id = R.string.waiting_to_receive_data),
+            message = stringResource(id = R.string.waiting_for_sender_to_initiate_sync),
+            showCancelButton = false,
+            onEvent = onEvent,
+            p2PUiState = p2PUiState
+          )
         }
         P2PState.RECEIVING_DATA -> {
           coroutineScope.launch { modalBottomSheetState.hide() }
