@@ -75,6 +75,9 @@ class P2PViewModel(
       P2PEvent.DismissConnectionBreakDialog -> {
         p2PUiState.value = p2PUiState.value.copy(showP2PDialog = false)
       }
+      P2PEvent.DataTransferCompleteConfirmed -> {
+        _p2PState.postValue(P2PState.PROMPT_NEXT_TRANSFER)
+      }
     }
   }
 
@@ -247,6 +250,10 @@ class P2PViewModel(
 
   fun getCurrentConnectedDevice(): DeviceInfo? {
     return dataSharingStrategy.getCurrentDevice()
+  }
+
+  fun updateP2PState(p2PState: P2PState) {
+    _p2PState.postValue(p2PState)
   }
 
   class Factory(

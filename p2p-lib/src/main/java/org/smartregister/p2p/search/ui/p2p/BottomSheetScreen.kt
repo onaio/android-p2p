@@ -32,6 +32,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.Button
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.ModalBottomSheetState
@@ -112,7 +113,8 @@ fun BottomSheetScreen(
 
     when (p2PState) {
       P2PState.TRANSFER_COMPLETE -> {
-        bottomSheetTitle = stringResource(id = R.string.device_data_successfully_sent)
+        bottomSheetTitle = stringResource(id = R.string.send_data)
+        progressStatusTitle = stringResource(id = R.string.device_data_successfully_sent)
         progressStatusMsg = transferCompleteMsg
         showCircularProgressIndicator = false
       }
@@ -171,6 +173,15 @@ fun BottomSheetScreen(
             PairDeviceRow(device = item, onEvent = onEvent)
           }
         }
+      }
+
+      Spacer(modifier = Modifier.size(5.dp))
+
+      if (p2PState == P2PState.TRANSFER_COMPLETE) {
+        Button(
+          onClick = { onEvent(P2PEvent.DataTransferCompleteConfirmed) },
+          modifier.padding(start = 10.dp, end = 10.dp).fillMaxWidth()
+        ) { Text(text = stringResource(id = R.string.okay)) }
       }
     }
   }

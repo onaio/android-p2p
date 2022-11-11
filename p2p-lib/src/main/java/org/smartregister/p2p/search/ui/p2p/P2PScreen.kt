@@ -163,6 +163,12 @@ fun P2PScreen(
             p2PUiState = p2PUiState
           )
         }
+        P2PState.PROMPT_NEXT_TRANSFER -> {
+          if (modalBottomSheetState.isVisible) {
+            coroutineScope.launch { modalBottomSheetState.hide() }
+          }
+          p2PViewModel.updateP2PState(P2PState.INITIATE_DATA_TRANSFER)
+        }
         else -> {
           // DefaultScreen(onEvent = onEvent, modalBottomSheetState = modalBottomSheetState,
           // updateDeviceRole = {deviceRole = it  })
