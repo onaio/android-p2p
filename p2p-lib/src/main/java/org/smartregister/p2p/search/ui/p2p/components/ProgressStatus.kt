@@ -38,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.smartregister.p2p.R
+import org.smartregister.p2p.model.ProgressIndicator
 import org.smartregister.p2p.search.ui.p2p.P2PUiState
 import org.smartregister.p2p.search.ui.theme.DefaultColor
 
@@ -54,11 +55,19 @@ fun ProgressStatusIndicator(
         .wrapContentSize()
         .background(p2PUiState.progressIndicator.backgroundColor, shape = CircleShape),
   ) {
-    Icon(
-      imageVector = p2PUiState.progressIndicator.icon,
-      contentDescription = null,
-      tint = DefaultColor.copy(0.8f)
-    )
+    if (p2PUiState.progressIndicator.showPercentage) {
+      Text(
+        text = "${p2PUiState.transferProgress.percentageTransferred}%",
+        modifier = modifier.wrapContentWidth(Alignment.Start)
+      )
+    } else {
+      Icon(
+        imageVector = p2PUiState.progressIndicator.icon,
+        contentDescription = null,
+        tint = DefaultColor.copy(0.8f)
+      )
+    }
+
     if (showCircularProgressIndicator) {
       CircularProgressIndicator(modifier = modifier.size(40.dp), strokeWidth = 2.dp)
     }
@@ -101,7 +110,9 @@ fun DeclineAcceptAction(modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 fun PreviewProgressStatusIndicator() {
-  ProgressStatusIndicator(p2PUiState = P2PUiState())
+  ProgressStatusIndicator(
+    p2PUiState = P2PUiState(progressIndicator = ProgressIndicator(showPercentage = true))
+  )
 }
 
 @Preview(showBackground = true)

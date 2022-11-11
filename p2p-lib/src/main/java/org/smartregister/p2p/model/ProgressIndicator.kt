@@ -23,6 +23,7 @@ import org.smartregister.p2p.search.ui.theme.SuccessColor
 
 data class ProgressIndicator(
   val percentage: Int = 40,
+  val showPercentage: Boolean = false,
   val backgroundColor: Color = SuccessColor.copy(alpha = 0.2F),
   val icon: ImageVector = Icons.Filled.Done
 )

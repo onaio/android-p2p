@@ -38,7 +38,9 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -60,10 +62,12 @@ import org.smartregister.p2p.R
 import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.model.ActionableButtonData
 import org.smartregister.p2p.model.P2PState
+import org.smartregister.p2p.model.ProgressIndicator
 import org.smartregister.p2p.search.ui.p2p.components.ActionableButton
 import org.smartregister.p2p.search.ui.p2p.components.P2PDialog
 import org.smartregister.p2p.search.ui.p2p.components.ProgressStatusIndicator
 import org.smartregister.p2p.search.ui.p2p.components.ProgressStatusText
+import org.smartregister.p2p.search.ui.theme.DefaultColor
 
 const val P2P_SCREEN_TOP_BAR_TEST_TAG = "p2pScreenTopBarTestTag"
 const val P2P_SCREEN_TOP_BAR_ICON_TEST_TAG = "p2pScreenTopBarIconTestTag"
@@ -130,7 +134,15 @@ fun P2PScreen(
               ),
             showCancelButton = true,
             onEvent = onEvent,
-            p2PUiState = p2PUiState
+            p2PUiState =
+              p2PUiState.copy(
+                progressIndicator =
+                  ProgressIndicator(
+                    backgroundColor = DefaultColor.copy(alpha = 0.2f),
+                    icon = Icons.Filled.Upload,
+                    showPercentage = true
+                  )
+              )
           )
         }
         P2PState.PREPARING_TO_SEND_DATA -> {
@@ -141,7 +153,14 @@ fun P2PScreen(
             message = stringResource(id = R.string.preparing_to_send_data_to, deviceName),
             showCancelButton = false,
             onEvent = onEvent,
-            p2PUiState = p2PUiState
+            p2PUiState =
+              p2PUiState.copy(
+                progressIndicator =
+                  ProgressIndicator(
+                    backgroundColor = DefaultColor.copy(alpha = 0.2f),
+                    icon = Icons.Filled.Upload
+                  )
+              )
           )
         }
         P2PState.TRANSFER_COMPLETE -> {
@@ -154,7 +173,14 @@ fun P2PScreen(
             message = stringResource(id = R.string.waiting_for_sender_to_initiate_sync),
             showCancelButton = false,
             onEvent = onEvent,
-            p2PUiState = p2PUiState
+            p2PUiState =
+              p2PUiState.copy(
+                progressIndicator =
+                  ProgressIndicator(
+                    backgroundColor = DefaultColor.copy(alpha = 0.2f),
+                    icon = Icons.Filled.Download
+                  )
+              )
           )
         }
         P2PState.RECEIVING_DATA -> {
@@ -168,7 +194,15 @@ fun P2PScreen(
               ),
             showCancelButton = true,
             onEvent = onEvent,
-            p2PUiState = p2PUiState
+            p2PUiState =
+              p2PUiState.copy(
+                progressIndicator =
+                  ProgressIndicator(
+                    backgroundColor = DefaultColor.copy(alpha = 0.2f),
+                    icon = Icons.Filled.Upload,
+                    showPercentage = true
+                  )
+              )
           )
         }
         P2PState.TRANSFER_CANCELLED -> {

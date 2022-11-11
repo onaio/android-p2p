@@ -18,13 +18,13 @@ package org.smartregister.p2p.model
 data class TransferProgress(
   val totalRecordCount: Long = 0,
   val transferredRecordCount: Long = 0,
-  val percentageTransferred: Float = 10f
+  val percentageTransferred: Int = 0
 )
 
 fun transferProgressOf(
   totalRecordCount: Long = 0,
   transferredRecordCount: Long = 0,
-  percentageTransferred: Float = 0f
+  percentageTransferred: Int = 0
 ): TransferProgress {
   return TransferProgress(
     totalRecordCount = totalRecordCount,

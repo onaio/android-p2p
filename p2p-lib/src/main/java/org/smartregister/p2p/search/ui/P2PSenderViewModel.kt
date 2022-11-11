@@ -234,7 +234,7 @@ class P2PSenderViewModel(
           TransferProgress(
             totalRecordCount = totalRecords,
             transferredRecordCount = totalSentRecords,
-            percentageTransferred = percentageSent.toFloat()
+            percentageTransferred = percentageSent
           )
         )
       }
