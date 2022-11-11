@@ -32,6 +32,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
@@ -79,9 +80,9 @@ fun P2PScreen(
 
   val modalBottomSheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Hidden)
   val coroutineScope = rememberCoroutineScope()
-  val p2PState by p2PViewModel.p2PState.observeAsState(initial = P2PState.SEARCHING_FOR_RECIPIENT)
+  val p2PState by p2PViewModel.p2PState.observeAsState(initial = P2PState.INITIATE_DATA_TRANSFER)
   // bottom sheet updated
-  var deviceRole by remember { mutableStateOf(DeviceRole.SENDER) }
+  var deviceRole: DeviceRole by remember { mutableStateOf(DeviceRole.SENDER) }
 
   ModalBottomSheetLayout(
     sheetContent = {
@@ -141,59 +142,79 @@ fun P2PScreen(
         P2PState.TRANSFER_CANCELLED -> {
           coroutineScope.launch { modalBottomSheetState.hide() }
         }
+        P2PState.INITIATE_DATA_TRANSFER -> {
+          DefaultScreen(
+            onEvent = onEvent,
+            modalBottomSheetState = modalBottomSheetState,
+            updateDeviceRole = { deviceRole = it }
+          )
+        }
         else -> {
-          Column(
-            modifier = modifier.fillMaxSize().padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-          ) {
-            Column(modifier = modifier.padding(4.dp), verticalArrangement = Arrangement.Center) {
-              Image(
-                painter = painterResource(R.drawable.ic_p2p),
-                contentDescription = stringResource(id = R.string.device_to_device_sync_logo),
-                modifier =
-                  modifier
-                    .align(Alignment.CenterHorizontally)
-                    .requiredHeight(120.dp)
-                    .requiredWidth(140.dp)
-                    .testTag(P2P_SYNC_IMAGE_TEST_TAG),
-              )
-
-              Spacer(modifier = modifier.height(40.dp))
-              ActionableButton(
-                actionableButtonData =
-                  ActionableButtonData(
-                    title = stringResource(id = R.string.send_data),
-                    description = stringResource(id = R.string.tap_to_send_data_msg)
-                  ),
-                onAction = { _, _ ->
-                  deviceRole = DeviceRole.SENDER
-                  onEvent(P2PEvent.StartScanning)
-                  coroutineScope.launch {
-                    modalBottomSheetState.animateTo(ModalBottomSheetValue.HalfExpanded)
-                  }
-                }
-              )
-              Spacer(modifier = modifier.height(20.dp))
-              ActionableButton(
-                actionableButtonData =
-                  ActionableButtonData(
-                    title = stringResource(id = R.string.receive_data),
-                    description = stringResource(id = R.string.tap_to_receive_data_msg)
-                  ),
-                onAction = { _, _ ->
-                  deviceRole = DeviceRole.RECEIVER
-                  onEvent(P2PEvent.StartScanning)
-                  coroutineScope.launch {
-                    modalBottomSheetState.animateTo(ModalBottomSheetValue.HalfExpanded)
-                  }
-                }
-              )
-              Spacer(modifier = modifier.height(20.dp))
-            }
-          }
+          // DefaultScreen(onEvent = onEvent, modalBottomSheetState = modalBottomSheetState,
+          // updateDeviceRole = {deviceRole = it  })
         }
       }
+    }
+  }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun DefaultScreen(
+  modifier: Modifier = Modifier,
+  onEvent: (P2PEvent) -> Unit,
+  modalBottomSheetState: ModalBottomSheetState,
+  updateDeviceRole: (DeviceRole) -> Unit
+) {
+  val coroutineScope = rememberCoroutineScope()
+  Column(
+    modifier = modifier.fillMaxSize().padding(16.dp),
+    horizontalAlignment = Alignment.CenterHorizontally,
+    verticalArrangement = Arrangement.Center
+  ) {
+    Column(modifier = modifier.padding(4.dp), verticalArrangement = Arrangement.Center) {
+      Image(
+        painter = painterResource(R.drawable.ic_p2p),
+        contentDescription = stringResource(id = R.string.device_to_device_sync_logo),
+        modifier =
+          modifier
+            .align(Alignment.CenterHorizontally)
+            .requiredHeight(120.dp)
+            .requiredWidth(140.dp)
+            .testTag(P2P_SYNC_IMAGE_TEST_TAG),
+      )
+
+      Spacer(modifier = modifier.height(40.dp))
+      ActionableButton(
+        actionableButtonData =
+          ActionableButtonData(
+            title = stringResource(id = R.string.send_data),
+            description = stringResource(id = R.string.tap_to_send_data_msg)
+          ),
+        onAction = { _, _ ->
+          updateDeviceRole(DeviceRole.SENDER)
+          onEvent(P2PEvent.StartScanning)
+          coroutineScope.launch {
+            modalBottomSheetState.animateTo(ModalBottomSheetValue.HalfExpanded)
+          }
+        }
+      )
+      Spacer(modifier = modifier.height(20.dp))
+      ActionableButton(
+        actionableButtonData =
+          ActionableButtonData(
+            title = stringResource(id = R.string.receive_data),
+            description = stringResource(id = R.string.tap_to_receive_data_msg)
+          ),
+        onAction = { _, _ ->
+          updateDeviceRole(DeviceRole.RECEIVER)
+          onEvent(P2PEvent.StartScanning)
+          coroutineScope.launch {
+            modalBottomSheetState.animateTo(ModalBottomSheetValue.HalfExpanded)
+          }
+        }
+      )
+      Spacer(modifier = modifier.height(20.dp))
     }
   }
 }
@@ -233,4 +254,12 @@ private fun PreviewTransferProgressScreen() {
     showCancelButton = true,
     onEvent = {}
   )
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Preview(showBackground = true)
+@Composable
+private fun PreviewDefaultScreen() {
+  val modalBottomSheetState = rememberModalBottomSheetState(ModalBottomSheetValue.HalfExpanded)
+  DefaultScreen(onEvent = {}, modalBottomSheetState = modalBottomSheetState, updateDeviceRole = {})
 }

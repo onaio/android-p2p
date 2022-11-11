@@ -17,9 +17,10 @@ package org.smartregister.p2p.model
 
 /** Enum showing the state of the p2p process */
 enum class P2PState {
-  SEARCHING_FOR_RECIPIENT,
-  TRANSFERRING_DATA,
+  INITIATE_DATA_TRANSFER,
   RECEIVING_DATA,
+  SEARCHING_FOR_RECIPIENT,
+  TRANSFER_CANCELLED,
   TRANSFER_COMPLETE,
-  TRANSFER_CANCELLED
+  TRANSFERRING_DATA
 }

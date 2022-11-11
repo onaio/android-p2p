@@ -16,6 +16,7 @@
 package org.smartregister.p2p.search.ui.p2p
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -77,7 +78,9 @@ fun BottomSheetScreen(
   val deviceList by p2PViewModel.deviceList.observeAsState(initial = listOf())
   val p2PState by p2PViewModel.p2PState.observeAsState(initial = P2PState.SEARCHING_FOR_RECIPIENT)
 
-  Scaffold(modifier.wrapContentHeight(Alignment.CenterVertically)) {
+  Scaffold(
+    modifier.wrapContentHeight(Alignment.CenterVertically).background(DefaultColor.copy(0.8f))
+  ) {
     var bottomSheetTitle = ""
     var progressStatusTitle: String? = null
     var progressStatusMsg: String? = null
