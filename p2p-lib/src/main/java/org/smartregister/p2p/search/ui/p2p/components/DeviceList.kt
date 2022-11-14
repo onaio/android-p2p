@@ -25,7 +25,6 @@ import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -35,11 +34,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.smartregister.p2p.R
 import org.smartregister.p2p.data_sharing.DeviceInfo
+import org.smartregister.p2p.model.ProgressIndicator
+import org.smartregister.p2p.model.ProgressIndicatorState
 import org.smartregister.p2p.search.ui.p2p.P2PEvent
+import org.smartregister.p2p.search.ui.p2p.P2PUiState
 import org.smartregister.p2p.search.ui.theme.DefaultColor
 
 @Composable
-fun DeviceList(modifier: Modifier = Modifier) {
+fun SelectPairDeviceRow(modifier: Modifier = Modifier, p2PUiState: P2PUiState) {
   Column(modifier = modifier.wrapContentWidth(Alignment.Start)) {
     Row(
       horizontalArrangement = Arrangement.SpaceBetween,
@@ -47,11 +49,7 @@ fun DeviceList(modifier: Modifier = Modifier) {
       modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)
     ) {
       Text(text = stringResource(id = R.string.select_recipient_device))
-      Icon(
-        imageVector = Icons.Filled.Image,
-        contentDescription = null,
-        tint = DefaultColor.copy(0.8f)
-      )
+      ProgressStatusIndicator(p2PUiState = p2PUiState)
     }
   }
 }
@@ -84,8 +82,17 @@ fun PairDeviceRow(modifier: Modifier = Modifier, device: DeviceInfo?, onEvent: (
 
 @Preview(showBackground = true)
 @Composable
-fun PreviewDeviceList() {
-  DeviceList()
+fun PreviewSelectPairDeviceRow() {
+  SelectPairDeviceRow(
+    p2PUiState =
+      P2PUiState(
+        progressIndicator =
+          ProgressIndicator(
+            progressIndicatorState = ProgressIndicatorState.EMPTY,
+            backgroundColor = DefaultColor
+          )
+      )
+  )
 }
 
 @Preview(showBackground = true)

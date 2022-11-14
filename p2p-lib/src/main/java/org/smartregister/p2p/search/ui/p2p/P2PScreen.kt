@@ -63,6 +63,7 @@ import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.model.ActionableButtonData
 import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.model.ProgressIndicator
+import org.smartregister.p2p.model.ProgressIndicatorState
 import org.smartregister.p2p.search.ui.p2p.components.ActionableButton
 import org.smartregister.p2p.search.ui.p2p.components.P2PDialog
 import org.smartregister.p2p.search.ui.p2p.components.ProgressStatusIndicator
@@ -140,7 +141,7 @@ fun P2PScreen(
                   ProgressIndicator(
                     backgroundColor = DefaultColor.copy(alpha = 0.2f),
                     icon = Icons.Filled.Upload,
-                    showPercentage = true
+                    progressIndicatorState = ProgressIndicatorState.SHOW_PERCENTAGE
                   )
               )
           )
@@ -200,7 +201,7 @@ fun P2PScreen(
                   ProgressIndicator(
                     backgroundColor = DefaultColor.copy(alpha = 0.2f),
                     icon = Icons.Filled.Upload,
-                    showPercentage = true
+                    progressIndicatorState = ProgressIndicatorState.SHOW_PERCENTAGE
                   )
               )
           )

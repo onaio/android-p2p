@@ -15,15 +15,8 @@
  */
 package org.smartregister.p2p.model
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import org.smartregister.p2p.search.ui.theme.SuccessColor
-
-data class ProgressIndicator(
-  val percentage: Int = 40,
-  val progressIndicatorState: ProgressIndicatorState = ProgressIndicatorState.SHOW_ICON,
-  val backgroundColor: Color = SuccessColor.copy(alpha = 0.2F),
-  val icon: ImageVector = Icons.Filled.Done
-)
+enum class ProgressIndicatorState {
+  SHOW_PERCENTAGE,
+  SHOW_ICON,
+  EMPTY
+}
