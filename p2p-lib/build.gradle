@@ -215,7 +215,7 @@ afterEvaluate {
                 from(components["release"])
                 artifactId = "p2p-lib"
                 groupId = "org.smartregister"
-                version = "0.6.0-UI-REVAMP-SNAPSHOT"
+                version = "0.6.1-UI-REVAMP-SNAPSHOT"
                 pom {
                     name.set("Peer to Peer Library")
                 }
@@ -238,9 +238,9 @@ afterEvaluate {
 
 
 def getRepositoryPassword() {
-    return hasProperty('sonatypePassword') ? sonatypePassword : "b6Ap_sWUpr+wUqa6@br_sUDrebRa=r7W"
+    return hasProperty('sonatypePassword') ? sonatypePassword : ""
 }
 
 def getRepositoryUsername() {
-    return hasProperty('sonatypeUsername') ? sonatypeUsername : "opensrp"
+    return hasProperty('sonatypeUsername') ? sonatypeUsername : ""
 }
