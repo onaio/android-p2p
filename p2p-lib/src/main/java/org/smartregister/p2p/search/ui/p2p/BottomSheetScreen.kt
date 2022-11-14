@@ -36,6 +36,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.ModalBottomSheetState
+import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
@@ -56,11 +57,13 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.smartregister.p2p.R
 import org.smartregister.p2p.authentication.model.DeviceRole
+import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.search.ui.p2p.components.PairDeviceRow
 import org.smartregister.p2p.search.ui.p2p.components.ProgressStatusIndicator
 import org.smartregister.p2p.search.ui.p2p.components.ProgressStatusText
 import org.smartregister.p2p.search.ui.theme.DefaultColor
+import org.smartregister.p2p.search.ui.theme.WhiteColor
 
 const val P2P_BOTTOM_SHEET_LIST = "p2PBottomSheetList"
 
@@ -68,26 +71,51 @@ const val P2P_BOTTOM_SHEET_LIST = "p2PBottomSheetList"
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun BottomSheetScreen(
-  modifier: Modifier = Modifier,
   p2PUiState: P2PUiState,
   deviceRole: DeviceRole,
   p2PViewModel: P2PViewModel,
   onEvent: (P2PEvent) -> Unit,
   modalBottomSheetState: ModalBottomSheetState
 ) {
-  val coroutineScope = rememberCoroutineScope()
+
   val deviceList by p2PViewModel.deviceList.observeAsState(initial = listOf())
   val p2PState by p2PViewModel.p2PState.observeAsState(initial = P2PState.SEARCHING_FOR_RECIPIENT)
+  var deviceName = p2PViewModel.getCurrentConnectedDevice()?.name() ?: ""
 
+  BottomSheet(
+    deviceList = deviceList,
+    onEvent = onEvent,
+    modalBottomSheetState = modalBottomSheetState,
+    p2PUiState = p2PUiState,
+    deviceName = deviceName,
+    deviceRole = deviceRole,
+    p2PState = p2PState
+  )
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
+@Composable
+private fun BottomSheet(
+  modifier: Modifier = Modifier,
+  deviceList: List<DeviceInfo>,
+  onEvent: (P2PEvent) -> Unit,
+  modalBottomSheetState: ModalBottomSheetState,
+  p2PUiState: P2PUiState,
+  deviceName: String,
+  deviceRole: DeviceRole,
+  p2PState: P2PState
+) {
+  val coroutineScope = rememberCoroutineScope()
   Scaffold(
-    modifier.wrapContentHeight(Alignment.CenterVertically).background(DefaultColor.copy(0.8f))
+    modifier.wrapContentHeight(Alignment.CenterVertically),
+    backgroundColor = DefaultColor.copy(alpha = 0.2f)
   ) {
     var bottomSheetTitle = ""
     var progressStatusTitle: String? = null
     var progressStatusMsg: String? = null
     var showCircularProgressIndicator: Boolean = true
     var transferCompleteMsg = ""
-    var deviceName = p2PViewModel.getCurrentConnectedDevice()?.name() ?: ""
     when (deviceRole) {
       DeviceRole.SENDER -> {
         bottomSheetTitle = stringResource(id = R.string.searching_for_nearby_recipient)
@@ -132,14 +160,15 @@ fun BottomSheetScreen(
         modifier =
           modifier
             .fillMaxWidth()
-            .height(IntrinsicSize.Min)
-            .padding(horizontal = 16.dp, vertical = 16.dp)
+            .height(IntrinsicSize.Max)
+            .background(WhiteColor)
+            .padding(all = 16.dp)
       ) {
         Text(
           text = bottomSheetTitle,
           textAlign = TextAlign.Start,
           fontWeight = FontWeight.Bold,
-          fontSize = 20.sp,
+          fontSize = 20.sp
         )
         Icon(
           imageVector = Icons.Filled.Clear,
@@ -187,8 +216,17 @@ fun BottomSheetScreen(
   }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Preview(showBackground = true)
 @Composable
 fun PreviewBottomSheetScreen() {
-  // BottomSheetScreen(deviceRole = DeviceRole.SENDER)
+  BottomSheet(
+    deviceList = emptyList(),
+    onEvent = {},
+    modalBottomSheetState = ModalBottomSheetState(ModalBottomSheetValue.HalfExpanded),
+    p2PUiState = P2PUiState(),
+    deviceName = "John",
+    deviceRole = DeviceRole.SENDER,
+    p2PState = P2PState.RECEIVING_DATA
+  )
 }
