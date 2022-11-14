@@ -61,7 +61,7 @@ fun PairDeviceRow(modifier: Modifier = Modifier, device: DeviceInfo?, onEvent: (
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
     verticalAlignment = Alignment.CenterVertically,
-    modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)
+    modifier = modifier.fillMaxWidth().padding(all = 16.dp)
   ) {
     Icon(
       imageVector = Icons.Filled.Phone,

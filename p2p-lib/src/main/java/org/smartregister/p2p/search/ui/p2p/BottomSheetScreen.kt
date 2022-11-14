@@ -21,7 +21,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -195,8 +194,7 @@ private fun BottomSheet(
       Spacer(modifier = Modifier.size(5.dp))
       if (deviceRole == DeviceRole.SENDER) {
         LazyColumn(
-          contentPadding = PaddingValues(vertical = 8.dp),
-          modifier = Modifier.fillMaxWidth().testTag(P2P_BOTTOM_SHEET_LIST)
+          modifier = Modifier.fillMaxWidth().testTag(P2P_BOTTOM_SHEET_LIST).background(WhiteColor)
         ) {
           itemsIndexed(deviceList) { index, item ->
             PairDeviceRow(device = item, onEvent = onEvent)
