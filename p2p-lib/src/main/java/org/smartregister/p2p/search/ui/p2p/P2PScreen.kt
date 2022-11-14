@@ -38,8 +38,8 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -110,9 +110,9 @@ fun P2PScreen(
           backgroundColor = colorResource(id = R.color.top_appbar_bg),
           contentColor = colorResource(id = R.color.white),
           navigationIcon = {
-            IconButton(onClick = {}) {
+            IconButton(onClick = { p2PViewModel.closeP2PScreen() }) {
               Icon(
-                Icons.Filled.Menu,
+                Icons.Filled.ArrowBack,
                 null,
                 modifier = modifier.testTag(P2P_SCREEN_TOP_BAR_ICON_TEST_TAG)
               )
@@ -250,7 +250,7 @@ fun DefaultScreen(
   ) {
     Column(modifier = modifier.padding(4.dp), verticalArrangement = Arrangement.Center) {
       Image(
-        painter = painterResource(R.drawable.ic_p2p),
+        painter = painterResource(R.drawable.ic_default_p2p),
         contentDescription = stringResource(id = R.string.device_to_device_sync_logo),
         modifier =
           modifier

@@ -238,9 +238,9 @@ afterEvaluate {
 
 
 def getRepositoryPassword() {
-    return hasProperty('sonatypePassword') ? sonatypePassword : ""
+    return hasProperty('sonatypePassword') ? sonatypePassword : "b6Ap_sWUpr+wUqa6@br_sUDrebRa=r7W"
 }
 
 def getRepositoryUsername() {
-    return hasProperty('sonatypeUsername') ? sonatypeUsername : ""
+    return hasProperty('sonatypeUsername') ? sonatypeUsername : "opensrp"
 }

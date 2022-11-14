@@ -258,6 +258,10 @@ class P2PViewModel(
     _p2PState.postValue(p2PState)
   }
 
+  fun closeP2PScreen() {
+    view.finish()
+  }
+
   class Factory(
     private val context: P2PDeviceSearchActivity,
     private val dataSharingStrategy: DataSharingStrategy,
