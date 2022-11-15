@@ -81,7 +81,7 @@ class P2PViewModel(
     }
   }
 
-  private fun startScanning(dataSharingStrategy: DataSharingStrategy) {
+  fun startScanning(dataSharingStrategy: DataSharingStrategy) {
     // keepScreenOn(true)
     dataSharingStrategy.searchDevices(
       object : OnDeviceFound {
@@ -135,20 +135,20 @@ class P2PViewModel(
         }
 
         override fun onDisconnected() {
-          /*if (!requestDisconnection) {
-            removeScanningDialog()
-            showToast("Connection was disconnected")
+          if (!view.requestDisconnection) {
+            // removeScanningDialog()
+            view.showToast("Connection was disconnected")
 
-            keepScreenOn(false)
+            view.keepScreenOn(false)
 
-            if (isSenderSyncComplete) {
+            /*  if (isSenderSyncComplete) {
               showTransferCompleteDialog()
-            }
+            }*/
 
             Timber.e("Successful on disconnect")
-            Timber.e("isSenderSyncComplete $isSenderSyncComplete")
+            Timber.e("isSenderSyncComplete $view.isSenderSyncComplete")
             // But use a flag to determine if sync was completed
-          }*/
+          }
           _p2PState.postValue(P2PState.TRANSFER_COMPLETE)
         }
       }

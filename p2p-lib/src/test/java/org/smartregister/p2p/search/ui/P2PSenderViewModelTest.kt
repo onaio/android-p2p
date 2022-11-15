@@ -39,7 +39,6 @@ import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.p2p.CoroutineTestRule
 import org.smartregister.p2p.P2PLibrary
-import org.smartregister.p2p.R
 import org.smartregister.p2p.dao.ReceiverTransferDao
 import org.smartregister.p2p.dao.SenderTransferDao
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
@@ -47,6 +46,7 @@ import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
 import org.smartregister.p2p.data_sharing.SyncSenderHandler
 import org.smartregister.p2p.data_sharing.WifiDirectDataSharingStrategy
+import org.smartregister.p2p.model.TransferProgress
 import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.payload.StringPayload
 import org.smartregister.p2p.robolectric.RobolectricTest
@@ -294,14 +294,28 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
 
   @Test
   fun `updateTransferProgress() calls view#updateTransferProgress()`() {
+    val expectedTransferProgress =
+      TransferProgress(
+        totalRecordCount = 40,
+        transferredRecordCount = 10,
+        percentageTransferred = 25
+      )
     p2PSenderViewModel.updateTransferProgress(totalSentRecords = 10, totalRecords = 40)
 
-    coVerify {
-      view.updateTransferProgress(
-        R.string.transferring_x_records,
-        percentageTransferred = 25,
-        totalRecords = 40
-      )
-    }
+    val transferProgressSlot = slot<TransferProgress>()
+    coVerify { view.updateTransferProgress(capture(transferProgressSlot)) }
+
+    Assert.assertEquals(
+      expectedTransferProgress.transferredRecordCount,
+      transferProgressSlot.captured.transferredRecordCount
+    )
+    Assert.assertEquals(
+      expectedTransferProgress.totalRecordCount,
+      transferProgressSlot.captured.totalRecordCount
+    )
+    Assert.assertEquals(
+      expectedTransferProgress.percentageTransferred,
+      transferProgressSlot.captured.percentageTransferred
+    )
   }
 }

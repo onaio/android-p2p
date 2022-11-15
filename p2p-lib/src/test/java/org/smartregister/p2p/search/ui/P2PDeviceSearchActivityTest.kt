@@ -66,7 +66,9 @@ import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.OnDeviceFound
 import org.smartregister.p2p.data_sharing.WifiDirectDataSharingStrategy
+import org.smartregister.p2p.model.TransferProgress
 import org.smartregister.p2p.robolectric.RobolectricTest
+import org.smartregister.p2p.search.ui.p2p.P2PViewModel
 import org.smartregister.p2p.shadows.ShadowAppDatabase
 import org.smartregister.p2p.shadows.ShadowLocationServices
 
@@ -81,6 +83,7 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
     ActivityController<P2PDeviceSearchActivity>
   private lateinit var dataSharingStrategy: DataSharingStrategy
   private lateinit var deviceInfo: DeviceInfo
+  private lateinit var p2PViewModel: P2PViewModel
 
   @Before
   fun setUp() {
@@ -119,6 +122,11 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
         deviceAddress = "00:00:5e:00:53:af"
       }
     deviceInfo = WifiDirectDataSharingStrategy.WifiDirectDevice(wifiP2pDevice)
+
+    p2PViewModel = mockk(relaxed = true)
+
+    /*every { p2PDeviceSearchActivity getProperty "p2PViewModel" } returns
+    p2PViewModel*/
   }
 
   @After
@@ -142,116 +150,6 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
 
     ReflectionHelpers.setField(p2PDeviceSearchActivity, "isSender", true)
     Assert.assertEquals(DeviceRole.SENDER, p2PDeviceSearchActivity.getDeviceRole())
-  }
-
-  @Test
-  fun `startScanning() should call keepScreenOn(), showScanningDialog() and dataSharingStrategy#searchDevices()`() {
-    every { p2PDeviceSearchActivity.keepScreenOn(true) } just runs
-    every { dataSharingStrategy.searchDevices(any(), any()) } just runs
-    every { p2PDeviceSearchActivity.showScanningDialog() } just runs
-
-    p2PDeviceSearchActivity.startScanning()
-
-    verify { p2PDeviceSearchActivity.keepScreenOn(true) }
-    verify { dataSharingStrategy.searchDevices(any(), any()) }
-    verify { p2PDeviceSearchActivity.showScanningDialog() }
-  }
-
-  @Test
-  fun `startScanning() should call showDevicesList() when onDeviceFound#deviceFound is called`() {
-    every { p2PDeviceSearchActivity.keepScreenOn(true) } just runs
-    every { p2PDeviceSearchActivity.showDevicesList(any()) } just runs
-    every { p2PDeviceSearchActivity.showScanningDialog() } just runs
-    val onDeviceFoundSlot = slot<OnDeviceFound>()
-    every { dataSharingStrategy.searchDevices(capture(onDeviceFoundSlot), any()) } just runs
-
-    p2PDeviceSearchActivity.startScanning()
-
-    val devicesList = listOf(deviceInfo)
-    onDeviceFoundSlot.captured.deviceFound(devicesList)
-
-    verify { p2PDeviceSearchActivity.showDevicesList(devicesList) }
-  }
-
-  @Test
-  fun `startScanning() should call showP2PSelectPage() and update currentConnectedDevice when pairing#onSuccess is called`() {
-    every { p2PDeviceSearchActivity.keepScreenOn(true) } just runs
-    every { p2PDeviceSearchActivity.showScanningDialog() } just runs
-    every { p2PDeviceSearchActivity.showP2PSelectPage(any(), any()) } just runs
-    every { dataSharingStrategy.getCurrentDevice() } returns deviceInfo
-    val pairingListenerSlot = slot<DataSharingStrategy.PairingListener>()
-    every { dataSharingStrategy.searchDevices(any(), capture(pairingListenerSlot)) } just runs
-
-    Assert.assertNull(ReflectionHelpers.getField(p2PDeviceSearchActivity, "currentConnectedDevice"))
-
-    p2PDeviceSearchActivity.startScanning()
-
-    pairingListenerSlot.captured.onSuccess(deviceInfo)
-
-    verify { p2PDeviceSearchActivity.showP2PSelectPage(any(), deviceInfo.getDisplayName()) }
-    Assert.assertEquals(
-      deviceInfo,
-      ReflectionHelpers.getField(p2PDeviceSearchActivity, "currentConnectedDevice")
-    )
-  }
-
-  @Test
-  fun `startScanning() should call removeScanningDialog() and keepScreenOn() when pairing#onFailure is called`() {
-    every { p2PDeviceSearchActivity.keepScreenOn(true) } just runs
-    every { p2PDeviceSearchActivity.showScanningDialog() } just runs
-    every { p2PDeviceSearchActivity.removeScanningDialog() } just runs
-    every { dataSharingStrategy.getCurrentDevice() } returns deviceInfo
-    val pairingListenerSlot = slot<DataSharingStrategy.PairingListener>()
-    every { dataSharingStrategy.searchDevices(any(), capture(pairingListenerSlot)) } just runs
-
-    p2PDeviceSearchActivity.startScanning()
-
-    pairingListenerSlot.captured.onFailure(deviceInfo, Exception(""))
-
-    verify { p2PDeviceSearchActivity.removeScanningDialog() }
-    verify { p2PDeviceSearchActivity.keepScreenOn(false) }
-  }
-
-  @Test
-  fun `startScanning() should call removeScanningDialog() and keepScreenOn() when pairing#onDisconnected  is called and requestDisconnection is false`() {
-    every { p2PDeviceSearchActivity.keepScreenOn(true) } just runs
-    every { p2PDeviceSearchActivity.showScanningDialog() } just runs
-    every { p2PDeviceSearchActivity.removeScanningDialog() } just runs
-    every { p2PDeviceSearchActivity.showToast(any()) } just runs
-    every { dataSharingStrategy.getCurrentDevice() } returns deviceInfo
-    val pairingListenerSlot = slot<DataSharingStrategy.PairingListener>()
-    every { dataSharingStrategy.searchDevices(any(), capture(pairingListenerSlot)) } just runs
-
-    p2PDeviceSearchActivity.startScanning()
-
-    verify { p2PDeviceSearchActivity.keepScreenOn(true) }
-
-    p2PDeviceSearchActivity.requestDisconnection = false
-    pairingListenerSlot.captured.onDisconnected()
-
-    verify { p2PDeviceSearchActivity.removeScanningDialog() }
-    verify { p2PDeviceSearchActivity.keepScreenOn(false) }
-    verify { p2PDeviceSearchActivity.showToast(any()) }
-  }
-
-  @Test
-  fun `startScanning() should call showTransferCompleteDialog() when pairing#onDisconnected is called and requestDisconnection is false and isSenderSyncComplete is true`() {
-    every { p2PDeviceSearchActivity.keepScreenOn(true) } just runs
-    every { p2PDeviceSearchActivity.showScanningDialog() } just runs
-    every { p2PDeviceSearchActivity.removeScanningDialog() } just runs
-    every { p2PDeviceSearchActivity.showToast(any()) } just runs
-    every { p2PDeviceSearchActivity.showTransferCompleteDialog() } just runs
-    every { dataSharingStrategy.getCurrentDevice() } returns deviceInfo
-    val pairingListenerSlot = slot<DataSharingStrategy.PairingListener>()
-    every { dataSharingStrategy.searchDevices(any(), capture(pairingListenerSlot)) } just runs
-
-    p2PDeviceSearchActivity.startScanning()
-
-    p2PDeviceSearchActivity.requestDisconnection = false
-    ReflectionHelpers.setField(p2PDeviceSearchActivity, "isSenderSyncComplete", true)
-    pairingListenerSlot.captured.onDisconnected()
-
-    verify { p2PDeviceSearchActivity.showTransferCompleteDialog() }
   }
 
   @Test
@@ -281,7 +179,7 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
     val onSuccessListenerSlot = slot<OnSuccessListener<LocationSettingsResponse?>>()
 
     every { settingsClient.checkLocationSettings(any()) } returns task
-    every { p2PDeviceSearchActivity.startScanning() } just runs
+    every { p2PViewModel.startScanning(any()) } just runs
     every { task.addOnSuccessListener(any<Activity>(), capture(onSuccessListenerSlot)) } returns
       mockk()
     every { task.addOnFailureListener(any<Activity>(), any()) } returns mockk()
@@ -290,7 +188,7 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
 
     onSuccessListenerSlot.captured.onSuccess(mockk())
 
-    verify { p2PDeviceSearchActivity.startScanning() }
+    verify { p2PViewModel.startScanning(any()) }
   }
 
   @Test
@@ -303,7 +201,7 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
     val resolvableError = mockk<ResolvableApiException>()
 
     every { settingsClient.checkLocationSettings(any()) } returns task
-    every { p2PDeviceSearchActivity.startScanning() } just runs
+    every { p2PViewModel.startScanning(any()) } just runs
     every { task.addOnSuccessListener(any<Activity>(), any()) } returns mockk()
     every { task.addOnFailureListener(any<Activity>(), capture(onFailureListenerSlot)) } returns
       mockk()
@@ -841,13 +739,15 @@ class P2PDeviceSearchActivityTest : RobolectricTest() {
       )
     } returns dialogDescription
 
-    p2PDeviceSearchActivity.updateTransferProgress(
-      resStringId = R.string.transferring_x_records,
-      percentageTransferred = 25,
-      totalRecords = 40
-    )
+    val transferProgress =
+      TransferProgress(
+        totalRecordCount = 100,
+        transferredRecordCount = 50,
+        percentageTransferred = 50
+      )
+    p2PDeviceSearchActivity.updateTransferProgress(transferProgress)
 
-    verify { dialogDescription.setText("Transferring 25% of 40 records") }
+    verify { p2PDeviceSearchActivity.updateTransferProgress(transferProgress) }
   }
 
   @Test
