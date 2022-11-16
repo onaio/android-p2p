@@ -15,6 +15,7 @@
  */
 package org.smartregister.p2p.search.ui.p2p.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -42,7 +43,10 @@ import org.smartregister.p2p.search.ui.theme.DefaultColor
 
 @Composable
 fun SelectPairDeviceRow(modifier: Modifier = Modifier, p2PUiState: P2PUiState) {
-  Column(modifier = modifier.wrapContentWidth(Alignment.Start)) {
+  Column(
+    modifier =
+      modifier.wrapContentWidth(Alignment.Start).background(DefaultColor.copy(alpha = 0.2f))
+  ) {
     Row(
       horizontalArrangement = Arrangement.SpaceBetween,
       verticalAlignment = Alignment.CenterVertically,

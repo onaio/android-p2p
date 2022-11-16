@@ -88,6 +88,11 @@ class P2PViewModel(
         override fun deviceFound(devices: List<DeviceInfo>) {
           // showDevicesList(devices)
           _deviceList.postValue(devices)
+          if (_p2PState.value == P2PState.INITIATE_DATA_TRANSFER) {
+            _p2PState.postValue(P2PState.PAIR_DEVICES_FOUND)
+          }
+
+          Timber.e("startScanning on device found sets ${P2PState.PREPARING_TO_SEND_DATA.name}")
           Timber.e("Devices searching succeeded. Found ${devices.size} devices")
         }
 
@@ -168,6 +173,7 @@ class P2PViewModel(
           Timber.e("Connecting to device %s success", device?.getDisplayName() ?: "Unknown")
           // _p2PState.postValue(P2PState.TRANSFERRING_DATA)
           _p2PState.postValue(P2PState.PREPARING_TO_SEND_DATA)
+          Timber.e("connect to device sets ${P2PState.PREPARING_TO_SEND_DATA.name} +++++++")
 
           Timber.e("calling sleep before sending")
           Timer().schedule(START_DATA_TRANSFER_DELAY) {

@@ -58,9 +58,12 @@ import org.smartregister.p2p.R
 import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.model.P2PState
+import org.smartregister.p2p.model.ProgressIndicator
+import org.smartregister.p2p.model.ProgressIndicatorState
 import org.smartregister.p2p.search.ui.p2p.components.PairDeviceRow
 import org.smartregister.p2p.search.ui.p2p.components.ProgressStatusIndicator
 import org.smartregister.p2p.search.ui.p2p.components.ProgressStatusText
+import org.smartregister.p2p.search.ui.p2p.components.SelectPairDeviceRow
 import org.smartregister.p2p.search.ui.theme.DefaultColor
 import org.smartregister.p2p.search.ui.theme.WhiteColor
 
@@ -182,17 +185,31 @@ private fun BottomSheet(
         )
       }
 
-      Spacer(modifier = Modifier.size(5.dp))
-      ProgressStatusIndicator(
-        showCircularProgressIndicator = showCircularProgressIndicator,
-        p2PUiState = p2PUiState
-      )
+      if (p2PState != P2PState.PAIR_DEVICES_FOUND) {
+        Spacer(modifier = Modifier.size(5.dp))
+        ProgressStatusIndicator(
+          showCircularProgressIndicator = showCircularProgressIndicator,
+          p2PUiState = p2PUiState
+        )
 
-      Spacer(modifier = Modifier.size(5.dp))
-      ProgressStatusText(title = progressStatusTitle, message = progressStatusMsg)
+        Spacer(modifier = Modifier.size(5.dp))
+        ProgressStatusText(title = progressStatusTitle, message = progressStatusMsg)
+      }
 
       Spacer(modifier = Modifier.size(5.dp))
       if (deviceRole == DeviceRole.SENDER) {
+        if (p2PState == P2PState.PAIR_DEVICES_FOUND) {
+          SelectPairDeviceRow(
+            p2PUiState =
+              p2PUiState.copy(
+                progressIndicator =
+                  ProgressIndicator(
+                    backgroundColor = DefaultColor.copy(alpha = 0.2f),
+                    progressIndicatorState = ProgressIndicatorState.EMPTY
+                  )
+              )
+          )
+        }
         LazyColumn(
           modifier = Modifier.fillMaxWidth().testTag(P2P_BOTTOM_SHEET_LIST).background(WhiteColor)
         ) {

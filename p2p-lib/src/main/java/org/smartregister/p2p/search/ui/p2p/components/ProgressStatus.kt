@@ -114,12 +114,23 @@ fun DeclineAcceptAction(modifier: Modifier = Modifier) {
 
 @Preview(showBackground = true)
 @Composable
-fun PreviewProgressStatusIndicator() {
+fun PreviewProgressStatusIndicatorWithIcon() {
   ProgressStatusIndicator(
     p2PUiState =
       P2PUiState(
         progressIndicator =
           ProgressIndicator(progressIndicatorState = ProgressIndicatorState.SHOW_ICON)
+      )
+  )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewProgressStatusIndicatorWithoutIcon() {
+  ProgressStatusIndicator(
+    p2PUiState =
+      P2PUiState(
+        progressIndicator = ProgressIndicator(progressIndicatorState = ProgressIndicatorState.EMPTY)
       )
   )
 }
