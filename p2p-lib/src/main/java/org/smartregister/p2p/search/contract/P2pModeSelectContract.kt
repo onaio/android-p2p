@@ -28,7 +28,7 @@ interface P2pModeSelectContract {
 
   interface View {
 
-    fun showP2PSelectPage(deviceRole: DeviceRole, deviceName: String)
+    // fun showP2PSelectPage(deviceRole: DeviceRole, deviceName: String)
 
     fun getDeviceRole(): DeviceRole
 
