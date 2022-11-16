@@ -88,8 +88,10 @@ class P2PViewModel(
         override fun deviceFound(devices: List<DeviceInfo>) {
           // showDevicesList(devices)
           _deviceList.postValue(devices)
-          if (_p2PState.value == P2PState.INITIATE_DATA_TRANSFER) {
+          Timber.e("startScanning initial p2PState is ${_p2PState.value?.name}   ++++")
+          if (_p2PState.value == null || _p2PState.value == P2PState.INITIATE_DATA_TRANSFER) {
             _p2PState.postValue(P2PState.PAIR_DEVICES_FOUND)
+            Timber.e("startScanning p2PState is ${P2PState.PAIR_DEVICES_FOUND.name}   ++++")
           }
 
           Timber.e("startScanning on device found sets ${P2PState.PREPARING_TO_SEND_DATA.name}")
