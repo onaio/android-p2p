@@ -26,6 +26,7 @@ import kotlin.concurrent.schedule
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.smartregister.p2p.R
+import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.OnDeviceFound
@@ -50,6 +51,8 @@ class P2PViewModel(
   private val _p2PState = MutableLiveData<P2PState>()
   val p2PState: LiveData<P2PState>
     get() = _p2PState
+
+  var deviceRole: DeviceRole = DeviceRole.SENDER
 
   fun onEvent(event: P2PEvent) {
     when (event) {
@@ -86,30 +89,23 @@ class P2PViewModel(
     dataSharingStrategy.searchDevices(
       object : OnDeviceFound {
         override fun deviceFound(devices: List<DeviceInfo>) {
-          // showDevicesList(devices)
           _deviceList.postValue(devices)
-          Timber.e("startScanning initial p2PState is ${_p2PState.value?.name}   ++++")
-          if (_p2PState.value == null || _p2PState.value == P2PState.INITIATE_DATA_TRANSFER) {
+          if (deviceRole == DeviceRole.SENDER &&
+              (_p2PState.value == null || _p2PState.value == P2PState.INITIATE_DATA_TRANSFER)
+          ) {
             _p2PState.postValue(P2PState.PAIR_DEVICES_FOUND)
-            Timber.e("startScanning p2PState is ${P2PState.PAIR_DEVICES_FOUND.name}   ++++")
           }
 
-          Timber.e("startScanning on device found sets ${P2PState.PREPARING_TO_SEND_DATA.name}")
           Timber.e("Devices searching succeeded. Found ${devices.size} devices")
         }
 
         override fun failed(ex: Exception) {
-          // keepScreenOn(false)
+          view.keepScreenOn(false)
           Timber.e("Devices searching failed")
           Timber.e(ex)
           // removeScanningDialog()
 
-          /* Toast.makeText(
-            this@P2PDeviceSearchActivity,
-            R.string.device_searching_failed,
-            Toast.LENGTH_LONG
-          )
-            .show()*/
+          view.showToast(view.getString(R.string.device_searching_failed))
         }
       },
       object : DataSharingStrategy.PairingListener {
@@ -123,19 +119,16 @@ class P2PViewModel(
           Timber.e("Devices paired with another: DeviceInfo is +++++")
 
           view.currentConnectedDevice = device
-          val displayName = device?.getDisplayName() ?: "Unknown"
-          // showP2PSelectPage(getDeviceRole(), displayName)
 
           // find better way to track this
           if (!view.isSender) {
-            // _p2PState.postValue(P2PState.RECEIVING_DATA)
             _p2PState.postValue(P2PState.WAITING_TO_RECEIVE_DATA)
             view.processSenderDeviceDetails()
           }
         }
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
-          // keepScreenOn(false)
+          view.keepScreenOn(false)
           Timber.e("Devices pairing failed")
           Timber.e(ex)
           // removeScanningDialog()
@@ -173,7 +166,6 @@ class P2PViewModel(
           // scanning = false
           view.currentConnectedDevice = device
           Timber.e("Connecting to device %s success", device?.getDisplayName() ?: "Unknown")
-          // _p2PState.postValue(P2PState.TRANSFERRING_DATA)
           _p2PState.postValue(P2PState.PREPARING_TO_SEND_DATA)
           Timber.e("connect to device sets ${P2PState.PREPARING_TO_SEND_DATA.name} +++++++")
 
@@ -182,7 +174,6 @@ class P2PViewModel(
             view.sendDeviceDetails()
             Timber.e("sending called after sleep")
           }
-          // showP2PSelectPage(getDeviceRole(), currentConnectedDevice!!.getDisplayName())
         }
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
@@ -190,12 +181,6 @@ class P2PViewModel(
           Timber.e(ex)
 
           view.showToast(view.getString(R.string.connecting_to_device_failed))
-          /*          Toast.makeText(
-            this@P2PDeviceSearchActivity,
-            getString(R.string.connecting_to_device_failed),
-            Toast.LENGTH_LONG
-          )
-            .show()*/
         }
       }
     )
