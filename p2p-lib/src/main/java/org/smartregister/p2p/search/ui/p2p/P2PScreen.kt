@@ -215,7 +215,10 @@ fun P2PScreen(
           DefaultScreen(
             onEvent = onEvent,
             modalBottomSheetState = modalBottomSheetState,
-            updateDeviceRole = { deviceRole = it },
+            updateDeviceRole = {
+              deviceRole = it
+              p2PViewModel.deviceRole = it
+            },
             p2PUiState = p2PUiState
           )
         }
