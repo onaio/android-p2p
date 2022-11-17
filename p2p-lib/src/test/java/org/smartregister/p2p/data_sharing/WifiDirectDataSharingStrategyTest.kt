@@ -116,7 +116,6 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     wifiDirectDataSharingStrategy = spyk(recordPrivateCalls = true)
     wifiDirectDataSharingStrategy.setActivity(context)
     wifiDirectDataSharingStrategy.setCoroutineScope(coroutineScope = coroutineScope)
-    wifiDirectDataSharingStrategy.setDispatcherProvider(coroutinesTestRule.testDispatcherProvider)
     every { context.getSystemService(Context.WIFI_P2P_SERVICE) } returns wifiP2pManager
 
     wifiP2pDevice =
