@@ -38,7 +38,6 @@ import com.google.android.gms.location.LocationSettingsResponse
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.snackbar.Snackbar
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.R
 import org.smartregister.p2p.authentication.model.DeviceRole
@@ -93,8 +92,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
   private lateinit var dataSharingStrategy: DataSharingStrategy
 
   private var keepScreenOnCounter = 0
-
-  private val rootView: View by lazy { findViewById(R.id.device_search_root_layout) }
 
   val REQUEST_CHECK_LOCATION_ENABLED = 2398
   var requestDisconnection = false
@@ -154,7 +151,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
       OnSuccessListener<LocationSettingsResponse?> {
         // All location settings are satisfied. The client can initialize
         // location requests here.
-        // startScanning()
+        p2PViewModel.startScanning(dataSharingStrategy = dataSharingStrategy)
       }
     )
     result.addOnFailureListener(
@@ -352,7 +349,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
   }
 
   private fun logDebug(message: String) {
-    Snackbar.make(rootView, message, Snackbar.LENGTH_SHORT).show()
+    // Snackbar.make(rootView, message, Snackbar.LENGTH_SHORT).show()
     Timber.d(message)
   }
 

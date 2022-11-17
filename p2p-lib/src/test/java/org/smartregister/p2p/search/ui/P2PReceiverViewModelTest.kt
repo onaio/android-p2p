@@ -246,7 +246,7 @@ class P2PReceiverViewModelTest : RobolectricTest() {
 
     payloadReceiptListener.captured.onPayloadReceived(syncPayload)
     verify { p2PReceiverViewModel.checkIfDeviceKeyHasChanged(appLifetimeKey = appLifetimeKey) }
-    coVerify { view.showTransferProgressDialog() }
+    // coVerify { view.showTransferProgressDialog() }
   }
 
   @Test
