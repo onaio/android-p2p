@@ -21,8 +21,36 @@ jobs:
         run: chmod +x gradlew
       - name: Spotless check p2p-lib module
         run: ./gradlew p2p-lib:spotlessCheck
-      - name: Run unit tests with Gradle
-        run: ./gradlew p2p-lib:clean p2p-lib:jacocoTestReport --stacktrace
+      - name: Load AVD cache
+        uses: actions/cache@v2
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-${{ matrix.api-level }}
+
+      - name: Create AVD and generate snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          working-directory: android
+          api-level: ${{ matrix.api-level }}
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching."
+      - name: Run unit and instrumentation tests and generate coverage report
+          uses: reactivecircus/android-emulator-runner@v2
+          with:
+            working-directory: android
+            api-level: ${{ matrix.api-level }}
+            arch: x86_64
+            force-avd-creation: true
+            emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+            disable-animations: true
+            script: ./gradlew p2p-lib:clean p2p-lib:jacocoTestReport --stacktrace
       - name: Upload coverage to Coveralls with Gradle
         run: ./gradlew p2p-lib:coveralls --stacktrace
         env:
