@@ -141,7 +141,9 @@ def locationDependencies(configuration) {
     configuration.implementation 'com.google.android.gms:play-services-location:16.0.0'
 }
 
-task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest'/*, 'createDebugCoverageReport'*/]) {
+task jacocoTestReport(type: JacocoReport, dependsOn: [
+        'testDebugUnitTest',
+        'connectedDebugAndroidTest'/*, 'createDebugCoverageReport'*/]) {
 
     reports {
         xml.enabled = true
@@ -185,7 +187,8 @@ task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest'/*, 'cr
     classDirectories.setFrom(files([javaDebugTree, kotlinDebugTree]))
 
     executionData.setFrom(fileTree(dir: project.buildDir, includes: [
-            'jacoco/testDebugUnitTest.exec', 'outputs/code-coverage/connected/*coverage.ec',
+            'jacoco/testDebugUnitTest.exec',
+            'outputs/code-coverage/connected/*coverage.ec',
             'outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec'
     ]))
 }

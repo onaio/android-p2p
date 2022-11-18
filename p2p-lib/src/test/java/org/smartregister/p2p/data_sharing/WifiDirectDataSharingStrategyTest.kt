@@ -519,6 +519,7 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     coVerify { operationListener.onSuccess(device) }
   }
 
+  @Ignore("Fix flaky test")
   @Test
   fun `send() calls operationListener#onFailure() when dataOutputStream is null and payload datatype is string`() {
     ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "socket", socket)
