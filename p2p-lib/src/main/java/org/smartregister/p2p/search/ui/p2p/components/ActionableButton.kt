@@ -28,6 +28,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.SendToMobile
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,6 +36,9 @@ import androidx.compose.ui.unit.dp
 import org.smartregister.p2p.R
 import org.smartregister.p2p.model.ActionableButtonData
 import org.smartregister.p2p.search.ui.theme.DefaultColor
+
+const val ACTION_BUTTON_ICON_TEST_TAG = "actionButtonIconTestTag"
+const val ACTIONABLE_BUTTON_TAG = "actionButtonTestTag"
 
 @Composable
 fun ActionableButton(
@@ -48,7 +52,11 @@ fun ActionableButton(
       ButtonDefaults.buttonColors(
         backgroundColor = actionableButtonData.contentColor.copy(alpha = 0.1f)
       ),
-    modifier = modifier.fillMaxWidth().padding(top = 0.dp, start = 16.dp, end = 16.dp)
+    modifier =
+      modifier
+        .fillMaxWidth()
+        .padding(top = 0.dp, start = 16.dp, end = 16.dp)
+        .testTag(ACTIONABLE_BUTTON_TAG)
   ) {
     Row(modifier = modifier) {
       Column(modifier = modifier.padding(end = 10.dp), verticalArrangement = Arrangement.Center) {
@@ -56,6 +64,7 @@ fun ActionableButton(
           imageVector = Icons.Filled.SendToMobile,
           contentDescription = null,
           tint = colorResource(id = R.color.icon_blue_color),
+          modifier = modifier.testTag(ACTION_BUTTON_ICON_TEST_TAG)
         )
       }
       Column() {

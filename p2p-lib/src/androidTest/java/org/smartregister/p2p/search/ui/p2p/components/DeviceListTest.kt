@@ -15,6 +15,7 @@
  */
 package org.smartregister.p2p.search.ui.p2p.components
 
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import org.junit.Rule
@@ -45,8 +46,8 @@ class DeviceListTest {
   @Test
   fun testPairDeviceRowIsRendered() {
     composeTestRule.setContent { PairDeviceRow(device = null, onEvent = {}) }
-    composeTestRule.onNodeWithTag(PAIR_DEVICE_ROW_ICON_TAG).assertExists()
-    composeTestRule.onNodeWithTag(PAIR_DEVICE_ROW_NAME_TEXT_TAG).assertExists()
-    composeTestRule.onNodeWithTag(PAIR_DEVICE_ROW_BUTTON_TAG).assertExists()
+    composeTestRule.onNodeWithTag(PAIR_DEVICE_ROW_ICON_TAG).assertExists().assertIsDisplayed()
+    composeTestRule.onNodeWithTag(PAIR_DEVICE_ROW_NAME_TEXT_TAG).assertExists().assertIsDisplayed()
+    composeTestRule.onNodeWithTag(PAIR_DEVICE_ROW_BUTTON_TAG).assertExists().assertIsDisplayed()
   }
 }

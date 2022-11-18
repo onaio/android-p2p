@@ -43,7 +43,8 @@ import org.smartregister.p2p.R
 import org.smartregister.p2p.search.ui.p2p.P2PEvent
 import org.smartregister.p2p.search.ui.theme.DefaultColor
 
-const val P2P_DIALOG_TITLE_TAG = "p2pDialogTitleTag"
+const val P2P_CONFIRM_BUTTON_TAG = "confirmButtonTestTag"
+const val P2P_CANCEL_BUTTON_TAG = "cancelButtonTestTag"
 const val P2P_DIALOG_MSG_TAG = "p2pDialogProgressMsgTag"
 
 @Composable
@@ -94,7 +95,7 @@ fun P2PDialog(
 }
 
 @Composable
-private fun ButtonRow(
+fun ButtonRow(
   confirmText: String = stringResource(id = R.string.yes_exit),
   cancelText: String = stringResource(id = R.string.cancel),
   onEvent: (P2PEvent) -> Unit
@@ -102,12 +103,12 @@ private fun ButtonRow(
   Row(modifier = Modifier.padding(20.dp), horizontalArrangement = Arrangement.Center) {
     Button(
       onClick = { onEvent(P2PEvent.DismissConnectionBreakDialog) },
-      modifier = Modifier.padding(end = 5.dp),
+      modifier = Modifier.padding(end = 5.dp).testTag(P2P_CANCEL_BUTTON_TAG),
       shape = RoundedCornerShape(16.dp)
     ) { Text(text = cancelText, fontSize = 20.sp) }
     Button(
       onClick = { onEvent(P2PEvent.ConnectionBreakConfirmed) },
-      modifier = Modifier,
+      modifier = Modifier.testTag(P2P_CONFIRM_BUTTON_TAG),
       shape = RoundedCornerShape(16.dp)
     ) {
       Text(

@@ -16,32 +16,30 @@
 package org.smartregister.p2p.search.ui.p2p.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.smartregister.p2p.R
 import org.smartregister.p2p.model.ProgressIndicator
 import org.smartregister.p2p.model.ProgressIndicatorState
 import org.smartregister.p2p.search.ui.p2p.P2PUiState
 import org.smartregister.p2p.search.ui.theme.DefaultColor
+
+const val CIRCULAR_PROGRESS_INDICATOR_TEST_TAG = "circularProgressIndicatorTestTag"
+const val PROGRESS_INDICATOR_ICON_TEST_TAG = "ProgressIndicatorIconTestTag"
+const val PERCENTAGE_TEXT_TEST_TAG = "percentageTextTestTag"
 
 @Composable
 fun ProgressStatusIndicator(
@@ -60,21 +58,25 @@ fun ProgressStatusIndicator(
       ProgressIndicatorState.SHOW_PERCENTAGE -> {
         Text(
           text = "${p2PUiState.transferProgress.percentageTransferred}%",
-          modifier = modifier.wrapContentWidth(Alignment.Start)
+          modifier = modifier.wrapContentWidth(Alignment.Start).testTag(PERCENTAGE_TEXT_TEST_TAG)
         )
       }
       ProgressIndicatorState.SHOW_ICON -> {
         Icon(
           imageVector = p2PUiState.progressIndicator.icon,
           contentDescription = null,
-          tint = DefaultColor.copy(0.8f)
+          tint = DefaultColor.copy(0.8f),
+          modifier = modifier.testTag(PROGRESS_INDICATOR_ICON_TEST_TAG)
         )
       }
       ProgressIndicatorState.EMPTY -> {}
     }
 
     if (showCircularProgressIndicator) {
-      CircularProgressIndicator(modifier = modifier.size(40.dp), strokeWidth = 2.dp)
+      CircularProgressIndicator(
+        modifier = modifier.size(40.dp).testTag(CIRCULAR_PROGRESS_INDICATOR_TEST_TAG),
+        strokeWidth = 2.dp
+      )
     }
   }
 }
@@ -92,22 +94,6 @@ fun ProgressStatusText(modifier: Modifier = Modifier, title: String?, message: S
         color = DefaultColor,
         modifier = modifier.wrapContentWidth(Alignment.Start)
       )
-    }
-  }
-}
-
-@Composable
-fun DeclineAcceptAction(modifier: Modifier = Modifier) {
-  Row(
-    horizontalArrangement = Arrangement.Center,
-    verticalAlignment = Alignment.CenterVertically,
-    modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)
-  ) {
-    Button(onClick = { /*TODO*/}, modifier.padding(end = 10.dp)) {
-      Text(text = stringResource(id = R.string.decline))
-    }
-    Button(onClick = { /*TODO*/}, modifier.padding(start = 10.dp)) {
-      Text(text = stringResource(id = R.string.pair))
     }
   }
 }
@@ -139,10 +125,4 @@ fun PreviewProgressStatusIndicatorWithoutIcon() {
 @Composable
 fun PreviewProgressStatusText() {
   ProgressStatusText(title = "sample title", message = "sample message")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewDeclineAcceptAction() {
-  DeclineAcceptAction()
 }
