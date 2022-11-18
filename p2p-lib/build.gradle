@@ -142,8 +142,8 @@ def locationDependencies(configuration) {
 }
 
 task jacocoTestReport(type: JacocoReport, dependsOn: [
-        'testDebugUnitTest',
-        'connectedDebugAndroidTest'/*, 'createDebugCoverageReport'*/]) {
+        'testDebugUnitTest'/*,
+        'connectedDebugAndroidTest'*//*, 'createDebugCoverageReport'*/]) {
 
     reports {
         xml.enabled = true
