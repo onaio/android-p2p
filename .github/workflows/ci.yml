@@ -11,6 +11,9 @@ on:
 jobs:
   unit_tests:
     runs-on: macos-latest
+    strategy:
+      matrix:
+        api-level: [ 30 ]
     steps:
       - uses: actions/checkout@v2
       - name: Set up JDK 11
