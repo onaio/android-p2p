@@ -228,10 +228,7 @@ fun P2PScreen(
           }
           p2PViewModel.updateP2PState(P2PState.INITIATE_DATA_TRANSFER)
         }
-        else -> {
-          // DefaultScreen(onEvent = onEvent, modalBottomSheetState = modalBottomSheetState,
-          // updateDeviceRole = {deviceRole = it  })
-        }
+        else -> {}
       }
     }
   }

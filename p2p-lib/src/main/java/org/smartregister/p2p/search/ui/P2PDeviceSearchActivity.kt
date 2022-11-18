@@ -37,7 +37,6 @@ import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.location.LocationSettingsResponse
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.R
 import org.smartregister.p2p.authentication.model.DeviceRole
@@ -86,7 +85,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
   internal var isSender = false
   private var scanning = false
   private var isSenderSyncComplete = false
-  internal lateinit var interactiveDialog: BottomSheetDialog
   internal var currentConnectedDevice: DeviceInfo? = null
 
   private lateinit var dataSharingStrategy: DataSharingStrategy
@@ -375,6 +373,10 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
       DeviceRole.SENDER -> p2PViewModel.updateP2PState(P2PState.TRANSFERRING_DATA)
       DeviceRole.RECEIVER -> p2PViewModel.updateP2PState(P2PState.RECEIVING_DATA)
     }
+  }
+
+  fun setCurrentConnectedDevice(currentConnectedDevice: DeviceInfo?) {
+    this.currentConnectedDevice = currentConnectedDevice
   }
 
   /**

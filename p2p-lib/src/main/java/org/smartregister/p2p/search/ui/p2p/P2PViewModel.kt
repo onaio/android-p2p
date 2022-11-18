@@ -85,7 +85,7 @@ class P2PViewModel(
   }
 
   fun startScanning(dataSharingStrategy: DataSharingStrategy) {
-    // keepScreenOn(true)
+    view.keepScreenOn(true)
     dataSharingStrategy.searchDevices(
       object : OnDeviceFound {
         override fun deviceFound(devices: List<DeviceInfo>) {
@@ -118,10 +118,10 @@ class P2PViewModel(
 
           Timber.e("Devices paired with another: DeviceInfo is +++++")
 
-          view.currentConnectedDevice = device
+          view.setCurrentConnectedDevice(device)
 
           // find better way to track this
-          if (!view.isSender) {
+          if (deviceRole == DeviceRole.RECEIVER) {
             _p2PState.postValue(P2PState.WAITING_TO_RECEIVE_DATA)
             view.processSenderDeviceDetails()
           }
@@ -153,8 +153,6 @@ class P2PViewModel(
         }
       }
     )
-
-    // showScanningDialog()
   }
 
   fun connectToDevice(device: DeviceInfo) {
@@ -219,7 +217,7 @@ class P2PViewModel(
     interactiveDialog.show()*/
   }
 
-  private fun cancelTransfer(p2PState: P2PState = P2PState.TRANSFER_CANCELLED) {
+  fun cancelTransfer(p2PState: P2PState = P2PState.TRANSFER_CANCELLED) {
     Timber.e("Connection terminated by user")
     viewModelScope.launch {
       withContext(dispatcherProvider.main()) { view.showTransferCompleteDialog() }
