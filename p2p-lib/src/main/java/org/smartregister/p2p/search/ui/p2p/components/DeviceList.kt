@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Phone
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -40,6 +41,11 @@ import org.smartregister.p2p.model.ProgressIndicatorState
 import org.smartregister.p2p.search.ui.p2p.P2PEvent
 import org.smartregister.p2p.search.ui.p2p.P2PUiState
 import org.smartregister.p2p.search.ui.theme.DefaultColor
+
+const val SELECT_PAIR_DEVICE_TEXT_TAG = "selectPairDeviceTextTestTag"
+const val PAIR_DEVICE_ROW_ICON_TAG = "pairDeviceRowIconTestTag"
+const val PAIR_DEVICE_ROW_NAME_TEXT_TAG = "pairDeviceRowNameTextTestTag"
+const val PAIR_DEVICE_ROW_BUTTON_TAG = "pairDeviceRowButtonTestTag"
 
 @Composable
 fun SelectPairDeviceRow(modifier: Modifier = Modifier, p2PUiState: P2PUiState) {
@@ -52,7 +58,10 @@ fun SelectPairDeviceRow(modifier: Modifier = Modifier, p2PUiState: P2PUiState) {
       verticalAlignment = Alignment.CenterVertically,
       modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)
     ) {
-      Text(text = stringResource(id = R.string.select_recipient_device))
+      Text(
+        text = stringResource(id = R.string.select_recipient_device),
+        modifier.testTag(SELECT_PAIR_DEVICE_TEXT_TAG)
+      )
       ProgressStatusIndicator(p2PUiState = p2PUiState)
     }
   }
@@ -68,19 +77,24 @@ fun PairDeviceRow(modifier: Modifier = Modifier, device: DeviceInfo?, onEvent: (
     Icon(
       imageVector = Icons.Filled.Phone,
       contentDescription = null,
-      tint = DefaultColor.copy(0.8f)
+      tint = DefaultColor.copy(0.8f),
+      modifier = modifier.testTag(PAIR_DEVICE_ROW_ICON_TAG)
     )
     Column(modifier = modifier.wrapContentWidth(Alignment.Start)) {
-      Text(text = "${device?.name()} Phone")
+      Text(
+        text = "${device?.name()} Phone",
+        modifier = modifier.testTag(PAIR_DEVICE_ROW_NAME_TEXT_TAG)
+      )
       Text(
         text = stringResource(id = R.string.pairing),
         color = DefaultColor,
         modifier = modifier.wrapContentWidth(Alignment.Start)
       )
     }
-    Button(onClick = { device?.let { P2PEvent.PairWithDevice(it) }?.let { onEvent(it) } }) {
-      Text(text = stringResource(id = R.string.pair))
-    }
+    Button(
+      onClick = { device?.let { P2PEvent.PairWithDevice(it) }?.let { onEvent(it) } },
+      modifier = modifier.testTag(PAIR_DEVICE_ROW_BUTTON_TAG)
+    ) { Text(text = stringResource(id = R.string.pair)) }
   }
 }
 
