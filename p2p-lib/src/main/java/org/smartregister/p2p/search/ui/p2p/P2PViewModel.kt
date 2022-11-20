@@ -53,6 +53,7 @@ class P2PViewModel(
     get() = _p2PState
 
   var deviceRole: DeviceRole = DeviceRole.SENDER
+  private var currentConnectedDevice: DeviceInfo? = null
 
   fun onEvent(event: P2PEvent) {
     when (event) {
@@ -112,13 +113,13 @@ class P2PViewModel(
 
         override fun onSuccess(device: DeviceInfo?) {
 
-          if (view.getCurrentConnectedDevice() == null) {
+          if (currentConnectedDevice == null) {
             Timber.e("Devices paired with another: DeviceInfo is null")
           }
 
           Timber.e("Devices paired with another: DeviceInfo is +++++")
 
-          view.setCurrentConnectedDevice(device)
+          currentConnectedDevice = device
 
           // find better way to track this
           if (deviceRole == DeviceRole.RECEIVER) {
@@ -156,13 +157,12 @@ class P2PViewModel(
   }
 
   fun connectToDevice(device: DeviceInfo) {
-    view.isSender = true
     dataSharingStrategy.connect(
       device,
       object : DataSharingStrategy.OperationListener {
         override fun onSuccess(device: DeviceInfo?) {
           // scanning = false
-          view.currentConnectedDevice = device
+          currentConnectedDevice = device
           Timber.e("Connecting to device %s success", device?.getDisplayName() ?: "Unknown")
           _p2PState.postValue(P2PState.PREPARING_TO_SEND_DATA)
           Timber.e("connect to device sets ${P2PState.PREPARING_TO_SEND_DATA.name} +++++++")
@@ -242,7 +242,7 @@ class P2PViewModel(
   }
 
   fun getCurrentConnectedDevice(): DeviceInfo? {
-    return dataSharingStrategy.getCurrentDevice()
+    return currentConnectedDevice
   }
 
   fun updateP2PState(p2PState: P2PState) {
@@ -251,6 +251,10 @@ class P2PViewModel(
 
   fun closeP2PScreen() {
     view.finish()
+  }
+
+  fun setCurrentConnectedDevice(device: DeviceInfo?) {
+    currentConnectedDevice = device
   }
 
   class Factory(

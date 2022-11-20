@@ -82,10 +82,8 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
       DefaultDispatcherProvider()
     )
   }
-  internal var isSender = false
   private var scanning = false
   private var isSenderSyncComplete = false
-  internal var currentConnectedDevice: DeviceInfo? = null
 
   private lateinit var dataSharingStrategy: DataSharingStrategy
 
@@ -275,11 +273,11 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
 
         override fun onSuccess(device: DeviceInfo?) {
 
-          if (currentConnectedDevice == null) {
+          if (p2PViewModel.getCurrentConnectedDevice() == null) {
             Timber.e("Devices paired with another: DeviceInfo is null")
           }
 
-          currentConnectedDevice = device
+          p2PViewModel.setCurrentConnectedDevice(device)
           val displayName = device?.getDisplayName() ?: "Unknown"
           // showP2PSelectPage(getDeviceRole(), displayName)
         }
@@ -343,7 +341,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
   }
 
   override fun getDeviceRole(): DeviceRole {
-    return if (isSender) DeviceRole.SENDER else DeviceRole.RECEIVER
+    return p2PViewModel.deviceRole
   }
 
   private fun logDebug(message: String) {
@@ -373,10 +371,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
       DeviceRole.SENDER -> p2PViewModel.updateP2PState(P2PState.TRANSFERRING_DATA)
       DeviceRole.RECEIVER -> p2PViewModel.updateP2PState(P2PState.RECEIVING_DATA)
     }
-  }
-
-  fun setCurrentConnectedDevice(currentConnectedDevice: DeviceInfo?) {
-    this.currentConnectedDevice = currentConnectedDevice
   }
 
   /**

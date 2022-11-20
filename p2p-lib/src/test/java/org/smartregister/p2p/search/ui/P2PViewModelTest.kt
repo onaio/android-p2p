@@ -28,7 +28,6 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
-import org.robolectric.util.ReflectionHelpers
 import org.smartregister.p2p.CoroutineTestRule
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
@@ -105,7 +104,7 @@ class P2PViewModelTest : RobolectricTest() {
     Assert.assertFalse(p2PViewModel.p2PUiState.value.showP2PDialog)
   }
 
-  @Ignore("Fix failing livedata assertion")
+  // @Ignore("Fix failing livedata assertion")
   @Test
   fun `onEvent() updates p2PState to PROMPT_NEXT_TRANSFER when P2PEvent is DataTransferCompleteConfirmed`() {
     Assert.assertNull(p2PViewModel.p2PState.value)
@@ -146,14 +145,14 @@ class P2PViewModelTest : RobolectricTest() {
     val pairingListenerSlot = slot<DataSharingStrategy.PairingListener>()
     every { dataSharingStrategy.searchDevices(any(), capture(pairingListenerSlot)) } just runs
 
-    view.setCurrentConnectedDevice(null)
-    Assert.assertNull(ReflectionHelpers.getField(view, "currentConnectedDevice"))
+    p2PViewModel.setCurrentConnectedDevice(null)
+    Assert.assertNull(p2PViewModel.getCurrentConnectedDevice())
 
     p2PViewModel.startScanning(dataSharingStrategy = dataSharingStrategy)
 
     pairingListenerSlot.captured.onSuccess(deviceInfo)
 
-    verify { view.setCurrentConnectedDevice(deviceInfo) }
+    Assert.assertEquals(deviceInfo, p2PViewModel.getCurrentConnectedDevice())
   }
 
   @Test
