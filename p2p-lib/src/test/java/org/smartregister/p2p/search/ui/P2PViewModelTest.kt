@@ -117,17 +117,6 @@ class P2PViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun `startScanning() should call view#keepScreenOn() and initDataSharingStrategyChannel()`() {
-    every { view.keepScreenOn(true) } just runs
-    every { dataSharingStrategy.searchDevices(any(), any()) } just runs
-
-    p2PViewModel.startScanning()
-
-    verify { view.keepScreenOn(true) }
-    verify { dataSharingStrategy.searchDevices(any(), any()) }
-  }
-
-  @Test
   fun `startScanning() should call view#keepScreenOn() and dataSharingStrategy#searchDevices()`() {
     every { view.keepScreenOn(true) } just runs
     every { dataSharingStrategy.searchDevices(any(), any()) } just runs
@@ -224,5 +213,14 @@ class P2PViewModelTest : RobolectricTest() {
 
     verify { view.keepScreenOn(false) }
     Assert.assertEquals(P2PState.TRANSFER_COMPLETE, p2PViewModel.p2PState.value)
+  }
+
+  @Test
+  fun `initChannel() should call dataSharingStrategy#initChannel()`() {
+    every { dataSharingStrategy.initChannel(any(), any()) } just runs
+
+    p2PViewModel.initChannel()
+
+    verify { dataSharingStrategy.initChannel(any(), any()) }
   }
 }

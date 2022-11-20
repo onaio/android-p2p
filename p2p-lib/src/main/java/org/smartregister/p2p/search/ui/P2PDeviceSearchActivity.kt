@@ -42,7 +42,6 @@ import org.smartregister.p2p.R
 import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
-import org.smartregister.p2p.data_sharing.OnDeviceFound
 import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.model.TransferProgress
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
@@ -243,70 +242,10 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
 
   override fun onResume() {
     super.onResume()
-    initChannel()
+    p2PViewModel.initChannel()
     dataSharingStrategy.onResume(isScanning = scanning)
   }
 
-  fun initChannel() {
-    dataSharingStrategy.initChannel(
-      object : OnDeviceFound {
-        override fun deviceFound(devices: List<DeviceInfo>) {
-          // showDevicesList(devices)
-        }
-
-        override fun failed(ex: Exception) {
-          keepScreenOn(false)
-          Timber.e("Devices searching failed")
-          Timber.e(ex)
-          // removeScanningDialog()
-
-          Toast.makeText(
-              this@P2PDeviceSearchActivity,
-              R.string.device_searching_failed,
-              Toast.LENGTH_LONG
-            )
-            .show()
-        }
-      },
-      object : DataSharingStrategy.PairingListener {
-
-        override fun onSuccess(device: DeviceInfo?) {
-
-          if (p2PViewModel.getCurrentConnectedDevice() == null) {
-            Timber.e("Devices paired with another: DeviceInfo is null")
-          }
-
-          p2PViewModel.setCurrentConnectedDevice(device)
-          val displayName = device?.getDisplayName() ?: "Unknown"
-          // showP2PSelectPage(getDeviceRole(), displayName)
-        }
-
-        override fun onFailure(device: DeviceInfo?, ex: Exception) {
-          keepScreenOn(false)
-          Timber.e("Devices pairing failed")
-          Timber.e(ex)
-          // removeScanningDialog()
-        }
-
-        override fun onDisconnected() {
-          if (!p2PViewModel.getRequestDisconnection()) {
-            // removeScanningDialog()
-            showToast("Connection was disconnected")
-
-            keepScreenOn(false)
-
-            if (isSenderSyncComplete) {
-              showTransferCompleteDialog()
-            }
-
-            Timber.e("Successful on disconnect")
-            Timber.e("isSenderSyncComplete $isSenderSyncComplete")
-            // But use a flag to determine if sync was completed
-          }
-        }
-      }
-    )
-  }
   override fun onPause() {
     super.onPause()
 

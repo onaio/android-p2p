@@ -384,15 +384,6 @@ class P2PDeviceSearchActivityTest : ActivityRobolectricTest() {
     verify { p2PViewModel.updateTransferProgress(capture(transferProgressSlot)) }
   }
 
-  @Test
-  fun `initChannel calls dataSharingStrategy#initChannel`() {
-    every { dataSharingStrategy.initChannel(any(), any()) } just runs
-
-    p2PDeviceSearchActivity.initChannel()
-
-    verify { dataSharingStrategy.initChannel(any(), any()) }
-  }
-
   fun Dialog.isCancellable(): Boolean {
     return ReflectionHelpers.getField<Boolean>(this, "mCancelable")
   }

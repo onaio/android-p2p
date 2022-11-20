@@ -89,68 +89,75 @@ class P2PViewModel(
 
   fun startScanning() {
     view.keepScreenOn(true)
-    dataSharingStrategy.searchDevices(
-      object : OnDeviceFound {
-        override fun deviceFound(devices: List<DeviceInfo>) {
-          _deviceList.postValue(devices)
-          if (deviceRole == DeviceRole.SENDER &&
-              (_p2PState.value == null || _p2PState.value == P2PState.INITIATE_DATA_TRANSFER)
-          ) {
-            _p2PState.postValue(P2PState.PAIR_DEVICES_FOUND)
-          }
+    dataSharingStrategy.searchDevices(initOnDeviceFound(), initPairingListener())
+  }
 
-          Timber.e("Devices searching succeeded. Found ${devices.size} devices")
+  fun initOnDeviceFound() =
+    object : OnDeviceFound {
+      override fun deviceFound(devices: List<DeviceInfo>) {
+        _deviceList.postValue(devices)
+        if (deviceRole == DeviceRole.SENDER &&
+            (_p2PState.value == null || _p2PState.value == P2PState.INITIATE_DATA_TRANSFER)
+        ) {
+          _p2PState.postValue(P2PState.PAIR_DEVICES_FOUND)
         }
 
-        override fun failed(ex: Exception) {
-          view.keepScreenOn(false)
-          Timber.e("Devices searching failed")
-          Timber.e(ex)
-          // removeScanningDialog()
+        Timber.e("Devices searching succeeded. Found ${devices.size} devices")
+      }
 
-          view.showToast(view.getString(R.string.device_searching_failed))
-        }
-      },
-      object : DataSharingStrategy.PairingListener {
+      override fun failed(ex: Exception) {
+        view.keepScreenOn(false)
+        Timber.e("Devices searching failed")
+        Timber.e(ex)
+        // removeScanningDialog()
 
-        override fun onSuccess(device: DeviceInfo?) {
+        view.showToast(view.getString(R.string.device_searching_failed))
+      }
+    }
 
-          if (currentConnectedDevice == null) {
-            Timber.e("Devices paired with another: DeviceInfo is null")
-          }
+  fun initPairingListener() =
+    object : DataSharingStrategy.PairingListener {
 
-          Timber.e("Devices paired with another: DeviceInfo is +++++")
+      override fun onSuccess(device: DeviceInfo?) {
 
-          currentConnectedDevice = device
-
-          // find better way to track this
-          if (deviceRole == DeviceRole.RECEIVER) {
-            _p2PState.postValue(P2PState.WAITING_TO_RECEIVE_DATA)
-            view.processSenderDeviceDetails()
-          }
+        if (currentConnectedDevice == null) {
+          Timber.e("Devices paired with another: DeviceInfo is null")
         }
 
-        override fun onFailure(device: DeviceInfo?, ex: Exception) {
-          view.keepScreenOn(false)
-          Timber.e("Devices pairing failed")
-          Timber.e(ex)
-          _p2PState.postValue(P2PState.PROMPT_NEXT_TRANSFER)
-        }
+        Timber.e("Devices paired with another: DeviceInfo is +++++")
 
-        override fun onDisconnected() {
-          if (!requestDisconnection) {
-            view.showToast("Connection was disconnected")
+        currentConnectedDevice = device
 
-            view.keepScreenOn(false)
-
-            Timber.e("Successful on disconnect")
-            Timber.e("isSenderSyncComplete $view.isSenderSyncComplete")
-            // But use a flag to determine if sync was completed
-          }
-          _p2PState.postValue(P2PState.TRANSFER_COMPLETE)
+        // find better way to track this
+        if (deviceRole == DeviceRole.RECEIVER) {
+          _p2PState.postValue(P2PState.WAITING_TO_RECEIVE_DATA)
+          view.processSenderDeviceDetails()
         }
       }
-    )
+
+      override fun onFailure(device: DeviceInfo?, ex: Exception) {
+        view.keepScreenOn(false)
+        Timber.e("Devices pairing failed")
+        Timber.e(ex)
+        _p2PState.postValue(P2PState.PROMPT_NEXT_TRANSFER)
+      }
+
+      override fun onDisconnected() {
+        if (!requestDisconnection) {
+          view.showToast("Connection was disconnected")
+
+          view.keepScreenOn(false)
+
+          Timber.e("Successful on disconnect")
+          Timber.e("isSenderSyncComplete $view.isSenderSyncComplete")
+          // But use a flag to determine if sync was completed
+        }
+        _p2PState.postValue(P2PState.TRANSFER_COMPLETE)
+      }
+    }
+
+  fun initChannel() {
+    dataSharingStrategy.initChannel(initOnDeviceFound(), initPairingListener())
   }
 
   fun connectToDevice(device: DeviceInfo) {
