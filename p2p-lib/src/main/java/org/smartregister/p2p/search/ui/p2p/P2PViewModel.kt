@@ -54,12 +54,13 @@ class P2PViewModel(
 
   var deviceRole: DeviceRole = DeviceRole.SENDER
   private var currentConnectedDevice: DeviceInfo? = null
+  private var requestDisconnection = false
 
   fun onEvent(event: P2PEvent) {
     when (event) {
       is P2PEvent.StartScanning -> {
         // initiate scanning
-        startScanning(dataSharingStrategy = dataSharingStrategy)
+        startScanning()
       }
       is P2PEvent.PairDevicesFound -> {
         // display list of pairing devices
@@ -75,6 +76,7 @@ class P2PViewModel(
       P2PEvent.ConnectionBreakConfirmed -> {
         // cancel data transfer
         cancelTransfer(P2PState.INITIATE_DATA_TRANSFER)
+        setRequestDisconnection(true)
       }
       P2PEvent.DismissConnectionBreakDialog -> {
         p2PUiState.value = p2PUiState.value.copy(showP2PDialog = false)
@@ -85,7 +87,7 @@ class P2PViewModel(
     }
   }
 
-  fun startScanning(dataSharingStrategy: DataSharingStrategy) {
+  fun startScanning() {
     view.keepScreenOn(true)
     dataSharingStrategy.searchDevices(
       object : OnDeviceFound {
@@ -132,19 +134,14 @@ class P2PViewModel(
           view.keepScreenOn(false)
           Timber.e("Devices pairing failed")
           Timber.e(ex)
-          // removeScanningDialog()
+          _p2PState.postValue(P2PState.PROMPT_NEXT_TRANSFER)
         }
 
         override fun onDisconnected() {
-          if (!view.requestDisconnection) {
-            // removeScanningDialog()
+          if (!requestDisconnection) {
             view.showToast("Connection was disconnected")
 
             view.keepScreenOn(false)
-
-            /*  if (isSenderSyncComplete) {
-              showTransferCompleteDialog()
-            }*/
 
             Timber.e("Successful on disconnect")
             Timber.e("isSenderSyncComplete $view.isSenderSyncComplete")
@@ -186,35 +183,6 @@ class P2PViewModel(
 
   fun showTransferCompleteDialog() {
     _p2PState.postValue(P2PState.TRANSFER_COMPLETE)
-
-    /*while (keepScreenOnCounter > 0) {
-      keepScreenOn(false)
-    }
-
-    initInteractiveDialog()
-    interactiveDialog.setContentView(R.layout.data_transfer_bottom_sheet)
-
-    interactiveDialog
-      .findViewById<TextView>(R.id.data_transfer_title)
-      ?.setText(getString(R.string.data_transfer_comlete))
-
-    interactiveDialog
-      .findViewById<TextView>(R.id.data_transfer_description)
-      ?.setText(String.format(getString(R.string.device_data_successfully_sent)))
-
-    interactiveDialog.findViewById<ImageButton>(R.id.data_transfer_dialog_close)
-      ?.setOnClickListener { interactiveDialog.cancel() }
-
-    interactiveDialog.findViewById<Button>(R.id.dataTransferBtn)?.apply {
-      setOnClickListener {
-        // close wifi direct connection
-        finish()
-      }
-      setText(getString(R.string.okay))
-    }
-
-    interactiveDialog.setCancelable(false)
-    interactiveDialog.show()*/
   }
 
   fun cancelTransfer(p2PState: P2PState = P2PState.TRANSFER_CANCELLED) {
@@ -255,6 +223,13 @@ class P2PViewModel(
 
   fun setCurrentConnectedDevice(device: DeviceInfo?) {
     currentConnectedDevice = device
+  }
+
+  fun setRequestDisconnection(requestDisconnection: Boolean = false) {
+    this.requestDisconnection = requestDisconnection
+  }
+  fun getRequestDisconnection(): Boolean {
+    return requestDisconnection
   }
 
   class Factory(

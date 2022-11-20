@@ -172,7 +172,7 @@ class P2PDeviceSearchActivityTest : ActivityRobolectricTest() {
     val onSuccessListenerSlot = slot<OnSuccessListener<LocationSettingsResponse?>>()
 
     every { settingsClient.checkLocationSettings(any()) } returns task
-    every { p2PViewModel.startScanning(any()) } just runs
+    every { p2PViewModel.startScanning() } just runs
     every { task.addOnSuccessListener(any<Activity>(), capture(onSuccessListenerSlot)) } returns
       mockk()
     every { task.addOnFailureListener(any<Activity>(), any()) } returns mockk()
@@ -181,7 +181,7 @@ class P2PDeviceSearchActivityTest : ActivityRobolectricTest() {
 
     onSuccessListenerSlot.captured.onSuccess(mockk())
 
-    verify { p2PViewModel.startScanning(any()) }
+    verify { p2PViewModel.startScanning() }
   }
 
   @Ignore("Update test")
@@ -195,7 +195,7 @@ class P2PDeviceSearchActivityTest : ActivityRobolectricTest() {
     val resolvableError = mockk<ResolvableApiException>()
 
     every { settingsClient.checkLocationSettings(any()) } returns task
-    every { p2PViewModel.startScanning(any()) } just runs
+    every { p2PViewModel.startScanning() } just runs
     every { task.addOnSuccessListener(any<Activity>(), any()) } returns mockk()
     every { task.addOnFailureListener(any<Activity>(), capture(onFailureListenerSlot)) } returns
       mockk()

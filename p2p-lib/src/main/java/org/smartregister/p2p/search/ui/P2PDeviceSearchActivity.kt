@@ -90,7 +90,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
   private var keepScreenOnCounter = 0
 
   val REQUEST_CHECK_LOCATION_ENABLED = 2398
-  var requestDisconnection = false
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -147,7 +146,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
       OnSuccessListener<LocationSettingsResponse?> {
         // All location settings are satisfied. The client can initialize
         // location requests here.
-        p2PViewModel.startScanning(dataSharingStrategy = dataSharingStrategy)
+        p2PViewModel.startScanning()
       }
     )
     result.addOnFailureListener(
@@ -290,7 +289,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
         }
 
         override fun onDisconnected() {
-          if (!requestDisconnection) {
+          if (!p2PViewModel.getRequestDisconnection()) {
             // removeScanningDialog()
             showToast("Connection was disconnected")
 
