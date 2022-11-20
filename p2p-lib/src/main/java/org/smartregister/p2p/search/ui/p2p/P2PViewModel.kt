@@ -59,8 +59,8 @@ class P2PViewModel(
   fun onEvent(event: P2PEvent) {
     when (event) {
       is P2PEvent.StartScanning -> {
-        // initiate scanning
-        startScanning()
+        // check whether location services are enabled
+        view.requestLocationPermissionsAndEnableLocation()
       }
       is P2PEvent.PairDevicesFound -> {
         // display list of pairing devices

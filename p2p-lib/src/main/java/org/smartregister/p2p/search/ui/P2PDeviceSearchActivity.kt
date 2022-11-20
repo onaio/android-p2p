@@ -21,7 +21,6 @@ import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
 import android.widget.Toast
@@ -231,15 +230,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     }
   }*/
 
-  override fun onOptionsItemSelected(item: MenuItem): Boolean {
-    if (item.itemId == android.R.id.home) {
-      finish()
-      return true
-    }
-
-    return super.onOptionsItemSelected(item)
-  }
-
   override fun onResume() {
     super.onResume()
     p2PViewModel.initChannel()
@@ -276,10 +266,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
 
   override fun showTransferCompleteDialog() {
     p2PViewModel.showTransferCompleteDialog()
-  }
-
-  override fun getDeviceRole(): DeviceRole {
-    return p2PViewModel.deviceRole
   }
 
   private fun logDebug(message: String) {
@@ -321,12 +307,12 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     if (enable) {
       keepScreenOnCounter++
       if (keepScreenOnCounter == 1) {
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
       }
     } else {
       keepScreenOnCounter--
       if (keepScreenOnCounter == 0) {
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
       }
     }
   }

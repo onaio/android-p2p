@@ -20,7 +20,6 @@ import android.app.Dialog
 import android.content.Intent
 import android.net.wifi.p2p.WifiP2pDevice
 import android.view.WindowManager
-import android.widget.Button
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationRequest
@@ -39,7 +38,6 @@ import io.mockk.verify
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.robolectric.Robolectric
@@ -49,11 +47,11 @@ import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowToast
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.p2p.P2PLibrary
-import org.smartregister.p2p.R
 import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.WifiDirectDataSharingStrategy
+import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.model.TransferProgress
 import org.smartregister.p2p.robolectric.ActivityRobolectricTest
 import org.smartregister.p2p.search.ui.p2p.P2PViewModel
@@ -126,25 +124,6 @@ class P2PDeviceSearchActivityTest : ActivityRobolectricTest() {
     return p2PDeviceSearchActivity
   }
 
-  @Ignore("Update test")
-  @Test
-  fun `clicking scan button should call requestLocationPermissionsAndEnableLocation()`() {
-    every { p2PDeviceSearchActivity.requestLocationPermissionsAndEnableLocation() } just runs
-
-    p2PDeviceSearchActivity.findViewById<Button>(R.id.scanDevicesBtn).callOnClick()
-
-    verify { p2PDeviceSearchActivity.requestLocationPermissionsAndEnableLocation() }
-  }
-
-  @Test
-  fun testGetDeviceRole() {
-    ReflectionHelpers.setField(p2PDeviceSearchActivity, "isSender", false)
-    Assert.assertEquals(DeviceRole.RECEIVER, p2PDeviceSearchActivity.getDeviceRole())
-
-    ReflectionHelpers.setField(p2PDeviceSearchActivity, "isSender", true)
-    Assert.assertEquals(DeviceRole.SENDER, p2PDeviceSearchActivity.getDeviceRole())
-  }
-
   @Test
   fun showToast() {
     p2PDeviceSearchActivity.showToast("Somebody")
@@ -184,7 +163,6 @@ class P2PDeviceSearchActivityTest : ActivityRobolectricTest() {
     verify { p2PViewModel.startScanning() }
   }
 
-  @Ignore("Update test")
   @Test
   fun `checkLocationEnabled() should call resolvableError#startResolutionForResult when onFailure is called`() {
     val settingsClient = mockk<SettingsClient>()
@@ -216,7 +194,6 @@ class P2PDeviceSearchActivityTest : ActivityRobolectricTest() {
     Assert.assertEquals(LocationRequest.PRIORITY_LOW_POWER, locationRequest.priority)
   }
 
-  @Ignore("Update test")
   @Test
   fun `onActivityResult() should call requestLocationPermissionsAndEnableLocation when resultCode is RESULT_OK and requestCode is REQUEST_CHECK_LOCATION_ENABLED`() {
     every { p2PDeviceSearchActivity.requestLocationPermissionsAndEnableLocation() } just runs
@@ -382,6 +359,18 @@ class P2PDeviceSearchActivityTest : ActivityRobolectricTest() {
 
     val transferProgressSlot = slot<TransferProgress>()
     verify { p2PViewModel.updateTransferProgress(capture(transferProgressSlot)) }
+  }
+
+  @Test
+  fun `notifyDataTransferStarting() should call p2PViewModel#updateP2PState() with TRANSFERRING_DATA param for sender device`() {
+    p2PDeviceSearchActivity.notifyDataTransferStarting(DeviceRole.SENDER)
+    verify { p2PViewModel.updateP2PState(P2PState.TRANSFERRING_DATA) }
+  }
+
+  @Test
+  fun `notifyDataTransferStarting() should call p2PViewModel#updateP2PState() with RECEIVING_DATA param for receiver device`() {
+    p2PDeviceSearchActivity.notifyDataTransferStarting(DeviceRole.RECEIVER)
+    verify { p2PViewModel.updateP2PState(P2PState.RECEIVING_DATA) }
   }
 
   fun Dialog.isCancellable(): Boolean {

@@ -72,10 +72,10 @@ class P2PViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun `onEvent() calls startScanning() when P2PEvent is StartScanningEvent`() {
-    every { p2PViewModel.startScanning() } just runs
+  fun `onEvent() calls view#requestLocationPermissionsAndEnableLocation() when P2PEvent is StartScanningEvent`() {
+    every { view.requestLocationPermissionsAndEnableLocation() } just runs
     p2PViewModel.onEvent(P2PEvent.StartScanning)
-    verify { p2PViewModel.startScanning() }
+    verify { view.requestLocationPermissionsAndEnableLocation() }
   }
 
   @Test
