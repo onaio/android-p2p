@@ -36,7 +36,7 @@ jobs:
         if: steps.avd-cache.outputs.cache-hit != 'true'
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          working-directory: android
+          working-directory: p2p
           api-level: ${{ matrix.api-level }}
           arch: x86_64
           force-avd-creation: false
@@ -46,7 +46,7 @@ jobs:
       - name: Run unit and instrumentation tests and generate coverage report
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          working-directory: android
+          working-directory: p2p
           api-level: ${{ matrix.api-level }}
           arch: x86_64
           force-avd-creation: true
