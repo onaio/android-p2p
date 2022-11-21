@@ -144,6 +144,21 @@ class P2PViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun `startScanning() should call view#keepScreenOn() and view#showToast when onDeviceFound#failed is called`() {
+    every { view.keepScreenOn(false) } just runs
+    val onDeviceFoundSlot = slot<OnDeviceFound>()
+    every { dataSharingStrategy.searchDevices(capture(onDeviceFoundSlot), any()) } just runs
+
+    Assert.assertNull(p2PViewModel.p2PState.value)
+    p2PViewModel.startScanning()
+
+    onDeviceFoundSlot.captured.failed(java.lang.Exception())
+
+    verify { view.keepScreenOn(false) }
+    verify { view.showToast(any()) }
+  }
+
+  @Test
   fun `startScanning() should update currentConnectedDevice, call view#processSenderDeviceDetails() when pairing#onSuccess is called and device role is receiver`() {
     every { view.keepScreenOn(true) } just runs
     every { dataSharingStrategy.getCurrentDevice() } returns deviceInfo
@@ -245,5 +260,52 @@ class P2PViewModelTest : RobolectricTest() {
 
     operationalListenerSlot.captured.onSuccess(deviceInfo)
     Assert.assertEquals(P2PState.TRANSFER_CANCELLED, p2PViewModel.p2PState.value)
+  }
+
+  @Test
+  fun `connectToDevice() calls dataSharingStrategy#connect()`() {
+    every { dataSharingStrategy.connect(any(), any()) } just runs
+
+    p2PViewModel.connectToDevice(deviceInfo)
+
+    verify { dataSharingStrategy.connect(any(), any()) }
+  }
+
+  @Test
+  fun `connectToDevice() sets currentConnectedDevice, view#sendDeviceDetails() and updates p2PState on operationalListener success`() {
+    every { dataSharingStrategy.connect(any(), any()) } just runs
+
+    Assert.assertNull(p2PViewModel.getCurrentConnectedDevice())
+    Assert.assertNull(p2PViewModel.p2PState.value)
+    p2PViewModel.connectToDevice(deviceInfo)
+
+    val operationalListenerSlot = slot<DataSharingStrategy.OperationListener>()
+    verify { dataSharingStrategy.connect(any(), capture(operationalListenerSlot)) }
+
+    operationalListenerSlot.captured.onSuccess(deviceInfo)
+
+    Assert.assertEquals(deviceInfo, p2PViewModel.getCurrentConnectedDevice())
+    Assert.assertEquals(P2PState.PREPARING_TO_SEND_DATA, p2PViewModel.p2PState.getOrAwaitValue())
+  }
+
+  @Test
+  fun `showTransferCompleteDialog() updates p2PState to TRANSFER_COMPLETE`() {
+    Assert.assertNull(p2PViewModel.p2PState.value)
+    p2PViewModel.showTransferCompleteDialog()
+    Assert.assertEquals(P2PState.TRANSFER_COMPLETE, p2PViewModel.p2PState.getOrAwaitValue())
+  }
+
+  @Test
+  fun `updateP2PState() updates p2PState with correct value`() {
+    Assert.assertNull(p2PViewModel.p2PState.value)
+    p2PViewModel.updateP2PState(P2PState.TRANSFER_COMPLETE)
+    Assert.assertEquals(P2PState.TRANSFER_COMPLETE, p2PViewModel.p2PState.getOrAwaitValue())
+  }
+
+  @Test
+  fun `closeP2PScreen() calls view#finish()`() {
+    p2PViewModel.closeP2PScreen()
+
+    verify { view.finish() }
   }
 }

@@ -108,8 +108,6 @@ class P2PViewModel(
         view.keepScreenOn(false)
         Timber.e("Devices searching failed")
         Timber.e(ex)
-        // removeScanningDialog()
-
         view.showToast(view.getString(R.string.device_searching_failed))
       }
     }
@@ -166,19 +164,14 @@ class P2PViewModel(
         override fun onSuccess(device: DeviceInfo?) {
           // scanning = false
           currentConnectedDevice = device
-          Timber.e("Connecting to device %s success", device?.getDisplayName() ?: "Unknown")
+          Timber.d("Connecting to device %s success", device?.getDisplayName() ?: "Unknown")
           _p2PState.postValue(P2PState.PREPARING_TO_SEND_DATA)
-          Timber.e("connect to device sets ${P2PState.PREPARING_TO_SEND_DATA.name} +++++++")
 
-          Timber.e("calling sleep before sending")
-          Timer().schedule(START_DATA_TRANSFER_DELAY) {
-            view.sendDeviceDetails()
-            Timber.e("sending called after sleep")
-          }
+          Timer().schedule(START_DATA_TRANSFER_DELAY) { view.sendDeviceDetails() }
         }
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
-          Timber.e("Connecting to device %s failure", device?.getDisplayName() ?: "Unknown")
+          Timber.d("Connecting to device %s failure", device?.getDisplayName() ?: "Unknown")
           Timber.e(ex)
 
           view.showToast(view.getString(R.string.connecting_to_device_failed))
@@ -230,7 +223,7 @@ class P2PViewModel(
     currentConnectedDevice = device
   }
 
-  fun setRequestDisconnection(requestDisconnection: Boolean = false) {
+  fun setRequestDisconnection(requestDisconnection: Boolean) {
     this.requestDisconnection = requestDisconnection
   }
   fun getRequestDisconnection(): Boolean {
