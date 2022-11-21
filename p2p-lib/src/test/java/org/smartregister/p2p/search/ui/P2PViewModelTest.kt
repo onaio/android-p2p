@@ -223,4 +223,27 @@ class P2PViewModelTest : RobolectricTest() {
 
     verify { dataSharingStrategy.initChannel(any(), any()) }
   }
+
+  @Test
+  fun `cancelTransfer() calls dataSharingStrategy#disconnect()`() {
+    every { dataSharingStrategy.disconnect(any(), any()) } just runs
+    every { dataSharingStrategy.getCurrentDevice() } returns deviceInfo
+    p2PViewModel.cancelTransfer(P2PState.TRANSFER_CANCELLED)
+
+    verify { dataSharingStrategy.disconnect(any(), any()) }
+  }
+
+  @Test
+  fun `cancelTransfer() should update p2PState when dataSharingStrategy#disconnect() is successful`() {
+    every { dataSharingStrategy.disconnect(any(), any()) } just runs
+    every { dataSharingStrategy.getCurrentDevice() } returns deviceInfo
+    p2PViewModel.cancelTransfer(P2PState.TRANSFER_CANCELLED)
+
+    Assert.assertNull(p2PViewModel.p2PState.value)
+    val operationalListenerSlot = slot<DataSharingStrategy.OperationListener>()
+    verify { dataSharingStrategy.disconnect(any(), capture(operationalListenerSlot)) }
+
+    operationalListenerSlot.captured.onSuccess(deviceInfo)
+    Assert.assertEquals(P2PState.TRANSFER_CANCELLED, p2PViewModel.p2PState.value)
+  }
 }

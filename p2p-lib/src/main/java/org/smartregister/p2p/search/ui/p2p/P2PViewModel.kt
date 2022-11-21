@@ -24,7 +24,6 @@ import androidx.lifecycle.viewModelScope
 import java.util.Timer
 import kotlin.concurrent.schedule
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.smartregister.p2p.R
 import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
@@ -195,7 +194,6 @@ class P2PViewModel(
   fun cancelTransfer(p2PState: P2PState = P2PState.TRANSFER_CANCELLED) {
     Timber.e("Connection terminated by user")
     viewModelScope.launch {
-      withContext(dispatcherProvider.main()) { view.showTransferCompleteDialog() }
       dataSharingStrategy.disconnect(
         dataSharingStrategy.getCurrentDevice()!!,
         object : DataSharingStrategy.OperationListener {

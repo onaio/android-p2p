@@ -210,6 +210,7 @@ fun P2PScreen(
           if (modalBottomSheetState.isVisible) {
             coroutineScope.launch { modalBottomSheetState.hide() }
           }
+          p2PViewModel.updateP2PState(P2PState.INITIATE_DATA_TRANSFER)
         }
         P2PState.INITIATE_DATA_TRANSFER -> {
           DefaultScreen(
