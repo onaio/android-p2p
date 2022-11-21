@@ -52,10 +52,10 @@ jobs:
           force-avd-creation: true
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: ./gradlew p2p-lib:clean p2p-lib:jacocoTestReport --stacktrace
+          script: ./gradlew p2p-lib:clean p2p-lib:jacocoTestReport p2p-lib:coveralls --stacktrace
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
-      - name: Upload p2p-lib test coverage report to Codecov
-        if: matrix.api-level == 30 # Only upload coverage on API level 30
-#        working-directory: p2p
-        run:  bash <(curl -s https://codecov.io/bash) -f "p2p-lib/build/reports/jacoco/jacocoRootReport/merged.xml"
+#      - name: Upload coverage to Coveralls with Gradle
+#        run: ./gradlew p2p-lib:coveralls --stacktrace
+#        env:
+#          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
