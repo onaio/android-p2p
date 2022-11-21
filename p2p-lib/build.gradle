@@ -188,7 +188,7 @@ task jacocoTestReport(type: JacocoReport, dependsOn: [
 
     executionData.setFrom(fileTree(dir: project.buildDir, includes: [
             'jacoco/testDebugUnitTest.exec',
-            'outputs/code-coverage/connected/*coverage.ec',
+            'outputs/code_coverage/debugAndroidTest/connected/**/*.ec',
             'outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec'
     ]))
 }
