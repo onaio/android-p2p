@@ -46,15 +46,15 @@ jobs:
           disable-animations: false
           script: echo "Generated AVD snapshot for caching."
       - name: Run unit and instrumentation tests and generate coverage report
-          uses: reactivecircus/android-emulator-runner@v2
-          with:
-            working-directory: android
-            api-level: ${{ matrix.api-level }}
-            arch: x86_64
-            force-avd-creation: true
-            emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-            disable-animations: true
-            script: ./gradlew p2p-lib:clean p2p-lib:jacocoTestReport --stacktrace
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          working-directory: android
+          api-level: ${{ matrix.api-level }}
+          arch: x86_64
+          force-avd-creation: true
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: ./gradlew p2p-lib:clean p2p-lib:jacocoTestReport --stacktrace
       - name: Upload coverage to Coveralls with Gradle
         run: ./gradlew p2p-lib:coveralls --stacktrace
         env:
