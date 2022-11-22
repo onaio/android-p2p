@@ -70,6 +70,8 @@ class P2PDeviceSearchActivityTest : ActivityRobolectricTest() {
   private lateinit var dataSharingStrategy: DataSharingStrategy
   private lateinit var deviceInfo: DeviceInfo
   private lateinit var p2PViewModel: P2PViewModel
+  private lateinit var p2PReceiverViewModel: P2PReceiverViewModel
+  private lateinit var p2PSenderViewModel: P2PSenderViewModel
 
   @Before
   fun setUp() {
@@ -87,21 +89,6 @@ class P2PDeviceSearchActivityTest : ActivityRobolectricTest() {
       Robolectric.buildActivity(P2PDeviceSearchActivity::class.java)
 
     p2PDeviceSearchActivity = spyk(p2PDeviceSearchActivityController.create().resume().get())
-    /*      spyk(
-        ReflectionHelpers.getField<P2PDeviceSearchActivity>(
-          p2PDeviceSearchActivityController,
-          "component"
-        ),
-        recordPrivateCalls = true
-      )
-    val _component_ = Reflector.reflector(_Activity_::class.java, p2PDeviceSearchActivity)
-    ReflectionHelpers.setField(
-      p2PDeviceSearchActivityController,
-      "component",
-      p2PDeviceSearchActivity
-    )
-    ReflectionHelpers.setField(p2PDeviceSearchActivityController, "_component_", _component_)
-    p2PDeviceSearchActivityController.create().resume().get()*/
 
     val wifiP2pDevice =
       WifiP2pDevice().apply {
@@ -111,8 +98,14 @@ class P2PDeviceSearchActivityTest : ActivityRobolectricTest() {
     deviceInfo = WifiDirectDataSharingStrategy.WifiDirectDevice(wifiP2pDevice)
 
     p2PViewModel = mockk(relaxed = true)
-
     every { p2PDeviceSearchActivity getProperty "p2PViewModel" } returns p2PViewModel
+
+    p2PReceiverViewModel = mockk(relaxed = true)
+    every { p2PDeviceSearchActivity getProperty "p2PReceiverViewModel" } returns
+      p2PReceiverViewModel
+
+    p2PSenderViewModel = mockk(relaxed = true)
+    every { p2PDeviceSearchActivity getProperty "p2PSenderViewModel" } returns p2PSenderViewModel
   }
 
   @After
@@ -371,6 +364,25 @@ class P2PDeviceSearchActivityTest : ActivityRobolectricTest() {
   fun `notifyDataTransferStarting() should call p2PViewModel#updateP2PState() with RECEIVING_DATA param for receiver device`() {
     p2PDeviceSearchActivity.notifyDataTransferStarting(DeviceRole.RECEIVER)
     verify { p2PViewModel.updateP2PState(P2PState.RECEIVING_DATA) }
+  }
+
+  @Test
+  fun `sendDeviceDetails() calls p2PSenderViewModel#sendDeviceDetails()`() {
+    every { dataSharingStrategy.getCurrentDevice() } returns deviceInfo
+    p2PDeviceSearchActivity.sendDeviceDetails()
+    verify { p2PSenderViewModel.sendDeviceDetails(deviceInfo) }
+  }
+
+  @Test
+  fun `processSenderDeviceDetails() calls p2PReceiverViewModel#processSenderDeviceDetails()`() {
+    p2PDeviceSearchActivity.processSenderDeviceDetails()
+    verify { p2PReceiverViewModel.processSenderDeviceDetails() }
+  }
+
+  @Test
+  fun `showTransferCompleteDialog() calls p2PViewModel#showTransferCompleteDialog()`() {
+    p2PDeviceSearchActivity.showTransferCompleteDialog()
+    verify { p2PViewModel.showTransferCompleteDialog() }
   }
 
   fun Dialog.isCancellable(): Boolean {

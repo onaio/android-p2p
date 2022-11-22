@@ -66,6 +66,7 @@ import org.smartregister.p2p.search.ui.p2p.components.ProgressStatusText
 import org.smartregister.p2p.search.ui.p2p.components.SelectPairDeviceRow
 import org.smartregister.p2p.search.ui.theme.DefaultColor
 import org.smartregister.p2p.search.ui.theme.WhiteColor
+import org.smartregister.p2p.utils.annotation.ExcludeFromJacocoGeneratedReport
 
 const val P2P_BOTTOM_SHEET_LIST = "p2PBottomSheetList"
 
@@ -234,6 +235,7 @@ private fun BottomSheet(
 @OptIn(ExperimentalMaterialApi::class)
 @Preview(showBackground = true)
 @Composable
+@ExcludeFromJacocoGeneratedReport
 fun PreviewBottomSheetScreen() {
   BottomSheet(
     deviceList = emptyList(),

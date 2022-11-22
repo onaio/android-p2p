@@ -42,6 +42,7 @@ import androidx.compose.ui.window.DialogProperties
 import org.smartregister.p2p.R
 import org.smartregister.p2p.search.ui.p2p.P2PEvent
 import org.smartregister.p2p.search.ui.theme.DefaultColor
+import org.smartregister.p2p.utils.annotation.ExcludeFromJacocoGeneratedReport
 
 const val P2P_CONFIRM_BUTTON_TAG = "confirmButtonTestTag"
 const val P2P_CANCEL_BUTTON_TAG = "cancelButtonTestTag"
@@ -121,12 +122,14 @@ fun ButtonRow(
 
 @Composable
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 private fun P2PDialogPreview() {
   P2PDialog(onEvent = {})
 }
 
 @Composable
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 private fun PreviewButtonRow() {
   ButtonRow(onEvent = {})
 }

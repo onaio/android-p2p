@@ -41,6 +41,7 @@ import org.smartregister.p2p.model.ProgressIndicatorState
 import org.smartregister.p2p.search.ui.p2p.P2PEvent
 import org.smartregister.p2p.search.ui.p2p.P2PUiState
 import org.smartregister.p2p.search.ui.theme.DefaultColor
+import org.smartregister.p2p.utils.annotation.ExcludeFromJacocoGeneratedReport
 
 const val SELECT_PAIR_DEVICE_TEXT_TAG = "selectPairDeviceTextTestTag"
 const val PAIR_DEVICE_ROW_ICON_TAG = "pairDeviceRowIconTestTag"
@@ -100,6 +101,7 @@ fun PairDeviceRow(modifier: Modifier = Modifier, device: DeviceInfo?, onEvent: (
 
 @Preview(showBackground = true)
 @Composable
+@ExcludeFromJacocoGeneratedReport
 fun PreviewSelectPairDeviceRow() {
   SelectPairDeviceRow(
     p2PUiState =
@@ -115,6 +117,7 @@ fun PreviewSelectPairDeviceRow() {
 
 @Preview(showBackground = true)
 @Composable
+@ExcludeFromJacocoGeneratedReport
 fun PreviewPairDeviceRow() {
   PairDeviceRow(onEvent = {}, device = null)
 }

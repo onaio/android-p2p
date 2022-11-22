@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import org.smartregister.p2p.R
 import org.smartregister.p2p.model.ActionableButtonData
 import org.smartregister.p2p.search.ui.theme.DefaultColor
+import org.smartregister.p2p.utils.annotation.ExcludeFromJacocoGeneratedReport
 
 const val ACTION_BUTTON_ICON_TEST_TAG = "actionButtonIconTestTag"
 const val ACTIONABLE_BUTTON_TAG = "actionButtonTestTag"
@@ -77,6 +78,7 @@ fun ActionableButton(
 
 @Composable
 @Preview(showBackground = true)
+@ExcludeFromJacocoGeneratedReport
 fun PreviewActionableButton() {
   Column {
     ActionableButton(

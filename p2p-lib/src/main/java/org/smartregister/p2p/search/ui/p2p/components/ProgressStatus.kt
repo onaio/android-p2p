@@ -36,6 +36,7 @@ import org.smartregister.p2p.model.ProgressIndicator
 import org.smartregister.p2p.model.ProgressIndicatorState
 import org.smartregister.p2p.search.ui.p2p.P2PUiState
 import org.smartregister.p2p.search.ui.theme.DefaultColor
+import org.smartregister.p2p.utils.annotation.ExcludeFromJacocoGeneratedReport
 
 const val CIRCULAR_PROGRESS_INDICATOR_TEST_TAG = "circularProgressIndicatorTestTag"
 const val PROGRESS_INDICATOR_ICON_TEST_TAG = "ProgressIndicatorIconTestTag"
@@ -100,6 +101,7 @@ fun ProgressStatusText(modifier: Modifier = Modifier, title: String?, message: S
 
 @Preview(showBackground = true)
 @Composable
+@ExcludeFromJacocoGeneratedReport
 fun PreviewProgressStatusIndicatorWithIcon() {
   ProgressStatusIndicator(
     p2PUiState =
@@ -112,6 +114,7 @@ fun PreviewProgressStatusIndicatorWithIcon() {
 
 @Preview(showBackground = true)
 @Composable
+@ExcludeFromJacocoGeneratedReport
 fun PreviewProgressStatusIndicatorWithoutIcon() {
   ProgressStatusIndicator(
     p2PUiState =
@@ -123,6 +126,7 @@ fun PreviewProgressStatusIndicatorWithoutIcon() {
 
 @Preview(showBackground = true)
 @Composable
+@ExcludeFromJacocoGeneratedReport
 fun PreviewProgressStatusText() {
   ProgressStatusText(title = "sample title", message = "sample message")
 }

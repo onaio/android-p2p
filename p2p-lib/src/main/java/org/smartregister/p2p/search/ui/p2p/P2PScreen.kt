@@ -69,6 +69,7 @@ import org.smartregister.p2p.search.ui.p2p.components.P2PDialog
 import org.smartregister.p2p.search.ui.p2p.components.ProgressStatusIndicator
 import org.smartregister.p2p.search.ui.p2p.components.ProgressStatusText
 import org.smartregister.p2p.search.ui.theme.DefaultColor
+import org.smartregister.p2p.utils.annotation.ExcludeFromJacocoGeneratedReport
 
 const val P2P_SCREEN_TOP_BAR_TEST_TAG = "p2pScreenTopBarTestTag"
 const val P2P_SCREEN_TOP_BAR_ICON_TEST_TAG = "p2pScreenTopBarIconTestTag"
@@ -330,6 +331,7 @@ fun TransferProgressScreen(
 
 @Preview(showBackground = true)
 @Composable
+@ExcludeFromJacocoGeneratedReport
 private fun PreviewTransferProgressScreen() {
   TransferProgressScreen(
     title = "Waiting to receive data",
@@ -343,6 +345,7 @@ private fun PreviewTransferProgressScreen() {
 @OptIn(ExperimentalMaterialApi::class)
 @Preview(showBackground = true)
 @Composable
+@ExcludeFromJacocoGeneratedReport
 private fun PreviewDefaultScreen() {
   val modalBottomSheetState = rememberModalBottomSheetState(ModalBottomSheetValue.HalfExpanded)
   DefaultScreen(
