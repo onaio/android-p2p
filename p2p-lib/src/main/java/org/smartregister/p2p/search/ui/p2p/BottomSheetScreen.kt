@@ -69,6 +69,8 @@ import org.smartregister.p2p.search.ui.theme.WhiteColor
 import org.smartregister.p2p.utils.annotation.ExcludeFromJacocoGeneratedReport
 
 const val P2P_BOTTOM_SHEET_LIST = "p2PBottomSheetList"
+const val BOTTOM_SHEET_CANCEL_ICON_TEST_TAG = "bottomSheetCancelIconTestTag"
+const val BOTTOM_SHEET_BUTTON_TEST_TAG = "bottomSheetButtonTestTag"
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterialApi::class)
@@ -99,7 +101,7 @@ fun BottomSheetScreen(
 @OptIn(ExperimentalMaterialApi::class)
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
-private fun BottomSheet(
+fun BottomSheet(
   modifier: Modifier = Modifier,
   deviceList: List<DeviceInfo>,
   onEvent: (P2PEvent) -> Unit,
@@ -178,11 +180,13 @@ private fun BottomSheet(
           contentDescription = null,
           tint = DefaultColor.copy(0.8f),
           modifier =
-            modifier.clickable {
-              coroutineScope.launch {
-                if (modalBottomSheetState.isVisible) modalBottomSheetState.hide()
+            modifier
+              .clickable {
+                coroutineScope.launch {
+                  if (modalBottomSheetState.isVisible) modalBottomSheetState.hide()
+                }
               }
-            }
+              .testTag(BOTTOM_SHEET_CANCEL_ICON_TEST_TAG)
         )
       }
 
@@ -225,7 +229,10 @@ private fun BottomSheet(
       if (p2PState == P2PState.TRANSFER_COMPLETE) {
         Button(
           onClick = { onEvent(P2PEvent.DataTransferCompleteConfirmed) },
-          modifier.padding(start = 10.dp, end = 10.dp).fillMaxWidth()
+          modifier
+            .padding(start = 10.dp, end = 10.dp)
+            .fillMaxWidth()
+            .testTag(BOTTOM_SHEET_BUTTON_TEST_TAG)
         ) { Text(text = stringResource(id = R.string.okay)) }
       }
     }
