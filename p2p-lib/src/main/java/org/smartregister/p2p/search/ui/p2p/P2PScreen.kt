@@ -74,6 +74,7 @@ import org.smartregister.p2p.utils.annotation.ExcludeFromJacocoGeneratedReport
 const val P2P_SCREEN_TOP_BAR_TEST_TAG = "p2pScreenTopBarTestTag"
 const val P2P_SCREEN_TOP_BAR_ICON_TEST_TAG = "p2pScreenTopBarIconTestTag"
 const val P2P_SYNC_IMAGE_TEST_TAG = "p2pSyncImageTestTag"
+const val CANCEL_BUTTON_TEST_TAG = "cancelButtonTestTag"
 
 @OptIn(ExperimentalMaterialApi::class)
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter", "CoroutineCreationDuringComposition")
@@ -322,9 +323,10 @@ fun TransferProgressScreen(
     ProgressStatusText(title = title, message = message)
     Spacer(modifier = Modifier.size(20.dp))
     if (showCancelButton) {
-      Button(onClick = { onEvent(P2PEvent.CancelDataTransfer) }) {
-        Text(text = stringResource(id = R.string.cancel))
-      }
+      Button(
+        onClick = { onEvent(P2PEvent.CancelDataTransfer) },
+        modifier = modifier.testTag(CANCEL_BUTTON_TEST_TAG)
+      ) { Text(text = stringResource(id = R.string.cancel)) }
     }
   }
 }
