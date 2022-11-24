@@ -130,10 +130,12 @@ class SyncSenderHandlerTest : RobolectricTest() {
   @Test
   fun `startSyncProcess() calls generateRecordsToSend(), populateTotalRecordCount() and sendNextManifest()`() {
     every { syncSenderHandler.populateTotalRecordCount() } just runs
+    every { p2PSenderViewModel.notifyDataTransferStarting() } just runs
     runBlocking { syncSenderHandler.startSyncProcess() }
     verify(exactly = 1) { syncSenderHandler.generateRecordsToSend() }
     verify(exactly = 1) { syncSenderHandler.populateTotalRecordCount() }
     coVerify(exactly = 1) { syncSenderHandler.sendNextManifest() }
+    verify(exactly = 1) { p2PSenderViewModel.notifyDataTransferStarting() }
   }
 
   @Test

@@ -32,6 +32,6 @@ class ExampleInstrumentedTest {
   fun useAppContext() {
     // Context of the app under test.
     val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-    assertEquals("org.smartregister.p2p", appContext.packageName)
+    assertEquals("org.smartregister.p2p.test", appContext.packageName)
   }
 }
