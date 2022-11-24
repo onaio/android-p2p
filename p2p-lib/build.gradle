@@ -223,7 +223,7 @@ afterEvaluate {
                 from(components["release"])
                 artifactId = "p2p-lib"
                 groupId = "org.smartregister"
-                version = "0.6.1-UI-REVAMP-SNAPSHOT"
+                version = "0.6.0-SNAPSHOT"
                 pom {
                     name.set("Peer to Peer Library")
                 }
