@@ -65,6 +65,7 @@
     <string name="tap_to_receive_data_msg">Tap to start receiving data from nearby device</string>
     <string name="select_recipient_device">SELECT RECIPIENT DEVICE</string>
     <string name="pair">Pair</string>
+    <string name="phone">Phone</string>
     <string name="decline">Decline</string>
     <string name="yes_exit">YES, EXIT</string>
     <string name="waiting_to_receive_data">Waiting to receive data</string>

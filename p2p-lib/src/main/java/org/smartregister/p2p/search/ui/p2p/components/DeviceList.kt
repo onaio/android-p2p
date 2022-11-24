@@ -83,7 +83,7 @@ fun PairDeviceRow(modifier: Modifier = Modifier, device: DeviceInfo?, onEvent: (
     )
     Column(modifier = modifier.wrapContentWidth(Alignment.Start)) {
       Text(
-        text = "${device?.name()} Phone",
+        text = "${device?.name()} ".plus(stringResource(id = R.string.phone)),
         modifier = modifier.testTag(PAIR_DEVICE_ROW_NAME_TEXT_TAG)
       )
       Text(
