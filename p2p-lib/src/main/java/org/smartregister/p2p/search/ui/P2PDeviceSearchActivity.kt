@@ -30,6 +30,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -52,8 +53,13 @@ import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.OnDeviceFound
+import org.smartregister.p2p.model.P2PState
+import org.smartregister.p2p.model.TransferProgress
 import org.smartregister.p2p.search.adapter.DeviceListAdapter
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
+import org.smartregister.p2p.search.ui.p2p.P2PScreen
+import org.smartregister.p2p.search.ui.p2p.P2PViewModel
+import org.smartregister.p2p.search.ui.theme.AppTheme
 import org.smartregister.p2p.utils.DefaultDispatcherProvider
 import org.smartregister.p2p.utils.getDeviceName
 import org.smartregister.p2p.utils.isAppDebuggable
@@ -81,106 +87,50 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
       DefaultDispatcherProvider()
     )
   }
-  private var isSender = false
+  private val p2PViewModel by viewModels<P2PViewModel> {
+    P2PViewModel.Factory(
+      context = this,
+      dataSharingStrategy = dataSharingStrategy,
+      DefaultDispatcherProvider()
+    )
+  }
   private var scanning = false
   private var isSenderSyncComplete = false
-  internal lateinit var interactiveDialog: BottomSheetDialog
-  private var currentConnectedDevice: DeviceInfo? = null
 
   private lateinit var dataSharingStrategy: DataSharingStrategy
 
   private var keepScreenOnCounter = 0
 
-  private val rootView: View by lazy { findViewById(R.id.device_search_root_layout) }
-
   val REQUEST_CHECK_LOCATION_ENABLED = 2398
-  var requestDisconnection = false
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    setContentView(R.layout.activity_p2_pdevice_search)
-
-    if (Timber.treeCount == 0 && isAppDebuggable(this)) {
-      Timber.plant(Timber.DebugTree())
-    }
-
-    Timber.e("Just a random log message")
-
-    title = getString(R.string.device_to_device_sync)
-    supportActionBar?.setHomeAsUpIndicator(android.R.drawable.ic_menu_close_clear_cancel)
 
     // Remaining setup for the DataSharingStrategy class
     dataSharingStrategy = P2PLibrary.getInstance().dataSharingStrategy
     dataSharingStrategy.setActivity(this)
 
-    findViewById<Button>(R.id.scanDevicesBtn).setOnClickListener {
+    // use compose
+    setContent {
+      AppTheme {
+        P2PScreen(
+          p2PUiState = p2PViewModel.p2PUiState.value,
+          onEvent = p2PViewModel::onEvent,
+          p2PViewModel = p2PViewModel
+        )
+      }
+    }
+
+    if (Timber.treeCount == 0 && isAppDebuggable(this)) {
+      Timber.plant(Timber.DebugTree())
+    }
+
+    title = getString(R.string.device_to_device_sync)
+
+    /* findViewById<Button>(R.id.scanDevicesBtn).setOnClickListener {
       scanning = true
       requestLocationPermissionsAndEnableLocation()
-    }
-  }
-
-  fun startScanning() {
-    keepScreenOn(true)
-    dataSharingStrategy.searchDevices(
-      object : OnDeviceFound {
-        override fun deviceFound(devices: List<DeviceInfo>) {
-          showDevicesList(devices)
-        }
-
-        override fun failed(ex: Exception) {
-          keepScreenOn(false)
-          Timber.e("Devices searching failed")
-          Timber.e(ex)
-          removeScanningDialog()
-
-          Toast.makeText(
-              this@P2PDeviceSearchActivity,
-              R.string.device_searching_failed,
-              Toast.LENGTH_LONG
-            )
-            .show()
-        }
-      },
-      object : DataSharingStrategy.PairingListener {
-
-        override fun onSuccess(device: DeviceInfo?) {
-
-          if (currentConnectedDevice == null) {
-            Timber.e("Devices paired with another: DeviceInfo is null")
-          }
-
-          currentConnectedDevice = device
-          val displayName = device?.getDisplayName() ?: "Unknown"
-          showP2PSelectPage(getDeviceRole(), displayName)
-        }
-
-        override fun onFailure(device: DeviceInfo?, ex: Exception) {
-          keepScreenOn(false)
-          Timber.e("Devices pairing failed")
-          Timber.e(ex)
-          removeScanningDialog()
-        }
-
-        override fun onDisconnected() {
-          if (!requestDisconnection) {
-            removeScanningDialog()
-            showToast("Connection was disconnected")
-
-            keepScreenOn(false)
-
-            if (isSenderSyncComplete) {
-              showTransferCompleteDialog()
-            }
-
-            Timber.e("Successful on disconnect")
-            Timber.e("isSenderSyncComplete $isSenderSyncComplete")
-            // But use a flag to determine if sync was completed
-          }
-        }
-      }
-    )
-
-    showScanningDialog()
+    }*/
   }
 
   internal fun showToast(text: String) {
@@ -208,7 +158,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
       OnSuccessListener<LocationSettingsResponse?> {
         // All location settings are satisfied. The client can initialize
         // location requests here.
-        startScanning()
+        p2PViewModel.startScanning()
       }
     )
     result.addOnFailureListener(
@@ -294,91 +244,16 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     }
   }*/
 
-  override fun onOptionsItemSelected(item: MenuItem): Boolean {
-    if (item.itemId == android.R.id.home) {
-      finish()
-      return true
-    }
-
-    return super.onOptionsItemSelected(item)
-  }
-
   override fun onResume() {
     super.onResume()
-    initChannel()
+    p2PViewModel.initChannel()
     dataSharingStrategy.onResume(isScanning = scanning)
   }
 
-  fun initChannel() {
-    dataSharingStrategy.initChannel(
-      object : OnDeviceFound {
-        override fun deviceFound(devices: List<DeviceInfo>) {
-          showDevicesList(devices)
-        }
-
-        override fun failed(ex: Exception) {
-          keepScreenOn(false)
-          Timber.e("Devices searching failed")
-          Timber.e(ex)
-          removeScanningDialog()
-
-          Toast.makeText(
-              this@P2PDeviceSearchActivity,
-              R.string.device_searching_failed,
-              Toast.LENGTH_LONG
-            )
-            .show()
-        }
-      },
-      object : DataSharingStrategy.PairingListener {
-
-        override fun onSuccess(device: DeviceInfo?) {
-
-          if (currentConnectedDevice == null) {
-            Timber.e("Devices paired with another: DeviceInfo is null")
-          }
-
-          currentConnectedDevice = device
-          val displayName = device?.getDisplayName() ?: "Unknown"
-          showP2PSelectPage(getDeviceRole(), displayName)
-        }
-
-        override fun onFailure(device: DeviceInfo?, ex: Exception) {
-          keepScreenOn(false)
-          Timber.e("Devices pairing failed")
-          Timber.e(ex)
-          removeScanningDialog()
-        }
-
-        override fun onDisconnected() {
-          if (!requestDisconnection) {
-            removeScanningDialog()
-            showToast("Connection was disconnected")
-
-            keepScreenOn(false)
-
-            if (isSenderSyncComplete) {
-              showTransferCompleteDialog()
-            }
-
-            Timber.e("Successful on disconnect")
-            Timber.e("isSenderSyncComplete $isSenderSyncComplete")
-            // But use a flag to determine if sync was completed
-          }
-        }
-      }
-    )
-  }
   override fun onPause() {
     super.onPause()
 
     dataSharingStrategy.onPause()
-  }
-
-  override fun onCreateOptionsMenu(menu: Menu): Boolean {
-    // Inflate the menu; this adds items to the action bar if it is present.
-    menuInflater.inflate(R.menu.menu_main, menu)
-    return true
   }
 
   @RequiresApi(Build.VERSION_CODES.M)
@@ -395,232 +270,20 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     }
   }
 
-  internal fun createBottomSheetDialog(): BottomSheetDialog {
-    return BottomSheetDialog(this)
+  fun sendDeviceDetails() {
+    p2PSenderViewModel.sendDeviceDetails(getCurrentConnectedDevice())
   }
 
-  fun showScanningDialog() {
-    interactiveDialog = createBottomSheetDialog()
-    interactiveDialog.setContentView(R.layout.devices_list_bottom_sheet)
-    interactiveDialog.setTitle(getString(R.string.nearby_devices))
-
-    interactiveDialog
-      .findViewById<TextView>(R.id.device_search_description)
-      ?.setText(
-        String.format(getString(R.string.looking_for_nearby_devices_as), getDeviceName(this))
-      )
-
-    interactiveDialog.findViewById<ImageButton>(R.id.dialog_close)?.setOnClickListener {
-      interactiveDialog.cancel()
-      stopScanning()
-    }
-
-    interactiveDialog.setCancelable(false)
-    interactiveDialog.show()
-  }
-
-  fun stopScanning() {
-    if (scanning) {
-      dataSharingStrategy.stopSearchingDevices(
-        object : DataSharingStrategy.OperationListener {
-          override fun onSuccess(device: DeviceInfo?) {
-            scanning = false
-            Timber.e("Searching stopped successfully")
-          }
-
-          override fun onFailure(device: DeviceInfo?, ex: Exception) {
-            Timber.e(ex)
-          }
-        }
-      )
-    }
-  }
-
-  fun removeScanningDialog() {
-    if (::interactiveDialog.isInitialized) {
-      interactiveDialog.dismiss()
-    }
-  }
-
-  fun showDevicesList(peerDeviceList: List<DeviceInfo>) {
-    initInteractiveDialog()
-    interactiveDialog.findViewById<ConstraintLayout>(R.id.loading_devices_layout)?.visibility =
-      View.GONE
-    interactiveDialog.findViewById<ConstraintLayout>(R.id.devices_list_layout)?.visibility =
-      View.VISIBLE
-    val devicesListRecyclerView =
-      interactiveDialog.findViewById<RecyclerView>(R.id.devices_list_recycler_view)
-    if (devicesListRecyclerView != null) {
-      devicesListRecyclerView.adapter = DeviceListAdapter(peerDeviceList, { connectToDevice(it) })
-      devicesListRecyclerView.layoutManager = LinearLayoutManager(this)
-    }
-  }
-
-  fun connectToDevice(device: DeviceInfo) {
-    isSender = true
-    dataSharingStrategy.connect(
-      device,
-      object : DataSharingStrategy.OperationListener {
-        override fun onSuccess(device: DeviceInfo?) {
-          scanning = false
-          currentConnectedDevice = device
-          showP2PSelectPage(getDeviceRole(), currentConnectedDevice!!.getDisplayName())
-        }
-
-        override fun onFailure(device: DeviceInfo?, ex: Exception) {
-          Timber.e("Connecting to device %s", device?.getDisplayName() ?: "Unknown")
-          Timber.e(ex)
-
-          Toast.makeText(
-              this@P2PDeviceSearchActivity,
-              getString(R.string.connecting_to_device_failed),
-              Toast.LENGTH_LONG
-            )
-            .show()
-        }
-      }
-    )
-  }
-
-  fun showSenderDialog(practitionerName: String) {
-    initInteractiveDialog()
-    interactiveDialog.setContentView(R.layout.data_transfer_bottom_sheet)
-
-    interactiveDialog
-      .findViewById<TextView>(R.id.data_transfer_title)
-      ?.setText(getString(R.string.start_sending_data))
-
-    interactiveDialog
-      .findViewById<TextView>(R.id.data_transfer_description)
-      ?.setText(String.format(getString(R.string.start_sending_data_to), practitionerName))
-
-    interactiveDialog.findViewById<ImageButton>(R.id.data_transfer_dialog_close)
-      ?.setOnClickListener { interactiveDialog.cancel() }
-
-    interactiveDialog.findViewById<Button>(R.id.dataTransferBtn)?.setOnClickListener {
-      // initiate data transfer
-      keepScreenOn(true)
-      p2PSenderViewModel.sendDeviceDetails(getCurrentConnectedDevice())
-      showTransferProgressDialog()
-
-      throw RuntimeException("Oh! An error occurred!")
-    }
-
-    interactiveDialog.setCancelable(false)
-    interactiveDialog.show()
-  }
-
-  fun showReceiverDialog() {
-    initInteractiveDialog()
-    interactiveDialog.setContentView(R.layout.data_transfer_bottom_sheet)
-
-    interactiveDialog
-      .findViewById<TextView>(R.id.data_transfer_title)
-      ?.setText(getString(R.string.start_receiving_data))
-
-    interactiveDialog
-      .findViewById<TextView>(R.id.data_transfer_description)
-      ?.setText(getString(R.string.waiting_for_transfer_to_start))
-
-    interactiveDialog.findViewById<ImageButton>(R.id.data_transfer_dialog_close)
-      ?.setOnClickListener { interactiveDialog.cancel() }
-
-    interactiveDialog.findViewById<ImageView>(R.id.data_transfer_icon)?.visibility = View.GONE
-
-    interactiveDialog.findViewById<Button>(R.id.dataTransferBtn)?.visibility = View.GONE
-
-    interactiveDialog.setCancelable(false)
-    interactiveDialog.show()
-
-    // listen for messages
-    keepScreenOn(true)
+  fun processSenderDeviceDetails() {
     p2PReceiverViewModel.processSenderDeviceDetails()
   }
 
-  fun showTransferProgressDialog() {
-    initInteractiveDialog()
-    interactiveDialog.setContentView(R.layout.data_transfer_bottom_sheet)
-
-    val transferTitle =
-      if (isSender) this.getString(R.string.sending) else this.getString(R.string.receiving)
-    interactiveDialog.findViewById<TextView>(R.id.data_transfer_title)?.setText(transferTitle)
-
-    val transferDescription =
-      if (isSender) String.format(getString(R.string.sending_data_to), "")
-      else String.format(getString(R.string.receiving_data_from), "")
-    interactiveDialog
-      .findViewById<TextView>(R.id.data_transfer_description)
-      ?.setText(transferDescription)
-
-    interactiveDialog.findViewById<ImageButton>(R.id.data_transfer_dialog_close)
-      ?.setOnClickListener { interactiveDialog.cancel() }
-
-    interactiveDialog.findViewById<Button>(R.id.dataTransferBtn)?.apply {
-      setOnClickListener {
-        // close wifi direct connection
-      }
-      setText(getString(R.string.cancel))
-    }
-
-    interactiveDialog.setCancelable(false)
-    interactiveDialog.show()
-  }
-
   override fun showTransferCompleteDialog() {
-    while (keepScreenOnCounter > 0) {
-      keepScreenOn(false)
-    }
-
-    initInteractiveDialog()
-    interactiveDialog.setContentView(R.layout.data_transfer_bottom_sheet)
-
-    interactiveDialog
-      .findViewById<TextView>(R.id.data_transfer_title)
-      ?.setText(getString(R.string.data_transfer_comlete))
-
-    interactiveDialog
-      .findViewById<TextView>(R.id.data_transfer_description)
-      ?.setText(String.format(getString(R.string.device_data_successfully_sent)))
-
-    interactiveDialog.findViewById<ImageButton>(R.id.data_transfer_dialog_close)
-      ?.setOnClickListener { interactiveDialog.cancel() }
-
-    interactiveDialog.findViewById<Button>(R.id.dataTransferBtn)?.apply {
-      setOnClickListener {
-        // close wifi direct connection
-        finish()
-      }
-      setText(getString(R.string.okay))
-    }
-
-    interactiveDialog.setCancelable(false)
-    interactiveDialog.show()
-  }
-
-  private fun initInteractiveDialog() {
-    if (!this::interactiveDialog.isInitialized) {
-      interactiveDialog = BottomSheetDialog(this)
-    }
-  }
-
-  override fun showP2PSelectPage(deviceRole: DeviceRole, deviceName: String) {
-    rootView
-      .findViewById<TextView>(R.id.description)
-      ?.setText(getString(R.string.connect_to_other_device_to_start_transfer))
-    rootView.findViewById<Button>(R.id.scanDevicesBtn)?.visibility = View.GONE
-
-    when (deviceRole) {
-      DeviceRole.RECEIVER -> showReceiverDialog()
-      DeviceRole.SENDER -> showSenderDialog(deviceName)
-    }
-  }
-
-  override fun getDeviceRole(): DeviceRole {
-    return if (isSender) DeviceRole.SENDER else DeviceRole.RECEIVER
+    p2PViewModel.showTransferCompleteDialog()
   }
 
   private fun logDebug(message: String) {
-    Snackbar.make(rootView, message, Snackbar.LENGTH_SHORT).show()
+    // Snackbar.make(rootView, message, Snackbar.LENGTH_SHORT).show()
     Timber.d(message)
   }
 
@@ -637,14 +300,15 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     Timber.e("sender sync complete $isSenderSyncComplete")
   }
 
-  override fun updateTransferProgress(
-    resStringId: Int,
-    percentageTransferred: Int,
-    totalRecords: Long
-  ) {
-    interactiveDialog
-      .findViewById<TextView>(R.id.data_transfer_description)
-      ?.setText(getString(resStringId, percentageTransferred, totalRecords))
+  override fun updateTransferProgress(transferProgress: TransferProgress) {
+    p2PViewModel.updateTransferProgress(transferProgress = transferProgress)
+  }
+
+  override fun notifyDataTransferStarting(deviceRole: DeviceRole) {
+    when (deviceRole) {
+      DeviceRole.SENDER -> p2PViewModel.updateP2PState(P2PState.TRANSFERRING_DATA)
+      DeviceRole.RECEIVER -> p2PViewModel.updateP2PState(P2PState.RECEIVING_DATA)
+    }
   }
 
   /**
@@ -657,12 +321,12 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     if (enable) {
       keepScreenOnCounter++
       if (keepScreenOnCounter == 1) {
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
       }
     } else {
       keepScreenOnCounter--
       if (keepScreenOnCounter == 0) {
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
       }
     }
   }

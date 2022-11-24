@@ -25,12 +25,13 @@ import java.util.TreeSet
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.smartregister.p2p.P2PLibrary
-import org.smartregister.p2p.R
+import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
 import org.smartregister.p2p.data_sharing.SyncSenderHandler
 import org.smartregister.p2p.model.P2PReceivedHistory
+import org.smartregister.p2p.model.TransferProgress
 import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.payload.StringPayload
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
@@ -230,12 +231,18 @@ class P2PSenderViewModel(
     viewModelScope.launch {
       withContext(dispatcherProvider.main()) {
         view.updateTransferProgress(
-          resStringId = R.string.transferring_x_records,
-          percentageTransferred = percentageSent,
-          totalRecords = totalRecords
+          TransferProgress(
+            totalRecordCount = totalRecords,
+            transferredRecordCount = totalSentRecords,
+            percentageTransferred = percentageSent
+          )
         )
       }
     }
+  }
+
+  fun notifyDataTransferStarting() {
+    view.notifyDataTransferStarting(DeviceRole.SENDER)
   }
 
   class Factory(
@@ -243,7 +250,7 @@ class P2PSenderViewModel(
     private val dataSharingStrategy: DataSharingStrategy,
     private val dispatcherProvider: DispatcherProvider
   ) : ViewModelProvider.Factory {
-    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
       return P2PSenderViewModel(context, dataSharingStrategy, dispatcherProvider).apply {
         dataSharingStrategy.setCoroutineScope(viewModelScope)
       } as

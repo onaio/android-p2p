@@ -47,6 +47,8 @@ constructor(
     Timber.i("Start sync process")
     generateRecordsToSend()
     populateTotalRecordCount()
+    // notify Ui data transfer is to begin
+    p2PSenderViewModel.notifyDataTransferStarting()
     sendNextManifest()
   }
 
