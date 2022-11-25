@@ -23,6 +23,5 @@ sealed class P2PEvent {
   object ConnectionBreakConfirmed : P2PEvent()
   object DataTransferCompleteConfirmed : P2PEvent()
   object DismissConnectionBreakDialog : P2PEvent()
-  data class PairDevicesFound(val devices: List<DeviceInfo>) : P2PEvent()
   data class PairWithDevice(val device: DeviceInfo) : P2PEvent()
 }

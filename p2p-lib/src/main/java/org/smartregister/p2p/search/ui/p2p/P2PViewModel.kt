@@ -61,9 +61,6 @@ class P2PViewModel(
         // check whether location services are enabled
         view.requestLocationPermissionsAndEnableLocation()
       }
-      is P2PEvent.PairDevicesFound -> {
-        // display list of pairing devices
-      }
       is P2PEvent.PairWithDevice -> {
         // initiate pairing with device
         connectToDevice(event.device)
