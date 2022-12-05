@@ -139,10 +139,12 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
 
     if (!androidWifiManager.isWifiEnabled) {
       if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-        androidWifiManager.setWifiEnabled(true)
+        var intent = Intent(Settings.ACTION_WIRELESS_SETTINGS)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        applicationContext.startActivity(intent)
       } else {
         var intent = Intent(Settings.Panel.ACTION_WIFI)
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
         applicationContext.startActivity(intent)
       }
     }
