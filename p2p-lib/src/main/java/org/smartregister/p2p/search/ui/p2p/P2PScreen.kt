@@ -126,6 +126,11 @@ fun P2PScreen(
       }
     ) {
       when (p2PState) {
+        P2PState.WIFI_AND_LOCATION_ENABLE -> {
+          coroutineScope.launch {
+            modalBottomSheetState.animateTo(ModalBottomSheetValue.HalfExpanded)
+          }
+        }
         P2PState.TRANSFERRING_DATA -> {
           coroutineScope.launch { modalBottomSheetState.hide() }
           TransferProgressScreen(
@@ -274,9 +279,9 @@ fun DefaultScreen(
         onAction = { _, _ ->
           updateDeviceRole(DeviceRole.SENDER)
           onEvent(P2PEvent.StartScanning)
-          coroutineScope.launch {
+          /* coroutineScope.launch {
             modalBottomSheetState.animateTo(ModalBottomSheetValue.HalfExpanded)
-          }
+          }*/
         }
       )
       Spacer(modifier = modifier.height(20.dp))
@@ -289,9 +294,9 @@ fun DefaultScreen(
         onAction = { _, _ ->
           updateDeviceRole(DeviceRole.RECEIVER)
           onEvent(P2PEvent.StartScanning)
-          coroutineScope.launch {
+          /*    coroutineScope.launch {
             modalBottomSheetState.animateTo(ModalBottomSheetValue.HalfExpanded)
-          }
+          }*/
         }
       )
       Spacer(modifier = modifier.height(20.dp))
