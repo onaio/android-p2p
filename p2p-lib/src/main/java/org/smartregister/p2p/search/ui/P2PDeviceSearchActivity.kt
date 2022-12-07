@@ -140,6 +140,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
       return
     }
 
+    showToast(getString(R.string.turn_on_wifi))
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
       var intent = Intent(Settings.ACTION_WIRELESS_SETTINGS)
       startForResult.launch(intent)

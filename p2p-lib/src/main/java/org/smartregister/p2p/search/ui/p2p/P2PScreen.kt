@@ -279,9 +279,6 @@ fun DefaultScreen(
         onAction = { _, _ ->
           updateDeviceRole(DeviceRole.SENDER)
           onEvent(P2PEvent.StartScanning)
-          /* coroutineScope.launch {
-            modalBottomSheetState.animateTo(ModalBottomSheetValue.HalfExpanded)
-          }*/
         }
       )
       Spacer(modifier = modifier.height(20.dp))
@@ -294,9 +291,6 @@ fun DefaultScreen(
         onAction = { _, _ ->
           updateDeviceRole(DeviceRole.RECEIVER)
           onEvent(P2PEvent.StartScanning)
-          /*    coroutineScope.launch {
-            modalBottomSheetState.animateTo(ModalBottomSheetValue.HalfExpanded)
-          }*/
         }
       )
       Spacer(modifier = modifier.height(20.dp))

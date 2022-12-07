@@ -159,7 +159,6 @@ class P2PViewModel(
       device,
       object : DataSharingStrategy.OperationListener {
         override fun onSuccess(device: DeviceInfo?) {
-          // scanning = false
           currentConnectedDevice = device
           Timber.d("Connecting to device %s success", device?.getDisplayName() ?: "Unknown")
           _p2PState.postValue(P2PState.PREPARING_TO_SEND_DATA)

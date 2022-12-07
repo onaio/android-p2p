@@ -80,4 +80,5 @@
     <string name="connection_break_msg">Devices might get unpaired if you exit, any data sharing in progress will be cancelled</string>
     <string name="preparing_to_send_data_to">Preparing to send data to %1$s</string>
     <string name="waiting_for_sender_to_initiate_sync">Waiting for sender to initiate data sync</string>
+    <string name="turn_on_wifi">Please turn on Wifi connection for P2P to work</string>
 </resources>
