@@ -105,7 +105,7 @@ class P2PViewModel(
         view.keepScreenOn(false)
         Timber.e("Devices searching failed")
         Timber.e(ex)
-        view.showToast(view.getString(R.string.device_searching_failed))
+        _p2PState.postValue(P2PState.PAIR_DEVICES_SEARCH_FAILED)
       }
     }
 

@@ -64,6 +64,7 @@ import org.smartregister.p2p.search.ui.p2p.components.PairDeviceRow
 import org.smartregister.p2p.search.ui.p2p.components.ProgressStatusIndicator
 import org.smartregister.p2p.search.ui.p2p.components.ProgressStatusText
 import org.smartregister.p2p.search.ui.p2p.components.SelectPairDeviceRow
+import org.smartregister.p2p.search.ui.theme.DangerColor
 import org.smartregister.p2p.search.ui.theme.DefaultColor
 import org.smartregister.p2p.search.ui.theme.WhiteColor
 import org.smartregister.p2p.utils.annotation.ExcludeFromJacocoGeneratedReport
@@ -123,8 +124,13 @@ fun BottomSheet(
     var transferCompleteMsg = ""
     when (deviceRole) {
       DeviceRole.SENDER -> {
+        if (p2PState == P2PState.PAIR_DEVICES_SEARCH_FAILED) {
+          progressStatusTitle = stringResource(id = R.string.searching_failed)
+          progressStatusMsg = stringResource(id = R.string.searching_failed_msg)
+        } else {
+          progressStatusMsg = stringResource(id = R.string.searching_nearby_device_as)
+        }
         bottomSheetTitle = stringResource(id = R.string.searching_for_nearby_recipient)
-        progressStatusMsg = stringResource(id = R.string.searching_nearby_device_as)
         transferCompleteMsg =
           stringResource(
             id = R.string.x_records_sent,
@@ -192,10 +198,23 @@ fun BottomSheet(
 
       if (p2PState != P2PState.PAIR_DEVICES_FOUND) {
         Spacer(modifier = Modifier.size(5.dp))
-        ProgressStatusIndicator(
-          showCircularProgressIndicator = showCircularProgressIndicator,
-          p2PUiState = p2PUiState
-        )
+        if (p2PState == P2PState.PAIR_DEVICES_SEARCH_FAILED) {
+          ProgressStatusIndicator(
+            p2PUiState =
+              p2PUiState.copy(
+                progressIndicator =
+                  ProgressIndicator(
+                    backgroundColor = DangerColor.copy(alpha = 0.2f),
+                    icon = Icons.Filled.Clear
+                  )
+              )
+          )
+        } else {
+          ProgressStatusIndicator(
+            showCircularProgressIndicator = showCircularProgressIndicator,
+            p2PUiState = p2PUiState
+          )
+        }
 
         Spacer(modifier = Modifier.size(5.dp))
         ProgressStatusText(title = progressStatusTitle, message = progressStatusMsg)
@@ -226,7 +245,8 @@ fun BottomSheet(
 
       Spacer(modifier = Modifier.size(5.dp))
 
-      if (p2PState == P2PState.TRANSFER_COMPLETE) {
+      if (p2PState == P2PState.TRANSFER_COMPLETE || p2PState == P2PState.PAIR_DEVICES_SEARCH_FAILED
+      ) {
         Button(
           onClick = { onEvent(P2PEvent.DataTransferCompleteConfirmed) },
           modifier
@@ -251,6 +271,6 @@ fun PreviewBottomSheetScreen() {
     p2PUiState = P2PUiState(),
     deviceName = "John",
     deviceRole = DeviceRole.SENDER,
-    p2PState = P2PState.RECEIVING_DATA
+    p2PState = P2PState.PAIR_DEVICES_SEARCH_FAILED
   )
 }
