@@ -24,7 +24,6 @@ import androidx.lifecycle.viewModelScope
 import java.util.Timer
 import kotlin.concurrent.schedule
 import kotlinx.coroutines.launch
-import org.smartregister.p2p.R
 import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
@@ -169,8 +168,8 @@ class P2PViewModel(
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
           Timber.d("Connecting to device %s failure", device?.getDisplayName() ?: "Unknown")
           Timber.e(ex)
-
-          view.showToast(view.getString(R.string.connecting_to_device_failed))
+          _p2PState.postValue(P2PState.CONNECT_TO_DEVICE_FAILED)
+          // view.showToast(view.getString(R.string.connecting_to_device_failed))
         }
       }
     )

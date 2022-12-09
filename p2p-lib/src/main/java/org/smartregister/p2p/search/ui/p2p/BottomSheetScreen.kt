@@ -124,12 +124,20 @@ fun BottomSheet(
     var transferCompleteMsg = ""
     when (deviceRole) {
       DeviceRole.SENDER -> {
-        if (p2PState == P2PState.PAIR_DEVICES_SEARCH_FAILED) {
-          progressStatusTitle = stringResource(id = R.string.searching_failed)
-          progressStatusMsg = stringResource(id = R.string.searching_failed_msg)
-        } else {
-          progressStatusMsg = stringResource(id = R.string.searching_nearby_device_as)
+        when (p2PState) {
+          P2PState.PAIR_DEVICES_SEARCH_FAILED -> {
+            progressStatusTitle = stringResource(id = R.string.searching_failed)
+            progressStatusMsg = stringResource(id = R.string.searching_failed_msg)
+          }
+          P2PState.CONNECT_TO_DEVICE_FAILED -> {
+            progressStatusTitle = stringResource(id = R.string.pairing_failed)
+            progressStatusMsg = stringResource(id = R.string.pairing_failed_msg)
+          }
+          else -> {
+            progressStatusMsg = stringResource(id = R.string.searching_nearby_device_as)
+          }
         }
+
         bottomSheetTitle = stringResource(id = R.string.searching_for_nearby_recipient)
         transferCompleteMsg =
           stringResource(
@@ -198,22 +206,38 @@ fun BottomSheet(
 
       if (p2PState != P2PState.PAIR_DEVICES_FOUND) {
         Spacer(modifier = Modifier.size(5.dp))
-        if (p2PState == P2PState.PAIR_DEVICES_SEARCH_FAILED) {
-          ProgressStatusIndicator(
-            p2PUiState =
-              p2PUiState.copy(
-                progressIndicator =
-                  ProgressIndicator(
-                    backgroundColor = DangerColor.copy(alpha = 0.2f),
-                    icon = Icons.Filled.Clear
-                  )
-              )
-          )
-        } else {
-          ProgressStatusIndicator(
-            showCircularProgressIndicator = showCircularProgressIndicator,
-            p2PUiState = p2PUiState
-          )
+
+        when (p2PState) {
+          P2PState.PAIR_DEVICES_SEARCH_FAILED -> {
+            ProgressStatusIndicator(
+              p2PUiState =
+                p2PUiState.copy(
+                  progressIndicator =
+                    ProgressIndicator(
+                      backgroundColor = DangerColor.copy(alpha = 0.2f),
+                      icon = Icons.Filled.Clear
+                    )
+                )
+            )
+          }
+          P2PState.CONNECT_TO_DEVICE_FAILED -> {
+            ProgressStatusIndicator(
+              p2PUiState =
+                p2PUiState.copy(
+                  progressIndicator =
+                    ProgressIndicator(
+                      backgroundColor = DangerColor.copy(alpha = 0.2f),
+                      icon = Icons.Filled.Clear
+                    )
+                )
+            )
+          }
+          else -> {
+            ProgressStatusIndicator(
+              showCircularProgressIndicator = showCircularProgressIndicator,
+              p2PUiState = p2PUiState
+            )
+          }
         }
 
         Spacer(modifier = Modifier.size(5.dp))
@@ -245,7 +269,9 @@ fun BottomSheet(
 
       Spacer(modifier = Modifier.size(5.dp))
 
-      if (p2PState == P2PState.TRANSFER_COMPLETE || p2PState == P2PState.PAIR_DEVICES_SEARCH_FAILED
+      if (p2PState == P2PState.TRANSFER_COMPLETE ||
+          p2PState == P2PState.PAIR_DEVICES_SEARCH_FAILED ||
+          p2PState == P2PState.CONNECT_TO_DEVICE_FAILED
       ) {
         Button(
           onClick = { onEvent(P2PEvent.DataTransferCompleteConfirmed) },
@@ -271,6 +297,6 @@ fun PreviewBottomSheetScreen() {
     p2PUiState = P2PUiState(),
     deviceName = "John",
     deviceRole = DeviceRole.SENDER,
-    p2PState = P2PState.PAIR_DEVICES_SEARCH_FAILED
+    p2PState = P2PState.CONNECT_TO_DEVICE_FAILED
   )
 }
