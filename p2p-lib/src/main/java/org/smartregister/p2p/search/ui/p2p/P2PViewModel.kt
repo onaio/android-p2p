@@ -211,7 +211,27 @@ class P2PViewModel(
   }
 
   fun closeP2PScreen() {
-    view.finish()
+    if (dataSharingStrategy.getCurrentDevice() == null) {
+      view.finish()
+      return
+    }
+
+    viewModelScope.launch {
+      dataSharingStrategy.disconnect(
+        dataSharingStrategy.getCurrentDevice()!!,
+        object : DataSharingStrategy.OperationListener {
+          override fun onSuccess(device: DeviceInfo?) {
+            Timber.i("Diconnection successful")
+            view.finish()
+          }
+
+          override fun onFailure(device: DeviceInfo?, ex: Exception) {
+            view.finish()
+            Timber.e(ex, "P2P diconnection failed")
+          }
+        }
+      )
+    }
   }
 
   fun setCurrentConnectedDevice(device: DeviceInfo?) {
