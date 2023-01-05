@@ -147,8 +147,18 @@ fun BottomSheet(
           )
       }
       DeviceRole.RECEIVER -> {
-        bottomSheetTitle = stringResource(id = R.string.waiting_to_pair)
-        progressStatusMsg = stringResource(id = R.string.waiting_to_pair_with_sender)
+        when (p2PState) {
+          P2PState.RECEIVE_BASIC_DEVICE_DETAILS_FAILED -> {
+            bottomSheetTitle = stringResource(id = R.string.receiving)
+            progressStatusTitle = stringResource(id = R.string.receive_device_details_failed)
+            progressStatusMsg = stringResource(id = R.string.receive_device_details_failed_msg)
+          }
+          else -> {
+            bottomSheetTitle = stringResource(id = R.string.waiting_to_pair)
+            progressStatusMsg = stringResource(id = R.string.waiting_to_pair_with_sender)
+          }
+        }
+
         transferCompleteMsg =
           stringResource(
             id = R.string.x_records_received,
@@ -232,6 +242,18 @@ fun BottomSheet(
                 )
             )
           }
+          P2PState.RECEIVE_BASIC_DEVICE_DETAILS_FAILED -> {
+            ProgressStatusIndicator(
+              p2PUiState =
+                p2PUiState.copy(
+                  progressIndicator =
+                    ProgressIndicator(
+                      backgroundColor = DangerColor.copy(alpha = 0.2f),
+                      icon = Icons.Filled.Clear
+                    )
+                )
+            )
+          }
           else -> {
             ProgressStatusIndicator(
               showCircularProgressIndicator = showCircularProgressIndicator,
@@ -271,7 +293,8 @@ fun BottomSheet(
 
       if (p2PState == P2PState.TRANSFER_COMPLETE ||
           p2PState == P2PState.PAIR_DEVICES_SEARCH_FAILED ||
-          p2PState == P2PState.CONNECT_TO_DEVICE_FAILED
+          p2PState == P2PState.CONNECT_TO_DEVICE_FAILED ||
+          p2PState == P2PState.RECEIVE_BASIC_DEVICE_DETAILS_FAILED
       ) {
         Button(
           onClick = { onEvent(P2PEvent.DataTransferCompleteConfirmed) },
@@ -296,7 +319,7 @@ fun PreviewBottomSheetScreen() {
     modalBottomSheetState = ModalBottomSheetState(ModalBottomSheetValue.HalfExpanded),
     p2PUiState = P2PUiState(),
     deviceName = "John",
-    deviceRole = DeviceRole.SENDER,
-    p2PState = P2PState.CONNECT_TO_DEVICE_FAILED
+    deviceRole = DeviceRole.RECEIVER,
+    p2PState = P2PState.RECEIVE_BASIC_DEVICE_DETAILS_FAILED
   )
 }

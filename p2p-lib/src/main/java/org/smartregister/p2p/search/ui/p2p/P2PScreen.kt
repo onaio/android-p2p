@@ -191,6 +191,9 @@ fun P2PScreen(
               )
           )
         }
+        P2PState.RECEIVE_BASIC_DEVICE_DETAILS_FAILED -> {
+          coroutineScope.launch { modalBottomSheetState.show() }
+        }
         P2PState.RECEIVING_DATA -> {
           coroutineScope.launch { modalBottomSheetState.hide() }
           TransferProgressScreen(

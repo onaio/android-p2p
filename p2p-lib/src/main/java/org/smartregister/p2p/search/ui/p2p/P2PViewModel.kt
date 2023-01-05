@@ -169,7 +169,6 @@ class P2PViewModel(
           Timber.d("Connecting to device %s failure", device?.getDisplayName() ?: "Unknown")
           Timber.e(ex)
           _p2PState.postValue(P2PState.CONNECT_TO_DEVICE_FAILED)
-          // view.showToast(view.getString(R.string.connecting_to_device_failed))
         }
       }
     )

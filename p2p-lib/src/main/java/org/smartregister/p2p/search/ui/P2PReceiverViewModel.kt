@@ -29,6 +29,7 @@ import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
 import org.smartregister.p2p.data_sharing.SyncReceiverHandler
 import org.smartregister.p2p.model.P2PReceivedHistory
+import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.model.TransferProgress
 import org.smartregister.p2p.payload.BytePayload
 import org.smartregister.p2p.payload.PayloadContract
@@ -65,14 +66,9 @@ class P2PReceiverViewModel(
             checkIfDeviceKeyHasChanged(
               deviceDetails[Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY]!!
             )
-
-            viewModelScope.launch {
-              withContext(dispatcherProvider.main()) {
-                // TODO update to use compose
-                // view.showTransferProgressDialog()
-              }
-            }
           } else {
+            // Show error msg
+            view.updateP2PState(P2PState.RECEIVE_BASIC_DEVICE_DETAILS_FAILED)
             Timber.e("An error occurred and the APP-LIFETIME-KEY was not sent")
           }
         }

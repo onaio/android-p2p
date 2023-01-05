@@ -85,4 +85,6 @@
     <string name="searching_failed_msg">Sorry could not find devices to pair with</string>
     <string name="pairing_failed">Pairing failed</string>
     <string name="pairing_failed_msg">Sorry could not pair with device</string>
+    <string name="receive_device_details_failed">Receiving device details failed</string>
+    <string name="receive_device_details_failed_msg">Sorry could not receive device details</string>
 </resources>
