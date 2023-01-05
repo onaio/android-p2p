@@ -16,14 +16,17 @@
 package org.smartregister.p2p.search.ui
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
+import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.provider.Settings
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.ImageButton
@@ -31,6 +34,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -102,6 +106,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
   private var keepScreenOnCounter = 0
 
   val REQUEST_CHECK_LOCATION_ENABLED = 2398
+  private lateinit var androidWifiManager: WifiManager
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -127,10 +132,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
 
     title = getString(R.string.device_to_device_sync)
 
-    /* findViewById<Button>(R.id.scanDevicesBtn).setOnClickListener {
-      scanning = true
-      requestLocationPermissionsAndEnableLocation()
-    }*/
+    androidWifiManager = getAndroidWifiManager()
   }
 
   internal fun showToast(text: String) {
@@ -143,6 +145,36 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     }
 
     checkLocationEnabled()
+  }
+
+  fun checkEnableWifi() {
+
+    if (androidWifiManager.isWifiEnabled) {
+      p2PViewModel.updateP2PState(P2PState.WIFI_AND_LOCATION_ENABLE)
+      p2PViewModel.startScanning()
+      return
+    }
+
+    showToast(getString(R.string.turn_on_wifi))
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+      var intent = Intent(Settings.ACTION_WIRELESS_SETTINGS)
+      startForResult.launch(intent)
+    } else {
+      var intent = Intent(Settings.Panel.ACTION_WIFI)
+      startForResult.launch(intent)
+    }
+  }
+
+  private val startForResult =
+    registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+      if (androidWifiManager.isWifiEnabled) {
+        p2PViewModel.updateP2PState(P2PState.WIFI_AND_LOCATION_ENABLE)
+        p2PViewModel.startScanning()
+      }
+    }
+
+  fun getAndroidWifiManager(): WifiManager {
+    return applicationContext.getSystemService(Context.WIFI_SERVICE) as (WifiManager)
   }
 
   /**
@@ -158,7 +190,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
       OnSuccessListener<LocationSettingsResponse?> {
         // All location settings are satisfied. The client can initialize
         // location requests here.
-        p2PViewModel.startScanning()
+        checkEnableWifi()
       }
     )
     result.addOnFailureListener(
