@@ -23,15 +23,25 @@ import android.content.pm.PackageManager
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
 import android.provider.Settings
 import android.view.WindowManager
+import android.widget.Button
+import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
@@ -39,18 +49,23 @@ import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.location.LocationSettingsResponse
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.snackbar.Snackbar
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.R
 import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
+import org.smartregister.p2p.data_sharing.OnDeviceFound
 import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.model.TransferProgress
+import org.smartregister.p2p.search.adapter.DeviceListAdapter
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
 import org.smartregister.p2p.search.ui.p2p.P2PScreen
 import org.smartregister.p2p.search.ui.p2p.P2PViewModel
 import org.smartregister.p2p.search.ui.theme.AppTheme
 import org.smartregister.p2p.utils.DefaultDispatcherProvider
+import org.smartregister.p2p.utils.getDeviceName
 import org.smartregister.p2p.utils.isAppDebuggable
 import org.smartregister.p2p.utils.startP2PScreen
 import timber.log.Timber
@@ -347,4 +362,11 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
       }
     }
   }
+
+  override fun onStop() {
+    super.onStop()
+
+    //dataSharingStrategy.onStop()
+  }
+
 }
