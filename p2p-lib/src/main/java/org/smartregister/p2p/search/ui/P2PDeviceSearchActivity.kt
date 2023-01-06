@@ -129,8 +129,12 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
       requestAccessFineLocationIfNotGranted()
     }
 
-    checkLocationEnabled()
+    if (hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
+      checkLocationEnabled()
+    }
   }
+
+  fun hasPermission(permission: String) : Boolean = checkCallingOrSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
 
   fun checkEnableWifi() {
 
@@ -345,6 +349,18 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
       if (keepScreenOnCounter == 0) {
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
       }
+    }
+  }
+
+  override fun onRequestPermissionsResult(
+    requestCode: Int,
+    permissions: Array<out String>,
+    grantResults: IntArray
+  ) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+    if (accessFineLocationPermissionRequestInt == requestCode && hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
+        checkLocationEnabled()
     }
   }
 }
