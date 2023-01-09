@@ -134,4 +134,103 @@ class BottomSheetScreenTest {
       .assertExists()
       .assertIsDisplayed()
   }
+
+  @Test
+  @OptIn(ExperimentalMaterialApi::class)
+  fun bottomSheetScreenRendersCorrectlyForReceiveBasicDeviceDetailsFailedStatus() {
+    composeRule.setContent {
+      BottomSheet(
+        deviceList = emptyList(),
+        onEvent = {},
+        modalBottomSheetState = ModalBottomSheetState(ModalBottomSheetValue.HalfExpanded),
+        p2PUiState = P2PUiState(),
+        deviceName = "John",
+        deviceRole = DeviceRole.RECEIVER,
+        p2PState = P2PState.RECEIVE_BASIC_DEVICE_DETAILS_FAILED
+      )
+    }
+
+    composeRule.onNodeWithText("OKay").assertExists().assertIsDisplayed()
+    composeRule.onNodeWithText("Receiving device details failed").assertExists().assertIsDisplayed()
+    composeRule
+      .onNodeWithText("Sorry could not receive device details")
+      .assertExists()
+      .assertIsDisplayed()
+    composeRule
+      .onNodeWithTag(BOTTOM_SHEET_BUTTON_TEST_TAG)
+      .assertExists()
+      .assertIsDisplayed()
+      .performClick()
+    composeRule
+      .onNodeWithTag(BOTTOM_SHEET_CANCEL_ICON_TEST_TAG)
+      .assertExists()
+      .assertIsDisplayed()
+      .performClick()
+  }
+
+  @Test
+  @OptIn(ExperimentalMaterialApi::class)
+  fun bottomSheetScreenRendersCorrectlyForPairDevicesSearchFailedStatus() {
+    composeRule.setContent {
+      BottomSheet(
+        deviceList = emptyList(),
+        onEvent = {},
+        modalBottomSheetState = ModalBottomSheetState(ModalBottomSheetValue.HalfExpanded),
+        p2PUiState = P2PUiState(),
+        deviceName = "John",
+        deviceRole = DeviceRole.SENDER,
+        p2PState = P2PState.PAIR_DEVICES_SEARCH_FAILED
+      )
+    }
+
+    composeRule.onNodeWithText("OKay").assertExists().assertIsDisplayed()
+    composeRule.onNodeWithText("Searching failed").assertExists().assertIsDisplayed()
+    composeRule
+      .onNodeWithText("Sorry could not find devices to pair with")
+      .assertExists()
+      .assertIsDisplayed()
+    composeRule
+      .onNodeWithTag(BOTTOM_SHEET_BUTTON_TEST_TAG)
+      .assertExists()
+      .assertIsDisplayed()
+      .performClick()
+    composeRule
+      .onNodeWithTag(BOTTOM_SHEET_CANCEL_ICON_TEST_TAG)
+      .assertExists()
+      .assertIsDisplayed()
+      .performClick()
+  }
+
+  @Test
+  @OptIn(ExperimentalMaterialApi::class)
+  fun bottomSheetScreenRendersCorrectlyForConnectToDeviceFailedStatus() {
+    composeRule.setContent {
+      BottomSheet(
+        deviceList = emptyList(),
+        onEvent = {},
+        modalBottomSheetState = ModalBottomSheetState(ModalBottomSheetValue.HalfExpanded),
+        p2PUiState = P2PUiState(),
+        deviceName = "John",
+        deviceRole = DeviceRole.SENDER,
+        p2PState = P2PState.CONNECT_TO_DEVICE_FAILED
+      )
+    }
+
+    composeRule.onNodeWithText("OKay").assertExists().assertIsDisplayed()
+    composeRule.onNodeWithText("Pairing failed").assertExists().assertIsDisplayed()
+    composeRule
+      .onNodeWithText("Sorry could not pair with device")
+      .assertExists()
+      .assertIsDisplayed()
+    composeRule
+      .onNodeWithTag(BOTTOM_SHEET_BUTTON_TEST_TAG)
+      .assertExists()
+      .assertIsDisplayed()
+      .performClick()
+    composeRule
+      .onNodeWithTag(BOTTOM_SHEET_CANCEL_ICON_TEST_TAG)
+      .assertExists()
+      .assertIsDisplayed()
+      .performClick()
+  }
 }

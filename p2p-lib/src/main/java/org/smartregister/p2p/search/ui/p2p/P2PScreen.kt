@@ -297,10 +297,6 @@ fun DefaultScreen(
         }
       )
       Spacer(modifier = modifier.height(20.dp))
-
-      if (p2PUiState.showP2PDialog) {
-        P2PDialog(onEvent = onEvent)
-      }
     }
   }
 }
@@ -329,6 +325,9 @@ fun TransferProgressScreen(
         onClick = { onEvent(P2PEvent.CancelDataTransfer) },
         modifier = modifier.testTag(CANCEL_BUTTON_TEST_TAG)
       ) { Text(text = stringResource(id = R.string.cancel)) }
+    }
+    if (p2PUiState.showP2PDialog) {
+      P2PDialog(onEvent = onEvent)
     }
   }
 }
