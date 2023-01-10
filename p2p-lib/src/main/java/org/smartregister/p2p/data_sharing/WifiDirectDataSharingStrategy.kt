@@ -444,16 +444,28 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
   private suspend fun connectToServerSocket(groupOwnerAddress: String): Socket? =
     withContext(dispatcherProvider.io()) {
-      try {
-        Socket().apply {
-          bind(null)
-          connect(InetSocketAddress(groupOwnerAddress, PORT), SOCKET_TIMEOUT)
-          constructStreamsFromSocket(this)
+      var retryCount = 3
+      val retryDuration = 5000L
+      var clientSocket : Socket? = null
+
+      while (retryCount > 0) {
+        try {
+          clientSocket = Socket().apply {
+            bind(null)
+            connect(InetSocketAddress(groupOwnerAddress, PORT), SOCKET_TIMEOUT)
+            constructStreamsFromSocket(this)
+          }
+          break
+        } catch (e: Exception) {
+          Timber.e(e)
+          clientSocket = null
+          delay(retryDuration)
         }
-      } catch (e: Exception) {
-        Timber.e(e)
-        null
+
+        retryCount--
       }
+
+      clientSocket
     }
 
   override fun sendManifest(
