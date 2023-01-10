@@ -20,6 +20,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.wifi.p2p.WifiP2pDevice
 import android.net.wifi.p2p.WifiP2pGroup
 import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
@@ -47,7 +48,12 @@ class WifiP2pBroadcastReceiver(
       WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION -> handlePeersChanged()
       WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION ->
         handleStateChanged(intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1))
-      WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION -> handleDeviceChanged()
+      WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION -> {
+        val device =
+          intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE) as WifiP2pDevice?
+        listener.onDeviceInfoChanged(device = device)
+        handleDeviceChanged()
+      }
     }
   }
 

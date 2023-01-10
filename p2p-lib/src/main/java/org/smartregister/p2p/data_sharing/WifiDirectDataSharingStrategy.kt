@@ -203,7 +203,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
           }
         }
       } else {
-        // TODO: Handle fetching device details
+        /** This has been handled by [WifiDirectDataSharingStrategy.onDeviceInfoChanged] */
       }
     }
   }
@@ -646,6 +646,10 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
             override fun onConnectionInfoAvailable(info: WifiP2pInfo) {
               this@WifiDirectDataSharingStrategy.onConnectionInfoAvailable(info, null)
             }
+
+            override fun onDeviceInfoChanged(device: WifiP2pDevice?) {
+              this@WifiDirectDataSharingStrategy.onDeviceInfoChanged(device)
+            }
           },
           context
         )
@@ -730,6 +734,13 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
   override fun onConnectionInfoAvailable(info: WifiP2pInfo) {
     this.onConnectionInfoAvailable(info, null)
+  }
+
+  override fun onDeviceInfoChanged(device: WifiP2pDevice?) {
+    if (device != null) {
+      currentDevice = device
+      handleWifiP2pDevice(device = device)
+    }
   }
 
   override fun stopSearchingDevices(operationListener: DataSharingStrategy.OperationListener?) {
