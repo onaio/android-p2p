@@ -554,7 +554,6 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     if (isScanning) {
       listenForWifiP2pIntents()
       initiatePeerDiscoveryOnceAccessFineLocationGranted()
-      requestDeviceInfo()
       requestConnectionInfo()
     }
   }
@@ -646,10 +645,6 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
             override fun onConnectionInfoAvailable(info: WifiP2pInfo) {
               this@WifiDirectDataSharingStrategy.onConnectionInfoAvailable(info, null)
             }
-
-            override fun onDeviceInfoChanged(device: WifiP2pDevice?) {
-              this@WifiDirectDataSharingStrategy.onDeviceInfoChanged(device)
-            }
           },
           context
         )
@@ -678,8 +673,9 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   }
 
   override fun handleWifiP2pDevice(device: WifiP2pDevice) {
-    // TODO: Handle the issue here
-    // This is a new p2p device
+    if (device != null) {
+      currentDevice = device
+    }
   }
 
   override fun handleP2pDiscoveryStarted() {
@@ -734,13 +730,6 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
   override fun onConnectionInfoAvailable(info: WifiP2pInfo) {
     this.onConnectionInfoAvailable(info, null)
-  }
-
-  override fun onDeviceInfoChanged(device: WifiP2pDevice?) {
-    if (device != null) {
-      currentDevice = device
-      handleWifiP2pDevice(device = device)
-    }
   }
 
   override fun stopSearchingDevices(operationListener: DataSharingStrategy.OperationListener?) {

@@ -45,6 +45,4 @@ interface P2PManagerListener : WifiP2pManager.ConnectionInfoListener {
   fun handleMinimumSDKVersionNotMet(minimumSdkVersion: Int)
 
   fun onConnectionInfoAvailable(info: WifiP2pInfo, wifiP2pGroup: WifiP2pGroup?)
-
-  fun onDeviceInfoChanged(device: WifiP2pDevice?)
 }
