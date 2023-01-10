@@ -131,6 +131,7 @@ class P2PReceiverViewModel(
           // Listen for incoming manifest
           val receivedManifest =
             dataSharingStrategy.receiveManifest(
+              // TODO: Fix this is null for some weird issue causing an NPE
               device = dataSharingStrategy.getCurrentDevice()!!,
               object : DataSharingStrategy.OperationListener {
                 override fun onSuccess(device: DeviceInfo?) {
@@ -209,7 +210,7 @@ class P2PReceiverViewModel(
         dataSharingStrategy.getCurrentDevice()!!,
         object : DataSharingStrategy.OperationListener {
           override fun onSuccess(device: DeviceInfo?) {
-            Timber.i("Diconnection successful")
+            Timber.i("Disconnection successful")
           }
 
           override fun onFailure(device: DeviceInfo?, ex: Exception) {
