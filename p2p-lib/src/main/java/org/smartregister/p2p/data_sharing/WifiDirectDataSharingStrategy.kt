@@ -37,6 +37,7 @@ import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.smartregister.p2p.WifiP2pBroadcastReceiver
@@ -391,12 +392,15 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
             fun() {
               send(device, syncPayload, operationListener)
             }
+
+          operationListener.onFailure(device, Exception("An exception occurred and the socket is null"))
         }
       }
     }
   }
 
   private fun getGroupOwnerAddress(): String {
+    // This also causes a crash on the app
     return wifiP2pInfo!!.groupOwnerAddress.hostAddress
   }
 
@@ -415,11 +419,13 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       socket = socketResult
     } else if (wifiP2pInfo?.isGroupOwner == true) {
       // Start a server to accept connections.
+      Timber.e("Accepting connections")
       socketResult = acceptConnectionsToServerSocket()
       socket = socketResult
     } else {
       // Connect to the server running on the group owner device.
       socketResult = connectToServerSocket(groupOwnerAddress)
+      Timber.e("Making connection to server")
       socket = socketResult
     }
 

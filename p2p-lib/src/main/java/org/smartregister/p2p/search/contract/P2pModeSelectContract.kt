@@ -39,6 +39,8 @@ interface P2pModeSelectContract {
     fun updateTransferProgress(transferProgress: TransferProgress)
 
     fun notifyDataTransferStarting(deviceRole: DeviceRole)
+
+    fun restartActivity()
   }
 
   interface SenderViewModel {

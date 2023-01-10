@@ -339,6 +339,11 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     }
   }
 
+  override fun restartActivity() {
+    startActivity(Intent(this, P2PDeviceSearchActivity::class.java))
+    finish()
+  }
+
   /**
    * Enables or disables the keep screen on flag to avoid the device going to sleep while there is a
    * sync happening
