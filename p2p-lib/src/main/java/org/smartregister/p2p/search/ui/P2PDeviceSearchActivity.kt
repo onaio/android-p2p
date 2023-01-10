@@ -344,6 +344,10 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     finish()
   }
 
+  fun updateP2PState(p2PState: P2PState) {
+    p2PViewModel.updateP2PState(p2PState)
+  }
+
   /**
    * Enables or disables the keep screen on flag to avoid the device going to sleep while there is a
    * sync happening

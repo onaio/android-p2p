@@ -21,10 +21,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import java.util.Timer
-import kotlin.concurrent.schedule
 import kotlinx.coroutines.launch
-import org.smartregister.p2p.R
 import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
@@ -105,7 +102,7 @@ class P2PViewModel(
         view.keepScreenOn(false)
         Timber.e("Devices searching failed")
         Timber.e(ex)
-        view.showToast(view.getString(R.string.device_searching_failed))
+        _p2PState.postValue(P2PState.PAIR_DEVICES_SEARCH_FAILED)
       }
     }
 
@@ -122,10 +119,14 @@ class P2PViewModel(
 
         currentConnectedDevice = device
 
-        // find better way to track this
-        if (deviceRole == DeviceRole.RECEIVER) {
-          _p2PState.postValue(P2PState.WAITING_TO_RECEIVE_DATA)
-          view.processSenderDeviceDetails()
+        when (deviceRole) {
+          DeviceRole.RECEIVER -> {
+            _p2PState.postValue(P2PState.WAITING_TO_RECEIVE_DATA)
+            view.processSenderDeviceDetails()
+          }
+          DeviceRole.SENDER -> {
+            view.sendDeviceDetails()
+          }
         }
       }
 
@@ -162,15 +163,12 @@ class P2PViewModel(
           currentConnectedDevice = device
           Timber.d("Connecting to device %s success", device?.getDisplayName() ?: "Unknown")
           _p2PState.postValue(P2PState.PREPARING_TO_SEND_DATA)
-
-          Timer().schedule(START_DATA_TRANSFER_DELAY) { view.sendDeviceDetails() }
         }
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
           Timber.d("Connecting to device %s failure", device?.getDisplayName() ?: "Unknown")
           Timber.e(ex)
-
-          view.showToast(view.getString(R.string.connecting_to_device_failed))
+          _p2PState.postValue(P2PState.CONNECT_TO_DEVICE_FAILED)
         }
       }
     )
@@ -212,7 +210,27 @@ class P2PViewModel(
   }
 
   fun closeP2PScreen() {
-    view.finish()
+    if (dataSharingStrategy.getCurrentDevice() == null) {
+      view.finish()
+      return
+    }
+
+    viewModelScope.launch {
+      dataSharingStrategy.disconnect(
+        dataSharingStrategy.getCurrentDevice()!!,
+        object : DataSharingStrategy.OperationListener {
+          override fun onSuccess(device: DeviceInfo?) {
+            Timber.i("Diconnection successful")
+            view.finish()
+          }
+
+          override fun onFailure(device: DeviceInfo?, ex: Exception) {
+            view.finish()
+            Timber.e(ex, "P2P diconnection failed")
+          }
+        }
+      )
+    }
   }
 
   fun setCurrentConnectedDevice(device: DeviceInfo?) {
