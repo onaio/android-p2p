@@ -95,6 +95,13 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    if (Timber.treeCount == 0 && isAppDebuggable(this)) {
+      Timber.plant(Timber.DebugTree())
+    }
+
+    Timber.e("Just a random log message")
+
+    supportActionBar?.setHomeAsUpIndicator(android.R.drawable.ic_menu_close_clear_cancel)
 
     // Remaining setup for the DataSharingStrategy class
     dataSharingStrategy = P2PLibrary.getInstance().dataSharingStrategy
@@ -129,8 +136,12 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
       requestAccessFineLocationIfNotGranted()
     }
 
-    checkLocationEnabled()
+    if (hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
+      checkLocationEnabled()
+    }
   }
+
+  fun hasPermission(permission: String) : Boolean = checkCallingOrSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
 
   fun checkEnableWifi() {
 
@@ -331,9 +342,15 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     }
   }
 
-  fun updateP2PState(p2PState: P2PState) {
+  override fun restartActivity() {
+    startActivity(Intent(this, P2PDeviceSearchActivity::class.java))
+    finish()
+  }
+
+  override fun updateP2PState(p2PState: P2PState) {
     p2PViewModel.updateP2PState(p2PState)
   }
+
 
   /**
    * Enables or disables the keep screen on flag to avoid the device going to sleep while there is a
@@ -354,4 +371,23 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
       }
     }
   }
+
+  override fun onRequestPermissionsResult(
+    requestCode: Int,
+    permissions: Array<out String>,
+    grantResults: IntArray
+  ) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+    if (accessFineLocationPermissionRequestInt == requestCode && hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
+        checkLocationEnabled()
+    }
+  }
+
+  override fun onStop() {
+    super.onStop()
+
+    dataSharingStrategy.onStop()
+  }
+
 }

@@ -37,6 +37,7 @@ import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.smartregister.p2p.WifiP2pBroadcastReceiver
@@ -101,9 +102,12 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       requestAccessFineLocationIfNotGranted()
     }
 
+    // Check if already connected and disconnect
+    requestDeviceInfo2()
+
     initChannel(onDeviceFound = onDeviceFound, onConnected = onConnected)
 
-    listenForWifiP2pIntents()
+    listenForWifiP2pEventsIntents()
     initiatePeerDiscovery(onDeviceFound)
   }
 
@@ -111,7 +115,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     wifiP2pManager.requestConnectionInfo(wifiP2pChannel) { onConnectionInfoAvailable(it, null) }
   }
 
-  private fun listenForWifiP2pIntents() {
+  private fun listenForWifiP2pEventsIntents() {
     wifiP2pReceiver?.also {
       context.registerReceiver(
         it,
@@ -207,6 +211,51 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       }
     }
   }
+
+  private fun requestDeviceInfo2() {
+    wifiP2pChannel?.also { wifiP2pChannel ->
+      if (ActivityCompat.checkSelfPermission(
+          context,
+          android.Manifest.permission.ACCESS_FINE_LOCATION
+        ) != PackageManager.PERMISSION_GRANTED
+      ) {
+        return handleAccessFineLocationNotGranted()
+      }
+
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        wifiP2pManager.requestDeviceInfo(wifiP2pChannel) {
+          if (it != null && it.status == WifiP2pDevice.CONNECTED) {
+            disconnect(WifiDirectDevice(it), object: DataSharingStrategy.OperationListener {
+              override fun onSuccess(device: DeviceInfo?) {
+                Timber.e("Successfully connected from Wifi-Direct")
+              }
+
+              override fun onFailure(device: DeviceInfo?, ex: Exception) {
+                Timber.e(ex, "Successfully disconnect from Wifi-Direct")
+              }
+            })
+          }
+        }
+      } else {
+        wifiP2pManager.requestConnectionInfo(wifiP2pChannel) {
+          if (it != null && it.groupFormed) {
+            wifiP2pManager.removeGroup(
+              wifiP2pChannel,
+              object : WifiP2pManager.ActionListener {
+                override fun onSuccess() {
+                  Timber.e("Successfully connected from Wifi-Direct")
+                }
+
+                override fun onFailure(reason: Int) {
+                  Timber.e(Exception(getWifiP2pReason(reason)), "Successfully disconnect from Wifi-Direct")
+                }
+              })
+          }
+        }
+      }
+    }
+  }
+
   override fun connect(
     device: DeviceInfo,
     operationListener: DataSharingStrategy.OperationListener
@@ -343,12 +392,15 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
             fun() {
               send(device, syncPayload, operationListener)
             }
+
+          operationListener.onFailure(device, Exception("An exception occurred and the socket is null"))
         }
       }
     }
   }
 
   private fun getGroupOwnerAddress(): String {
+    // This also causes a crash on the app
     return wifiP2pInfo!!.groupOwnerAddress.hostAddress
   }
 
@@ -367,11 +419,13 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       socket = socketResult
     } else if (wifiP2pInfo?.isGroupOwner == true) {
       // Start a server to accept connections.
+      Timber.e("Accepting connections")
       socketResult = acceptConnectionsToServerSocket()
       socket = socketResult
     } else {
       // Connect to the server running on the group owner device.
       socketResult = connectToServerSocket(groupOwnerAddress)
+      Timber.e("Making connection to server")
       socket = socketResult
     }
 
@@ -396,16 +450,28 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
   private suspend fun connectToServerSocket(groupOwnerAddress: String): Socket? =
     withContext(dispatcherProvider.io()) {
-      try {
-        Socket().apply {
-          bind(null)
-          connect(InetSocketAddress(groupOwnerAddress, PORT), SOCKET_TIMEOUT)
-          constructStreamsFromSocket(this)
+      var retryCount = 3
+      val retryDuration = 5000L
+      var clientSocket : Socket? = null
+
+      while (retryCount > 0) {
+        try {
+          clientSocket = Socket().apply {
+            bind(null)
+            connect(InetSocketAddress(groupOwnerAddress, PORT), SOCKET_TIMEOUT)
+            constructStreamsFromSocket(this)
+          }
+          break
+        } catch (e: Exception) {
+          Timber.e(e)
+          clientSocket = null
+          delay(retryDuration)
         }
-      } catch (e: Exception) {
-        Timber.e(e)
-        null
+
+        retryCount--
       }
+
+      clientSocket
     }
 
   override fun sendManifest(
@@ -564,7 +630,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
   override fun onResume(isScanning: Boolean) {
     if (isScanning) {
-      listenForWifiP2pIntents()
+      listenForWifiP2pEventsIntents()
       initiatePeerDiscoveryOnceAccessFineLocationGranted()
       requestConnectionInfo()
     }
@@ -812,5 +878,25 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     override fun address(): String {
       return wifiP2pDevice.deviceAddress
     }
+  }
+
+  override fun onStop() {
+    closeSocketAndStreams()
+
+    requestedDisconnection = true
+    wifiP2pManager.removeGroup(
+      wifiP2pChannel,
+      object : WifiP2pManager.ActionListener {
+        override fun onSuccess() {
+          Timber.i("Device successfully disconnected")
+          paired = false
+        }
+
+        override fun onFailure(reason: Int) {
+          val exception = Exception("Error #$reason: ${getWifiP2pReason(reason)}")
+          Timber.e(exception)
+        }
+      }
+    )
   }
 }

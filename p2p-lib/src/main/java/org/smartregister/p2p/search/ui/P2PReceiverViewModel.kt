@@ -42,7 +42,7 @@ import org.smartregister.p2p.utils.divideToPercent
 import timber.log.Timber
 
 class P2PReceiverViewModel(
-  private val view: P2PDeviceSearchActivity,
+  private val view: P2pModeSelectContract.View,
   private val dataSharingStrategy: DataSharingStrategy,
   private val dispatcherProvider: DispatcherProvider
 ) : ViewModel(), P2pModeSelectContract.ReceiverViewModel {
@@ -53,8 +53,8 @@ class P2PReceiverViewModel(
   fun processSenderDeviceDetails() {
 
     dataSharingStrategy.receive(
-      dataSharingStrategy.getCurrentDevice(),
-      object : DataSharingStrategy.PayloadReceiptListener {
+      device = dataSharingStrategy.getCurrentDevice(),
+      payloadReceiptListener = object : DataSharingStrategy.PayloadReceiptListener {
         override fun onPayloadReceived(payload: PayloadContract<out Any>?) {
 
           var map: MutableMap<String, String?> = HashMap()
@@ -73,10 +73,13 @@ class P2PReceiverViewModel(
           }
         }
       },
-      object : DataSharingStrategy.OperationListener {
+      operationListener = object : DataSharingStrategy.OperationListener {
         override fun onSuccess(device: DeviceInfo?) {}
 
-        override fun onFailure(device: DeviceInfo?, ex: Exception) {}
+        override fun onFailure(device: DeviceInfo?, ex: Exception) {
+          Timber.e(ex, "An exception occured when trying to create the socket")
+          view.restartActivity()
+        }
       }
     )
   }
@@ -124,6 +127,7 @@ class P2PReceiverViewModel(
           // Listen for incoming manifest
           val receivedManifest =
             dataSharingStrategy.receiveManifest(
+              // TODO: Fix this is null for some weird issue causing an NPE
               device = dataSharingStrategy.getCurrentDevice()!!,
               object : DataSharingStrategy.OperationListener {
                 override fun onSuccess(device: DeviceInfo?) {
@@ -175,6 +179,9 @@ class P2PReceiverViewModel(
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
           Timber.e(ex, "Failed to receive chunk data")
+
+          // Reset and restart the page
+          view.restartActivity()
         }
       }
     )
@@ -199,7 +206,7 @@ class P2PReceiverViewModel(
         dataSharingStrategy.getCurrentDevice()!!,
         object : DataSharingStrategy.OperationListener {
           override fun onSuccess(device: DeviceInfo?) {
-            Timber.i("Diconnection successful")
+            Timber.i("Disconnection successful")
           }
 
           override fun onFailure(device: DeviceInfo?, ex: Exception) {

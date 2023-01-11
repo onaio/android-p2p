@@ -93,7 +93,10 @@ class P2PSenderViewModel(
           )
         }
 
-        override fun onFailure(device: DeviceInfo?, ex: Exception) {}
+        override fun onFailure(device: DeviceInfo?, ex: Exception) {
+          Timber.e(ex, "An error occurred trying to setup the socket")
+          view.restartActivity()
+        }
       }
     )
   }
