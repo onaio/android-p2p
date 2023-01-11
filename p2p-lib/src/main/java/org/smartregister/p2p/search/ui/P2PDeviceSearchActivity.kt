@@ -299,8 +299,11 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     p2PViewModel.showTransferCompleteDialog()
   }
 
+  override fun showCancelTransferDialog() {
+    p2PViewModel.showCancelTransferDialog()
+  }
+
   private fun logDebug(message: String) {
-    // Snackbar.make(rootView, message, Snackbar.LENGTH_SHORT).show()
     Timber.d(message)
   }
 

@@ -247,6 +247,10 @@ class P2PReceiverViewModel(
     }
   }
 
+  fun showCancelTransferDialog() {
+    viewModelScope.launch(dispatcherProvider.main()) { view.showCancelTransferDialog() }
+  }
+
   class Factory(
     private val context: P2PDeviceSearchActivity,
     private val dataSharingStrategy: DataSharingStrategy,

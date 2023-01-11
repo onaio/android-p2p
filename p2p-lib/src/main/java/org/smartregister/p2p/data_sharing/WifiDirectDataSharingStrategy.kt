@@ -450,7 +450,13 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
         if (socket != null) {
 
           dataInputStream?.run {
-            val dataType = readUTF()
+            val dataType =
+              try {
+                readUTF()
+              } catch (e: Exception) {
+                operationListener.onFailure(getCurrentDevice(), e)
+                return@makeSocketConnections
+              }
 
             if (dataType == SyncPayloadType.STRING.name) {
               val stringPayload = readUTF()
@@ -493,7 +499,13 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     // Check if this is the receiver/sender
 
     return dataInputStream?.run {
-      val dataType = readUTF()
+      val dataType =
+        try {
+          readUTF()
+        } catch (e: Exception) {
+          operationListener.onFailure(device = device, e)
+          return null
+        }
 
       if (dataType == MANIFEST) {
 
