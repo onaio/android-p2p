@@ -418,8 +418,12 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
     dataOutputStream?.apply {
       val manifestString = Gson().toJson(manifest)
-      writeUTF(MANIFEST)
-      writeUTF(manifestString)
+      try {
+        writeUTF(MANIFEST)
+        writeUTF(manifestString)
+      } catch (e: Exception) {
+        operationListener.onFailure(device = device, ex = e)
+      }
       flush()
       operationListener.onSuccess(device = device)
     }
