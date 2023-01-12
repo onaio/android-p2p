@@ -805,13 +805,12 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   }
 
   @Test
-  fun `onResume() calls listenForWifiP2pIntents(), initiatePeerDiscoveryOnceAccessFineLocationGranted(), requestDeviceInfo() and requestConnectionInfo() when isScanning is true`() {
+  fun `onResume() calls listenForWifiP2pIntents(), initiatePeerDiscoveryOnceAccessFineLocationGranted(), requestConnectionInfo() when isScanning is true`() {
     every { wifiDirectDataSharingStrategy invokeNoArgs "listenForWifiP2pIntents" } returns null
     every {
       wifiDirectDataSharingStrategy invokeNoArgs
         "initiatePeerDiscoveryOnceAccessFineLocationGranted"
     } returns null
-    every { wifiDirectDataSharingStrategy invokeNoArgs "requestDeviceInfo" } returns null
     every { wifiDirectDataSharingStrategy invokeNoArgs "requestConnectionInfo" } returns null
 
     wifiDirectDataSharingStrategy.onResume(isScanning = true)
@@ -821,7 +820,6 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
       wifiDirectDataSharingStrategy invokeNoArgs
         "initiatePeerDiscoveryOnceAccessFineLocationGranted"
     }
-    verify { wifiDirectDataSharingStrategy invokeNoArgs "requestDeviceInfo" }
     verify { wifiDirectDataSharingStrategy invokeNoArgs "requestConnectionInfo" }
   }
 

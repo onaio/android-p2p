@@ -41,6 +41,8 @@ interface P2pModeSelectContract {
     fun notifyDataTransferStarting(deviceRole: DeviceRole)
 
     fun restartActivity()
+
+    fun showCancelTransferDialog()
   }
 
   interface SenderViewModel {

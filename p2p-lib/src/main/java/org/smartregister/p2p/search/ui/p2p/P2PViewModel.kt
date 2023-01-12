@@ -64,7 +64,7 @@ class P2PViewModel(
       }
       is P2PEvent.CancelDataTransfer -> {
         // show cancel transfer dialog
-        p2PUiState.value = p2PUiState.value.copy(showP2PDialog = true)
+        showCancelTransferDialog()
       }
       P2PEvent.ConnectionBreakConfirmed -> {
         // cancel data transfer
@@ -242,6 +242,11 @@ class P2PViewModel(
   }
   fun getRequestDisconnection(): Boolean {
     return requestDisconnection
+  }
+
+  fun showCancelTransferDialog() {
+    // show cancel transfer dialog
+    p2PUiState.value = p2PUiState.value.copy(showP2PDialog = true)
   }
 
   class Factory(
