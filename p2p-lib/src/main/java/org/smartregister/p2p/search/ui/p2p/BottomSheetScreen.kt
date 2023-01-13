@@ -209,6 +209,7 @@ fun BottomSheet(
                 coroutineScope.launch {
                   if (modalBottomSheetState.isVisible) modalBottomSheetState.hide()
                 }
+                onEvent(P2PEvent.DataTransferCompleteConfirmed)
               }
               .testTag(BOTTOM_SHEET_CANCEL_ICON_TEST_TAG)
         )
