@@ -347,7 +347,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     finish()
   }
 
-  fun updateP2PState(p2PState: P2PState) {
+  override fun updateP2PState(p2PState: P2PState) {
     p2PViewModel.updateP2PState(p2PState)
   }
 
