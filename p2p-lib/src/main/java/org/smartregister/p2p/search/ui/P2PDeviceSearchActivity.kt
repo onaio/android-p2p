@@ -44,6 +44,7 @@ import org.smartregister.p2p.R
 import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
+import org.smartregister.p2p.model.P2PDialogState
 import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.model.TransferProgress
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
@@ -299,8 +300,8 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     p2PViewModel.showTransferCompleteDialog()
   }
 
-  override fun showCancelTransferDialog() {
-    p2PViewModel.showCancelTransferDialog()
+  override fun showCancelTransferDialog(p2PDialogState: P2PDialogState) {
+    p2PViewModel.showCancelTransferDialog(p2PDialogState = p2PDialogState)
   }
 
   private fun logDebug(message: String) {

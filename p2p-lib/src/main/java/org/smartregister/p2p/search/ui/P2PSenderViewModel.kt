@@ -30,6 +30,7 @@ import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
 import org.smartregister.p2p.data_sharing.SyncSenderHandler
+import org.smartregister.p2p.model.P2PDialogState
 import org.smartregister.p2p.model.P2PReceivedHistory
 import org.smartregister.p2p.model.TransferProgress
 import org.smartregister.p2p.payload.PayloadContract
@@ -88,7 +89,9 @@ class P2PSenderViewModel(
             object : DataSharingStrategy.OperationListener {
               override fun onSuccess(device: DeviceInfo?) {}
 
-              override fun onFailure(device: DeviceInfo?, ex: Exception) {}
+              override fun onFailure(device: DeviceInfo?, ex: Exception) {
+                view.showCancelTransferDialog(P2PDialogState(showCancelTransferDialog = true))
+              }
             }
           )
         }

@@ -28,6 +28,7 @@ import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
 import org.smartregister.p2p.data_sharing.SyncReceiverHandler
+import org.smartregister.p2p.model.P2PDialogState
 import org.smartregister.p2p.model.P2PReceivedHistory
 import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.model.TransferProgress
@@ -132,6 +133,7 @@ class P2PReceiverViewModel(
 
                 override fun onFailure(device: DeviceInfo?, ex: Exception) {
                   Timber.e(ex, "Failed to receive manifest")
+                  showCancelTransferDialog(P2PDialogState(showCancelTransferDialog = true))
                 }
               }
             )
@@ -175,6 +177,7 @@ class P2PReceiverViewModel(
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
           Timber.e(ex, "Failed to receive chunk data")
+          showCancelTransferDialog(P2PDialogState(showCancelTransferDialog = true))
         }
       }
     )
@@ -222,6 +225,7 @@ class P2PReceiverViewModel(
 
           override fun onFailure(device: DeviceInfo?, ex: Exception) {
             Timber.e(ex, "Failed to receive manifest")
+            showCancelTransferDialog(P2PDialogState(showCancelTransferDialog = true))
           }
         }
       )
@@ -247,8 +251,8 @@ class P2PReceiverViewModel(
     }
   }
 
-  fun showCancelTransferDialog() {
-    viewModelScope.launch(dispatcherProvider.main()) { view.showCancelTransferDialog() }
+  fun showCancelTransferDialog(p2PDialogState: P2PDialogState) {
+    view.showCancelTransferDialog(p2PDialogState = p2PDialogState)
   }
 
   class Factory(

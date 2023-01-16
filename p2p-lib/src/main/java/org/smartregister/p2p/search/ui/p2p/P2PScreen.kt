@@ -326,7 +326,7 @@ fun TransferProgressScreen(
         modifier = modifier.testTag(CANCEL_BUTTON_TEST_TAG)
       ) { Text(text = stringResource(id = R.string.cancel)) }
     }
-    if (p2PUiState.showP2PDialog) {
+    if (p2PUiState.p2PDialogState.showCancelTransferDialog) {
       P2PDialog(onEvent = onEvent)
     }
   }

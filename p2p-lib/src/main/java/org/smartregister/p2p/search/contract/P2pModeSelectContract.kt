@@ -18,6 +18,7 @@ package org.smartregister.p2p.search.contract
 import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
+import org.smartregister.p2p.model.P2PDialogState
 import org.smartregister.p2p.model.P2PReceivedHistory
 import org.smartregister.p2p.model.TransferProgress
 import org.smartregister.p2p.payload.PayloadContract
@@ -40,7 +41,7 @@ interface P2pModeSelectContract {
 
     fun notifyDataTransferStarting(deviceRole: DeviceRole)
 
-    fun showCancelTransferDialog()
+    fun showCancelTransferDialog(p2PDialogState: P2PDialogState)
   }
 
   interface SenderViewModel {
