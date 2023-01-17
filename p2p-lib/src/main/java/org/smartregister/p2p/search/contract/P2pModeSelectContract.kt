@@ -48,6 +48,17 @@ interface P2pModeSelectContract {
     fun updateP2PState(p2PState: P2PState)
 
     fun showToast(msg: String)
+
+    fun keepScreenOn(enable: Boolean)
+
+    fun requestLocationPermissionsAndEnableLocation()
+
+    fun processSenderDeviceDetails()
+
+    fun sendDeviceDetails()
+
+    fun finish()
+
   }
 
   interface SenderViewModel {

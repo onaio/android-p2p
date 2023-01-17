@@ -133,7 +133,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     }
   }
 
-  fun requestLocationPermissionsAndEnableLocation() {
+  override fun requestLocationPermissionsAndEnableLocation() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       requestAccessFineLocationIfNotGranted()
     }
@@ -155,10 +155,10 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
 
     showToast(getString(R.string.turn_on_wifi))
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-      var intent = Intent(Settings.ACTION_WIRELESS_SETTINGS)
+      val intent = Intent(Settings.ACTION_WIRELESS_SETTINGS)
       startForResult.launch(intent)
     } else {
-      var intent = Intent(Settings.Panel.ACTION_WIFI)
+      val intent = Intent(Settings.Panel.ACTION_WIFI)
       startForResult.launch(intent)
     }
   }
@@ -300,11 +300,11 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     }
   }
 
-  fun sendDeviceDetails() {
+  override fun sendDeviceDetails() {
     p2PSenderViewModel.sendDeviceDetails(getCurrentConnectedDevice())
   }
 
-  fun processSenderDeviceDetails() {
+  override fun processSenderDeviceDetails() {
     p2PReceiverViewModel.processSenderDeviceDetails()
   }
 
@@ -359,7 +359,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
    *
    * @param enable `TRUE` to enable or `FALSE` disable
    */
-  internal fun keepScreenOn(enable: Boolean) {
+  override fun keepScreenOn(enable: Boolean) {
     if (enable) {
       keepScreenOnCounter++
       if (keepScreenOnCounter == 1) {

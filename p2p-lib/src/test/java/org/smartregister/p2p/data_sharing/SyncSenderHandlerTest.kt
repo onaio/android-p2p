@@ -132,7 +132,7 @@ class SyncSenderHandlerTest : RobolectricTest() {
     every { syncSenderHandler.populateTotalRecordCount() } just runs
     every { p2PSenderViewModel.notifyDataTransferStarting() } just runs
     runBlocking { syncSenderHandler.startSyncProcess() }
-    verify(exactly = 1) { syncSenderHandler.generateRecordsToSend() }
+    verify(exactly = 1) { syncSenderHandler.generateLastRecordIds() }
     verify(exactly = 1) { syncSenderHandler.populateTotalRecordCount() }
     coVerify(exactly = 1) { syncSenderHandler.sendNextManifest() }
     verify(exactly = 1) { p2PSenderViewModel.notifyDataTransferStarting() }

@@ -165,7 +165,7 @@ class P2PSenderViewModel(
       syncPayload = awaitingPayload,
       object : DataSharingStrategy.OperationListener {
         override fun onSuccess(device: DeviceInfo?) {
-          Timber.i("Chunk data sent successfully")
+          Timber.i("Progress update: Chunk data sent successfully")
           syncSenderHandler.updateTotalSentRecordCount()
           viewModelScope.launch(dispatcherProvider.io()) { syncSenderHandler.sendNextManifest() }
         }
@@ -219,7 +219,7 @@ class P2PSenderViewModel(
     val receivedHistory: List<P2PReceivedHistory> =
       Gson().fromJson(syncPayload.string, receivedHistoryListType)
 
-    var dataTypes = P2PLibrary.getInstance().getSenderTransferDao().getP2PDataTypes()
+    val dataTypes = P2PLibrary.getInstance().getSenderTransferDao().getP2PDataTypes()
     syncSenderHandler = createSyncSenderHandler(dataTypes, receivedHistory)
 
     if (!dataTypes.isEmpty()) {

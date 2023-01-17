@@ -668,6 +668,8 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     runCatching { wifiP2pReceiver?.also { context.unregisterReceiver(it) } }.onFailure {
       Timber.e(it)
     }
+
+    closeSocketAndStreams()
   }
 
   override fun initChannel(

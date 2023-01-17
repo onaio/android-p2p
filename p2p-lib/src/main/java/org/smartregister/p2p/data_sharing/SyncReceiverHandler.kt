@@ -33,7 +33,7 @@ constructor(
 
   private lateinit var currentManifest: Manifest
   private var totalRecordCount: Long = 0
-  private var totalSentRecordCount: Long = 0
+  private var totalReceivedRecordCount: Long = 0
 
   fun processManifest(manifest: Manifest) {
     currentManifest = manifest
@@ -52,9 +52,11 @@ constructor(
     var lastUpdatedAt =
       P2PLibrary.getInstance().getReceiverTransferDao().receiveJson(currentManifest.dataType, data)
 
-    totalSentRecordCount += data!!.length()
+    totalReceivedRecordCount += data!!.length()
+    Timber.e("Progress update: Updating received data ${currentManifest.dataType.name} x ${currentManifest.recordsSize} | UPTO $lastUpdatedAt")
+    Timber.e("Progress update: Record count vs JSONArray size | ${currentManifest.recordsSize} - ${data.length()}")
     p2PReceiverViewModel.updateTransferProgress(
-      totalReceivedRecords = totalSentRecordCount,
+      totalReceivedRecords = totalReceivedRecordCount,
       totalRecords = totalRecordCount
     )
 

@@ -45,14 +45,14 @@ constructor(
 
   suspend fun startSyncProcess() {
     Timber.i("Start sync process")
-    generateRecordsToSend()
+    generateLastRecordIds()
     populateTotalRecordCount()
     // notify Ui data transfer is to begin
     p2PSenderViewModel.notifyDataTransferStarting()
     sendNextManifest()
   }
 
-  fun generateRecordsToSend() {
+  fun generateLastRecordIds() {
     for (dataType in dataSyncOrder) {
       remainingLastRecordIds[dataType.name] = 0L
     }
@@ -99,7 +99,7 @@ constructor(
       val jsonData =
         P2PLibrary.getInstance()
           .getSenderTransferDao()
-          .getJsonData(dataType, lastRecordId, batchSize)!!
+          .getJsonData(dataType, lastRecordId, batchSize)
 
       // send actual manifest
 
@@ -112,6 +112,7 @@ constructor(
 
         val recordsJsonString = recordsArray.toString()
         awaitingDataTypeRecordsBatchSize = recordsArray!!.length()
+        Timber.e("Progress update: Sending | ${dataType.name} x $awaitingDataTypeRecordsBatchSize | UPTO ${jsonData.getHighestRecordId()}")
         awaitingPayload =
           BytePayload(
             recordsArray.toString().toByteArray(),
@@ -148,6 +149,7 @@ constructor(
 
   open fun updateTotalSentRecordCount() {
     this.totalSentRecordCount = totalSentRecordCount + awaitingDataTypeRecordsBatchSize
+    Timber.e("Progress update: Updating progress to $totalSentRecordCount out of $totalRecordCount")
     p2PSenderViewModel.updateTransferProgress(
       totalSentRecords = totalSentRecordCount,
       totalRecords = totalRecordCount

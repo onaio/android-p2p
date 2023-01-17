@@ -28,6 +28,7 @@ import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.OnDeviceFound
 import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.model.TransferProgress
+import org.smartregister.p2p.search.contract.P2pModeSelectContract
 import org.smartregister.p2p.search.ui.P2PDeviceSearchActivity
 import org.smartregister.p2p.utils.DispatcherProvider
 import timber.log.Timber
@@ -35,7 +36,7 @@ import timber.log.Timber
 const val START_DATA_TRANSFER_DELAY: Long = 5000
 
 class P2PViewModel(
-  private val view: P2PDeviceSearchActivity,
+  private val view: P2pModeSelectContract.View,
   private val dataSharingStrategy: DataSharingStrategy,
   private val dispatcherProvider: DispatcherProvider
 ) : ViewModel() {
