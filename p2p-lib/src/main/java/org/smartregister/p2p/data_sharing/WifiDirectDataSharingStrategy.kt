@@ -36,6 +36,7 @@ import java.io.IOException
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
+import java.net.SocketException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -339,54 +340,20 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       makeSocketConnections(getGroupOwnerAddress()) { socket ->
         if (socket != null) {
 
+          try {
+
           when (syncPayload.getDataType()) {
             SyncPayloadType.STRING -> {
-
-              if (dataOutputStream != null) {
-                dataOutputStream?.apply {
-                  writeUTF(SyncPayloadType.STRING.name)
-                  flush()
-
-                  writeUTF(syncPayload.getData() as String)
-                  flush()
-
-                  operationListener.onSuccess(device)
-                }
-              } else {
-                operationListener.onFailure(device, Exception("DataOutputStream is null"))
-              }
+              writeStringPayload(syncPayload, operationListener, device)
             }
+
             SyncPayloadType.BYTES -> {
-
-              dataOutputStream?.apply {
-                val byteArray = syncPayload.getData() as ByteArray
-
-                writeUTF(SyncPayloadType.BYTES.name)
-                writeLong(byteArray.size.toLong())
-
-                val len = byteArray.size
-                var offset = 0
-                var chunkSize = 1024
-
-                while (offset < len) {
-                  if (chunkSize > len) {
-                    chunkSize = len
-                  }
-                  write(byteArray, offset, chunkSize)
-
-                  offset += chunkSize
-                  if ((len - offset) < chunkSize) {
-                    chunkSize = len - offset
-                  }
-                }
-
-                operationListener.onSuccess(device)
-              }
-                ?: run {
-                  operationListener.onFailure(device, Exception("DataOutputStream is null"))
-                }
+              writeBytePayload(syncPayload, operationListener, device)
             }
           }
+            } catch(ex: SocketException) {
+              operationListener.onFailure(device, ex)
+            }
         } else {
           onConnectionInfo =
             fun() {
@@ -396,6 +363,60 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
           operationListener.onFailure(device, Exception("An exception occurred and the socket is null"))
         }
       }
+    }
+  }
+
+  private fun writeBytePayload(
+      syncPayload: PayloadContract<out Any>,
+      operationListener: DataSharingStrategy.OperationListener,
+      device: DeviceInfo?
+  ) {
+    (dataOutputStream?.apply {
+      val byteArray = syncPayload.getData() as ByteArray
+
+      writeUTF(SyncPayloadType.BYTES.name)
+      writeLong(byteArray.size.toLong())
+
+      val len = byteArray.size
+      var offset = 0
+      var chunkSize = 1024
+
+      while (offset < len) {
+        if (chunkSize > len) {
+          chunkSize = len
+        }
+        write(byteArray, offset, chunkSize)
+
+        offset += chunkSize
+        if ((len - offset) < chunkSize) {
+          chunkSize = len - offset
+        }
+      }
+
+      operationListener.onSuccess(device)
+    }
+      ?: run {
+        operationListener.onFailure(device, Exception("DataOutputStream is null"))
+      })
+  }
+
+  private fun writeStringPayload(
+      syncPayload: PayloadContract<out Any>,
+      operationListener: DataSharingStrategy.OperationListener,
+      device: DeviceInfo?
+  ) {
+    if (dataOutputStream != null) {
+      dataOutputStream?.apply {
+        writeUTF(SyncPayloadType.STRING.name)
+        flush()
+
+        writeUTF(syncPayload.getData() as String)
+        flush()
+
+        operationListener.onSuccess(device)
+      }
+    } else {
+      operationListener.onFailure(device, Exception("DataOutputStream is null"))
     }
   }
 
@@ -482,6 +503,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     // Check if the socket is setup for sending
     // Check if this is the sender/receiver
 
+    try {
     dataOutputStream?.apply {
       val manifestString = Gson().toJson(manifest)
       try {
@@ -493,6 +515,10 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       flush()
       operationListener.onSuccess(device = device)
     }
+      } catch(ex: SocketException) {
+        Timber.e("Sending the manifest failed", ex)
+      operationListener.onFailure(device, ex)
+      }
   }
 
   override fun receive(
@@ -520,13 +546,8 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
         if (socket != null) {
 
           dataInputStream?.run {
-            val dataType =
-              try {
-                readUTF()
-              } catch (e: Exception) {
-                operationListener.onFailure(getCurrentDevice(), e)
-                return@makeSocketConnections
-              }
+            try {
+            val dataType = readUTF()
 
             if (dataType == SyncPayloadType.STRING.name) {
               val stringPayload = readUTF()
@@ -553,9 +574,12 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
                 Exception("Unknown datatype: $dataType")
               )
             }
+            } catch(ex: SocketException) {
+              operationListener.onFailure(device, ex)
+            }
           }
         } else {
-          operationListener.onFailure(getCurrentDevice(), Exception("Socket is null"))
+          operationListener.onFailure(device, Exception("Socket is null"))
         }
       }
     }
@@ -569,19 +593,19 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     // Check if this is the receiver/sender
 
     return dataInputStream?.run {
-      val dataType =
-        try {
-          readUTF()
-        } catch (e: Exception) {
-          operationListener.onFailure(device = device, e)
-          return null
-        }
+
+      try {
+      val dataType = readUTF()
 
       if (dataType == MANIFEST) {
-
         val manifestString = readUTF()
         Gson().fromJson(manifestString, Manifest::class.java)
       } else {
+        null
+      }
+        } catch(ex: SocketException) {
+          Timber.e("Receiving manfiest failed", ex)
+        operationListener.onFailure(device, ex)
         null
       }
     }

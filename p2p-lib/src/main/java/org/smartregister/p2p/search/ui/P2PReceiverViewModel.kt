@@ -19,6 +19,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
+import java.net.SocketException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -45,7 +46,7 @@ class P2PReceiverViewModel(
   private val view: P2pModeSelectContract.View,
   private val dataSharingStrategy: DataSharingStrategy,
   private val dispatcherProvider: DispatcherProvider
-) : ViewModel(), P2pModeSelectContract.ReceiverViewModel {
+) : BaseViewModel(view), P2pModeSelectContract.ReceiverViewModel {
 
   private lateinit var syncReceiverHandler: SyncReceiverHandler
   private var sendingDeviceAppLifetimeKey: String = ""
@@ -54,33 +55,38 @@ class P2PReceiverViewModel(
 
     dataSharingStrategy.receive(
       device = dataSharingStrategy.getCurrentDevice(),
-      payloadReceiptListener = object : DataSharingStrategy.PayloadReceiptListener {
-        override fun onPayloadReceived(payload: PayloadContract<out Any>?) {
+      payloadReceiptListener =
+        object : DataSharingStrategy.PayloadReceiptListener {
+          override fun onPayloadReceived(payload: PayloadContract<out Any>?) {
 
-          var map: MutableMap<String, String?> = HashMap()
-          val deviceDetails = Gson().fromJson((payload as StringPayload).string, map.javaClass)
+            var map: MutableMap<String, String?> = HashMap()
+            val deviceDetails = Gson().fromJson((payload as StringPayload).string, map.javaClass)
 
-          if (deviceDetails != null &&
-              deviceDetails.containsKey(Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY)
-          ) {
-            checkIfDeviceKeyHasChanged(
-              deviceDetails[Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY]!!
-            )
-          } else {
-            // Show error msg
-            view.updateP2PState(P2PState.RECEIVE_BASIC_DEVICE_DETAILS_FAILED)
-            Timber.e("An error occurred and the APP-LIFETIME-KEY was not sent")
+            if (deviceDetails != null &&
+                deviceDetails.containsKey(Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY)
+            ) {
+              checkIfDeviceKeyHasChanged(
+                deviceDetails[Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY]!!
+              )
+            } else {
+              // Show error msg
+              view.updateP2PState(P2PState.RECEIVE_BASIC_DEVICE_DETAILS_FAILED)
+              Timber.e("An error occurred and the APP-LIFETIME-KEY was not sent")
+            }
+          }
+        },
+      operationListener =
+        object : DataSharingStrategy.OperationListener {
+          override fun onSuccess(device: DeviceInfo?) {}
+
+          override fun onFailure(device: DeviceInfo?, ex: Exception) {
+            Timber.e(ex, "An exception occured when trying to create the socket")
+
+            if (ex is SocketException) {
+              handleSocketException()
+            }
           }
         }
-      },
-      operationListener = object : DataSharingStrategy.OperationListener {
-        override fun onSuccess(device: DeviceInfo?) {}
-
-        override fun onFailure(device: DeviceInfo?, ex: Exception) {
-          Timber.e(ex, "An exception occured when trying to create the socket")
-          view.restartActivity()
-        }
-      }
     )
   }
 
@@ -136,6 +142,10 @@ class P2PReceiverViewModel(
 
                 override fun onFailure(device: DeviceInfo?, ex: Exception) {
                   Timber.e(ex, "Failed to receive manifest")
+
+                  if (ex is SocketException) {
+                    handleSocketException()
+                  }
                 }
               }
             )
@@ -151,6 +161,10 @@ class P2PReceiverViewModel(
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
           Timber.e(ex, "Failed to send the last received records")
+
+          if (ex is SocketException) {
+            handleSocketException()
+          }
         }
       }
     )
@@ -181,7 +195,9 @@ class P2PReceiverViewModel(
           Timber.e(ex, "Failed to receive chunk data")
 
           // Reset and restart the page
-          view.restartActivity()
+          if (ex is SocketException) {
+            handleSocketException()
+          }
         }
       }
     )
@@ -191,10 +207,16 @@ class P2PReceiverViewModel(
     val incomingManifest = listenForIncomingManifest()
 
     // Handle successfully received manifest
-    if (incomingManifest != null && incomingManifest.dataType.name == Constants.SYNC_COMPLETE) {
-      handleDataTransferCompleteManifest()
+    if (incomingManifest != null) {
+      if (incomingManifest.dataType.name == Constants.SYNC_COMPLETE) {
+        handleDataTransferCompleteManifest()
+      } else {
+        syncReceiverHandler.processManifest(incomingManifest!!)
+      }
     } else {
-      syncReceiverHandler.processManifest(incomingManifest!!)
+      // TODO: See if there's something better to do here
+      view.showToast("An error occurred! Restarting")
+      view.restartActivity()
     }
   }
 
@@ -229,6 +251,10 @@ class P2PReceiverViewModel(
 
           override fun onFailure(device: DeviceInfo?, ex: Exception) {
             Timber.e(ex, "Failed to receive manifest")
+
+            if (ex is SocketException) {
+              handleSocketException()
+            }
           }
         }
       )

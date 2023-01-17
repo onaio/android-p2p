@@ -127,8 +127,10 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     androidWifiManager = getAndroidWifiManager()
   }
 
-  internal fun showToast(text: String) {
-    Toast.makeText(this@P2PDeviceSearchActivity, text, Toast.LENGTH_LONG).show()
+  override fun showToast(msg: String) {
+    runOnUiThread {
+      Toast.makeText(this@P2PDeviceSearchActivity, msg, Toast.LENGTH_LONG).show()
+    }
   }
 
   fun requestLocationPermissionsAndEnableLocation() {

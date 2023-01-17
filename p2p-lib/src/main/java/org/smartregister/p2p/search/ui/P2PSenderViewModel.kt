@@ -21,6 +21,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import java.net.SocketException
 import java.util.TreeSet
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -46,7 +47,7 @@ class P2PSenderViewModel(
   private val view: P2pModeSelectContract.View,
   private val dataSharingStrategy: DataSharingStrategy,
   private val dispatcherProvider: DispatcherProvider
-) : ViewModel(), P2pModeSelectContract.SenderViewModel {
+) : BaseViewModel(view), P2pModeSelectContract.SenderViewModel {
 
   private var connectionLevel: Constants.ConnectionLevel? = null
 
@@ -79,7 +80,6 @@ class P2PSenderViewModel(
 
               override fun onPayloadReceived(payload: PayloadContract<out Any>?) {
                 // WE are receiving the history
-
                 Timber.i("I have received last history : ${(payload as StringPayload).string}")
 
                 processReceivedHistory(payload)
@@ -88,14 +88,22 @@ class P2PSenderViewModel(
             object : DataSharingStrategy.OperationListener {
               override fun onSuccess(device: DeviceInfo?) {}
 
-              override fun onFailure(device: DeviceInfo?, ex: Exception) {}
+              override fun onFailure(device: DeviceInfo?, ex: Exception) {
+                Timber.e("An error occured trying to receive last history", ex)
+                if (ex is SocketException) {
+                  handleSocketException()
+                }
+              }
             }
           )
         }
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
           Timber.e(ex, "An error occurred trying to setup the socket")
-          view.restartActivity()
+
+          if (ex is SocketException) {
+            handleSocketException()
+          }
         }
       }
     )
@@ -121,6 +129,10 @@ class P2PSenderViewModel(
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
           Timber.e(ex)
+
+          if (ex is SocketException) {
+            handleSocketException()
+          }
         }
       }
     )
@@ -159,7 +171,11 @@ class P2PSenderViewModel(
         }
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
-          Timber.i("Failed to send chunk data")
+          Timber.e("Failed to send chunk data", ex)
+
+          if (ex is SocketException) {
+            handleSocketException()
+          }
         }
       }
     )
@@ -181,6 +197,10 @@ class P2PSenderViewModel(
 
           override fun onFailure(device: DeviceInfo?, ex: Exception) {
             Timber.e(ex, "manifest failed to send")
+
+            if (ex is SocketException) {
+              handleSocketException()
+            }
           }
         }
       )

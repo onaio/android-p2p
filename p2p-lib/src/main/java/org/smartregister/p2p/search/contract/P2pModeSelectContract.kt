@@ -46,6 +46,8 @@ interface P2pModeSelectContract {
     fun showCancelTransferDialog()
 
     fun updateP2PState(p2PState: P2PState)
+
+    fun showToast(msg: String)
   }
 
   interface SenderViewModel {
