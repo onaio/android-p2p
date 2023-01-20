@@ -71,6 +71,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   val SOCKET_TIMEOUT = 5_000
 
   private var socket: Socket? = null
+  var serverSocket: ServerSocket? = null
   private var dataInputStream: DataInputStream? = null
   private var dataOutputStream: DataOutputStream? = null
 
@@ -456,8 +457,10 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   private suspend fun acceptConnectionsToServerSocket(): Socket? =
     withContext(dispatcherProvider.io()) {
       try {
-        val serverSocket = ServerSocket(PORT)
-        serverSocket.accept().apply { constructStreamsFromSocket(this) }
+        if (serverSocket == null) {
+          serverSocket = ServerSocket(PORT)
+        }
+        serverSocket!!.accept().apply { constructStreamsFromSocket(this) }
       } catch (e: Exception) {
         Timber.e(e)
         null
@@ -879,6 +882,18 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
         Timber.e(e)
       }
       socket = null
+      Timber.i("Socket closed")
+    }
+
+    if (serverSocket != null) {
+      try {
+        serverSocket!!.close()
+      } catch (e: IOException) {
+        Timber.i("Server Socket not closed with exception")
+        Timber.e(e)
+      }
+      serverSocket = null
+      Timber.i("Server Socket closed")
     }
   }
 
