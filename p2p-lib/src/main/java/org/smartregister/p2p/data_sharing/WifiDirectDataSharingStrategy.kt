@@ -71,7 +71,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   val SOCKET_TIMEOUT = 5_000
 
   private var socket: Socket? = null
-  var serverSocket: ServerSocket? = null
+  private var serverSocket: ServerSocket? = null
   private var dataInputStream: DataInputStream? = null
   private var dataOutputStream: DataOutputStream? = null
 
@@ -457,10 +457,28 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   private suspend fun acceptConnectionsToServerSocket(): Socket? =
     withContext(dispatcherProvider.io()) {
       try {
+        Timber.d("serverSocket is = $serverSocket" )
+
         if (serverSocket == null) {
-          serverSocket = ServerSocket(PORT)
+          serverSocket = ServerSocket()
+          serverSocket!!.reuseAddress = true
+          Timber.d("Server socket inside null block isBound  ${serverSocket!!.isBound}")
+          if (!serverSocket!!.isBound) {
+            Timber.d("Server socket before binding is  $serverSocket")
+            serverSocket!!.bind(InetSocketAddress(PORT))
+          }
+          Timber.d("Server socket after binding is  $serverSocket")
+          serverSocket!!.accept().apply { constructStreamsFromSocket(this) }
+        } else {
+          Timber.d("Server socket is not null. returning socket $socket")
+          if (!serverSocket!!.isBound) {
+            Timber.d("Binding to existing server socket is  $serverSocket")
+            serverSocket!!.bind(InetSocketAddress(PORT))
+          }
+
+          serverSocket!!.accept().apply { constructStreamsFromSocket(this) }
         }
-        serverSocket!!.accept().apply { constructStreamsFromSocket(this) }
+
       } catch (e: Exception) {
         Timber.e(e)
         null
@@ -885,16 +903,6 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       Timber.i("Socket closed")
     }
 
-    if (serverSocket != null) {
-      try {
-        serverSocket!!.close()
-      } catch (e: IOException) {
-        Timber.i("Server Socket not closed with exception")
-        Timber.e(e)
-      }
-      serverSocket = null
-      Timber.i("Server Socket closed")
-    }
   }
 
   fun getWifiP2pReason(reasonInt: Int): String =
