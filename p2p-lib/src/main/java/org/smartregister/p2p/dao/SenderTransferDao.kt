@@ -24,5 +24,5 @@ interface SenderTransferDao {
 
   fun getTotalRecordCount(highestRecordIdMap: HashMap<String, Long>): Long
 
-  fun getJsonData(dataType: DataType, lastRecordId: Long, batchSize: Int): JsonData?
+  fun getJsonData(dataType: DataType, lastRecordId: Long, batchSize: Int, offset: Int = 0): JsonData?
 }
