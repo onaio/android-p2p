@@ -162,7 +162,7 @@ fun BottomSheet(
         transferCompleteMsg =
           stringResource(
             id = R.string.x_records_received,
-            p2PUiState.transferProgress.totalRecordCount,
+            p2PUiState.transferProgress.transferredRecordCount,
             deviceName
           )
       }
