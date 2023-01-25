@@ -16,6 +16,7 @@
 package org.smartregister.p2p.search.ui.p2p
 
 import android.annotation.SuppressLint
+import android.net.wifi.p2p.WifiP2pDevice
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -57,6 +58,7 @@ import kotlinx.coroutines.launch
 import org.smartregister.p2p.R
 import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.data_sharing.DeviceInfo
+import org.smartregister.p2p.data_sharing.WifiDirectDataSharingStrategy
 import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.model.ProgressIndicator
 import org.smartregister.p2p.model.ProgressIndicatorState
@@ -315,12 +317,21 @@ fun BottomSheet(
 @ExcludeFromJacocoGeneratedReport
 fun PreviewBottomSheetScreen() {
   BottomSheet(
-    deviceList = emptyList(),
+    deviceList = listOf(populateDeviceInfo()),
     onEvent = {},
     modalBottomSheetState = ModalBottomSheetState(ModalBottomSheetValue.HalfExpanded),
     p2PUiState = P2PUiState(),
     deviceName = "John",
-    deviceRole = DeviceRole.RECEIVER,
-    p2PState = P2PState.RECEIVE_BASIC_DEVICE_DETAILS_FAILED
+    deviceRole = DeviceRole.SENDER,
+    p2PState = P2PState.PAIR_DEVICES_FOUND
   )
+}
+
+private fun populateDeviceInfo(): DeviceInfo {
+  val wifiP2pDevice =
+    WifiP2pDevice().apply {
+      deviceName = "Google Pixel 7 android 12"
+      deviceAddress = "00:00:5e:00:53:af"
+    }
+  return WifiDirectDataSharingStrategy.WifiDirectDevice(wifiP2pDevice)
 }

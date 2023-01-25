@@ -127,6 +127,15 @@ fun P2PScreen(
     ) {
       when (p2PState) {
         P2PState.WIFI_AND_LOCATION_ENABLE -> {
+          DefaultScreen(
+            onEvent = onEvent,
+            modalBottomSheetState = modalBottomSheetState,
+            updateDeviceRole = {
+              deviceRole = it
+              p2PViewModel.deviceRole = it
+            },
+            p2PUiState = p2PUiState
+          )
           coroutineScope.launch {
             modalBottomSheetState.animateTo(ModalBottomSheetValue.HalfExpanded)
           }
