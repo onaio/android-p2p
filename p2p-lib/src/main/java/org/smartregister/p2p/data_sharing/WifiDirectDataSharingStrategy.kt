@@ -335,12 +335,18 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       )
       return
     }
-
+    try {
     coroutineScope.launch(dispatcherProvider.io()) {
-      makeSocketConnections(getGroupOwnerAddress()) { socket ->
-        if (socket != null) {
+      val groupOwnerAddress = getGroupOwnerAddress()
 
-          try {
+      if (groupOwnerAddress == null) {
+        Timber.e("groupOwnerAddress is null")
+        operationListener.onFailure(device, Exception("An exception occurred and the socket is null"))
+        return@launch
+      }
+
+      makeSocketConnections(groupOwnerAddress) { socket ->
+        if (socket != null) {
 
           when (syncPayload.getDataType()) {
             SyncPayloadType.STRING -> {
@@ -351,9 +357,6 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
               writeBytePayload(syncPayload, operationListener, device)
             }
           }
-            } catch(ex: SocketException) {
-              operationListener.onFailure(device, ex)
-            }
         } else {
           onConnectionInfo =
             fun() {
@@ -363,6 +366,10 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
           operationListener.onFailure(device, Exception("An exception occurred and the socket is null"))
         }
       }
+    }
+    } catch(ex: SocketException) {
+      Timber.e(ex)
+      operationListener.onFailure(device, ex)
     }
   }
 
@@ -420,9 +427,9 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     }
   }
 
-  private fun getGroupOwnerAddress(): String {
+  private fun getGroupOwnerAddress(): String? {
     // This also causes a crash on the app
-    return wifiP2pInfo!!.groupOwnerAddress.hostAddress
+    return wifiP2pInfo?.groupOwnerAddress?.hostAddress
   }
 
   suspend fun makeSocketConnections(
@@ -506,8 +513,8 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     try {
     dataOutputStream?.apply {
       val manifestString = Gson().toJson(manifest)
-        writeUTF(MANIFEST)
-        writeUTF(manifestString)
+      writeUTF(MANIFEST)
+      writeUTF(manifestString)
       flush()
       operationListener.onSuccess(device = device)
     }
@@ -538,7 +545,14 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     }
 
     coroutineScope.launch(dispatcherProvider.io()) {
-      makeSocketConnections(getGroupOwnerAddress()) { socket ->
+
+      val groupOwnerAddress = getGroupOwnerAddress()
+      if (groupOwnerAddress == null) {
+        operationListener.onFailure(device, Exception("Socket is null"))
+        return@launch
+      }
+
+      makeSocketConnections(groupOwnerAddress) { socket ->
         if (socket != null) {
 
           dataInputStream?.run {
