@@ -338,32 +338,34 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     }
 
     coroutineScope.launch(dispatcherProvider.io()) {
-      makeSocketConnections(getGroupOwnerAddress()) { socket ->
-        if (socket != null) {
 
-          try {
+      try {
+        makeSocketConnections(getGroupOwnerAddress()) { socket ->
+          if (socket != null) {
 
-          when (syncPayload.getDataType()) {
-            SyncPayloadType.STRING -> {
-              writeStringPayload(syncPayload, operationListener, device)
+            when (syncPayload.getDataType()) {
+              SyncPayloadType.STRING -> {
+                writeStringPayload(syncPayload, operationListener, device)
+              }
+
+              SyncPayloadType.BYTES -> {
+                writeBytePayload(syncPayload, operationListener, device)
+              }
             }
 
-            SyncPayloadType.BYTES -> {
-              writeBytePayload(syncPayload, operationListener, device)
-            }
+          } else {
+            onConnectionInfo =
+              fun() {
+                send(device, syncPayload, operationListener)
+              }
+
+            operationListener.onFailure(device, Exception("An exception occurred and the socket is null"))
           }
-            } catch(ex: SocketException) {
-              operationListener.onFailure(device, ex)
-            }
-        } else {
-          onConnectionInfo =
-            fun() {
-              send(device, syncPayload, operationListener)
-            }
-
-          operationListener.onFailure(device, Exception("An exception occurred and the socket is null"))
         }
+      } catch (e: Exception) {
+        operationListener.onFailure(device, e)
       }
+
     }
   }
 
@@ -456,15 +458,10 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
   private suspend fun acceptConnectionsToServerSocket(): Socket? =
     withContext(dispatcherProvider.io()) {
-      try {
         if (serverSocket == null) {
           serverSocket = ServerSocket(PORT)
         }
         serverSocket!!.accept().apply { constructStreamsFromSocket(this) }
-      } catch (e: Exception) {
-        Timber.e(e)
-        null
-      }
     }
 
   private fun constructStreamsFromSocket(socket: Socket) {
@@ -509,12 +506,10 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     try {
     dataOutputStream?.apply {
       val manifestString = Gson().toJson(manifest)
-      try {
+
         writeUTF(MANIFEST)
         writeUTF(manifestString)
-      } catch (e: Exception) {
-        operationListener.onFailure(device = device, ex = e)
-      }
+
       flush()
       operationListener.onSuccess(device = device)
     }
@@ -545,46 +540,48 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     }
 
     coroutineScope.launch(dispatcherProvider.io()) {
-      makeSocketConnections(getGroupOwnerAddress()) { socket ->
-        if (socket != null) {
 
-          dataInputStream?.run {
-            try {
-            val dataType = readUTF()
+      try {
+        makeSocketConnections(getGroupOwnerAddress()) { socket ->
+          if (socket != null) {
 
-            if (dataType == SyncPayloadType.STRING.name) {
-              val stringPayload = readUTF()
-              payloadReceiptListener.onPayloadReceived(StringPayload(stringPayload))
-            } else if (dataType == SyncPayloadType.BYTES.name) {
-              var payloadLen = readLong()
-              val payloadByteArray = ByteArray(payloadLen.toInt())
-              var currentBufferPos = 0
-              var n = 0
+            dataInputStream?.run {
+              val dataType = readUTF()
 
-              while (payloadLen > 0 &&
-                read(payloadByteArray, currentBufferPos, Math.min(1024, payloadLen).toInt()).also {
-                  n = it
-                } != -1) {
+              if (dataType == SyncPayloadType.STRING.name) {
+                val stringPayload = readUTF()
+                payloadReceiptListener.onPayloadReceived(StringPayload(stringPayload))
+              } else if (dataType == SyncPayloadType.BYTES.name) {
+                var payloadLen = readLong()
+                val payloadByteArray = ByteArray(payloadLen.toInt())
+                var currentBufferPos = 0
+                var n = 0
 
-                currentBufferPos += n
-                payloadLen -= n.toLong()
-                logDebug("file size $payloadLen")
+                while (payloadLen > 0 &&
+                  read(payloadByteArray, currentBufferPos, Math.min(1024, payloadLen).toInt()).also {
+                    n = it
+                  } != -1) {
+
+                  currentBufferPos += n
+                  payloadLen -= n.toLong()
+                  logDebug("file size $payloadLen")
+                }
+                payloadReceiptListener.onPayloadReceived(BytePayload(payloadByteArray))
+              } else {
+                operationListener.onFailure(
+                  getCurrentDevice(),
+                  Exception("Unknown datatype: $dataType")
+                )
               }
-              payloadReceiptListener.onPayloadReceived(BytePayload(payloadByteArray))
-            } else {
-              operationListener.onFailure(
-                getCurrentDevice(),
-                Exception("Unknown datatype: $dataType")
-              )
             }
-            } catch(ex: SocketException) {
-              operationListener.onFailure(device, ex)
-            }
+          } else {
+            operationListener.onFailure(device, Exception("Socket is null"))
           }
-        } else {
-          operationListener.onFailure(device, Exception("Socket is null"))
         }
+      } catch (e: Exception) {
+      operationListener.onFailure(device, e)
       }
+
     }
   }
 
