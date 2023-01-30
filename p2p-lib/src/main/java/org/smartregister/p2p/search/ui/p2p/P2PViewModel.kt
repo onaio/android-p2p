@@ -77,7 +77,7 @@ class P2PViewModel(
         p2PUiState.value = p2PUiState.value.copy(showP2PDialog = false)
       }
       P2PEvent.DataTransferCompleteConfirmed -> {
-        _p2PState.postValue(P2PState.PROMPT_NEXT_TRANSFER)
+        updateP2PState(P2PState.PROMPT_NEXT_TRANSFER)
       }
     }
   }
@@ -94,7 +94,7 @@ class P2PViewModel(
         if (deviceRole == DeviceRole.SENDER &&
             (_p2PState.value == null || _p2PState.value == P2PState.INITIATE_DATA_TRANSFER)
         ) {
-          _p2PState.postValue(P2PState.PAIR_DEVICES_FOUND)
+          updateP2PState(P2PState.PAIR_DEVICES_FOUND)
         }
 
         Timber.e("Devices searching succeeded. Found ${devices.size} devices")
@@ -104,7 +104,7 @@ class P2PViewModel(
         view.keepScreenOn(false)
         Timber.e("Devices searching failed")
         Timber.e(ex)
-        _p2PState.postValue(P2PState.PAIR_DEVICES_SEARCH_FAILED)
+        updateP2PState(P2PState.PAIR_DEVICES_SEARCH_FAILED)
       }
     }
 
@@ -123,7 +123,7 @@ class P2PViewModel(
 
         when (deviceRole) {
           DeviceRole.RECEIVER -> {
-            _p2PState.postValue(P2PState.WAITING_TO_RECEIVE_DATA)
+            updateP2PState(P2PState.WAITING_TO_RECEIVE_DATA)
             view.processSenderDeviceDetails()
           }
           DeviceRole.SENDER -> {
@@ -136,7 +136,7 @@ class P2PViewModel(
         view.keepScreenOn(false)
         Timber.e("Devices pairing failed")
         Timber.e(ex)
-        _p2PState.postValue(P2PState.PROMPT_NEXT_TRANSFER)
+        updateP2PState(P2PState.PROMPT_NEXT_TRANSFER)
       }
 
       override fun onDisconnected() {
@@ -146,11 +146,12 @@ class P2PViewModel(
           view.keepScreenOn(false)
 
           Timber.e("Successful on disconnect")
-          Timber.e("isSenderSyncComplete $view.isSenderSyncComplete")
+          Timber.e("isSenderSyncComplete $isSenderSyncComplete")
           // But use a flag to determine if sync was completed
+          updateP2PState(P2PState.DEVICE_DISCONNECTED)
         }
         if (isSenderSyncComplete) {
-          _p2PState.postValue(P2PState.TRANSFER_COMPLETE)
+          updateP2PState(P2PState.TRANSFER_COMPLETE)
         }
       }
     }
@@ -166,20 +167,20 @@ class P2PViewModel(
         override fun onSuccess(device: DeviceInfo?) {
           currentConnectedDevice = device
           Timber.d("Connecting to device %s success", device?.getDisplayName() ?: "Unknown")
-          _p2PState.postValue(P2PState.PREPARING_TO_SEND_DATA)
+          updateP2PState(P2PState.PREPARING_TO_SEND_DATA)
         }
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
           Timber.d("Connecting to device %s failure", device?.getDisplayName() ?: "Unknown")
           Timber.e(ex)
-          _p2PState.postValue(P2PState.CONNECT_TO_DEVICE_FAILED)
+          updateP2PState(P2PState.CONNECT_TO_DEVICE_FAILED)
         }
       }
     )
   }
 
   fun showTransferCompleteDialog(p2PState: P2PState) {
-    _p2PState.postValue(p2PState)
+   updateP2PState(p2PState)
   }
 
   fun cancelTransfer(p2PState: P2PState = P2PState.TRANSFER_CANCELLED) {
@@ -190,7 +191,8 @@ class P2PViewModel(
         object : DataSharingStrategy.OperationListener {
           override fun onSuccess(device: DeviceInfo?) {
             Timber.i("Diconnection successful")
-            _p2PState.postValue(p2PState)
+            updateP2PState(p2PState)
+            Timber.e("P2P state updated to ${p2PState.name}")
           }
 
           override fun onFailure(device: DeviceInfo?, ex: Exception) {
@@ -210,6 +212,7 @@ class P2PViewModel(
   }
 
   fun updateP2PState(p2PState: P2PState) {
+    Timber.e("P2P state updated to ${p2PState.name}")
     _p2PState.postValue(p2PState)
   }
 

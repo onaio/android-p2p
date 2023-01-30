@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
+import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
 import timber.log.Timber
 
@@ -28,10 +29,12 @@ open class BaseViewModel(
                 object : DataSharingStrategy.OperationListener {
                     override fun onSuccess(device: DeviceInfo?) {
                         Timber.i("Disconnection successful")
+                        view.updateP2PState(P2PState.DEVICE_DISCONNECTED)
                     }
 
                     override fun onFailure(device: DeviceInfo?, ex: Exception) {
                         Timber.e(ex, "P2P diconnection failed")
+                        view.updateP2PState(P2PState.DEVICE_DISCONNECTED)
                     }
                 }
             )

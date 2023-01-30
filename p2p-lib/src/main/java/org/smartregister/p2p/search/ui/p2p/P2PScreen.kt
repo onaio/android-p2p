@@ -248,6 +248,9 @@ fun P2PScreen(
           }
           p2PViewModel.updateP2PState(P2PState.INITIATE_DATA_TRANSFER)
         }
+        P2PState.DEVICE_DISCONNECTED -> {
+          coroutineScope.launch { modalBottomSheetState.show() }
+        }
         else -> {}
       }
     }

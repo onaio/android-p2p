@@ -91,4 +91,6 @@
     <string name="receiver_data_upto_date_msg">No new records to sync with your device</string>
     <string name="sender_data_upto_date">Receiver up-to date</string>
     <string name="sender_data_upto_date_msg">No new records to transfer, receiver data up-to date</string>
+    <string name="device_disconnected">Device disconnected</string>
+    <string name="device_disconnected_msg">Devices disconnected without completing the data transfer</string>
 </resources>
