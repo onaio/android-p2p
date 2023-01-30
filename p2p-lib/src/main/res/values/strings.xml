@@ -87,4 +87,8 @@
     <string name="pairing_failed_msg">Sorry could not pair with device</string>
     <string name="receive_device_details_failed">Receiving device details failed</string>
     <string name="receive_device_details_failed_msg">Sorry could not receive device details</string>
+    <string name="receiver_data_upto_date">Your data is up-to date</string>
+    <string name="receiver_data_upto_date_msg">No new records to sync with your device</string>
+    <string name="sender_data_upto_date">Receiver up-to date</string>
+    <string name="sender_data_upto_date_msg">No new records to transfer, receiver data up-to date</string>
 </resources>

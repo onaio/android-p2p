@@ -126,6 +126,8 @@ fun BottomSheet(
     var transferCompleteMsg = ""
     when (deviceRole) {
       DeviceRole.SENDER -> {
+        bottomSheetTitle = stringResource(id = R.string.searching_for_nearby_recipient)
+
         when (p2PState) {
           P2PState.PAIR_DEVICES_SEARCH_FAILED -> {
             progressStatusTitle = stringResource(id = R.string.searching_failed)
@@ -135,12 +137,17 @@ fun BottomSheet(
             progressStatusTitle = stringResource(id = R.string.pairing_failed)
             progressStatusMsg = stringResource(id = R.string.pairing_failed_msg)
           }
+          P2PState.DATA_UP_TO_DATE -> {
+            bottomSheetTitle = stringResource(id = R.string.send_data)
+            progressStatusTitle = stringResource(id = R.string.sender_data_upto_date)
+            progressStatusMsg = stringResource(id = R.string.sender_data_upto_date_msg)
+          }
           else -> {
             progressStatusMsg = stringResource(id = R.string.searching_nearby_device_as)
           }
         }
 
-        bottomSheetTitle = stringResource(id = R.string.searching_for_nearby_recipient)
+
         transferCompleteMsg =
           stringResource(
             id = R.string.x_records_sent,
@@ -154,6 +161,11 @@ fun BottomSheet(
             bottomSheetTitle = stringResource(id = R.string.receiving)
             progressStatusTitle = stringResource(id = R.string.receive_device_details_failed)
             progressStatusMsg = stringResource(id = R.string.receive_device_details_failed_msg)
+          }
+          P2PState.DATA_UP_TO_DATE -> {
+            bottomSheetTitle = stringResource(id = R.string.receive_data)
+            progressStatusTitle = stringResource(id = R.string.receiver_data_upto_date)
+            progressStatusMsg = stringResource(id = R.string.receiver_data_upto_date_msg)
           }
           else -> {
             bottomSheetTitle = stringResource(id = R.string.waiting_to_pair)
@@ -257,6 +269,7 @@ fun BottomSheet(
                 )
             )
           }
+          P2PState.DATA_UP_TO_DATE -> { }
           else -> {
             ProgressStatusIndicator(
               showCircularProgressIndicator = showCircularProgressIndicator,
@@ -297,7 +310,8 @@ fun BottomSheet(
       if (p2PState == P2PState.TRANSFER_COMPLETE ||
           p2PState == P2PState.PAIR_DEVICES_SEARCH_FAILED ||
           p2PState == P2PState.CONNECT_TO_DEVICE_FAILED ||
-          p2PState == P2PState.RECEIVE_BASIC_DEVICE_DETAILS_FAILED
+          p2PState == P2PState.RECEIVE_BASIC_DEVICE_DETAILS_FAILED ||
+          p2PState == P2PState.DATA_UP_TO_DATE
       ) {
         Button(
           onClick = { onEvent(P2PEvent.DataTransferCompleteConfirmed) },
@@ -317,13 +331,13 @@ fun BottomSheet(
 @ExcludeFromJacocoGeneratedReport
 fun PreviewBottomSheetScreen() {
   BottomSheet(
-    deviceList = listOf(populateDeviceInfo()),
+    deviceList = emptyList(),
     onEvent = {},
     modalBottomSheetState = ModalBottomSheetState(ModalBottomSheetValue.HalfExpanded),
     p2PUiState = P2PUiState(),
     deviceName = "John",
-    deviceRole = DeviceRole.SENDER,
-    p2PState = P2PState.PAIR_DEVICES_FOUND
+    deviceRole = DeviceRole.RECEIVER,
+    p2PState = P2PState.DATA_UP_TO_DATE
   )
 }
 

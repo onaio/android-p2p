@@ -32,6 +32,7 @@ import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
 import org.smartregister.p2p.data_sharing.SyncSenderHandler
 import org.smartregister.p2p.model.P2PReceivedHistory
+import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.model.TransferProgress
 import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.payload.StringPayload
@@ -141,7 +142,7 @@ class P2PSenderViewModel(
   override fun sendSyncComplete() {
     Timber.i("P2P sync complete")
     viewModelScope.launch {
-      withContext(dispatcherProvider.main()) { view.showTransferCompleteDialog() }
+      withContext(dispatcherProvider.main()) { view.showTransferCompleteDialog(P2PState.TRANSFER_COMPLETE) }
       dataSharingStrategy.disconnect(
         getCurrentConnectedDevice()!!,
         object : DataSharingStrategy.OperationListener {

@@ -49,7 +49,7 @@ constructor(
     populateTotalRecordCount()
     // notify Ui data transfer is to begin
     p2PSenderViewModel.notifyDataTransferStarting()
-    sendNextManifest()
+    sendNextManifest(isInitialManifest = true)
   }
 
   fun generateLastRecordIds() {
@@ -72,14 +72,15 @@ constructor(
       P2PLibrary.getInstance().getSenderTransferDao().getTotalRecordCount(remainingLastRecordIds)
   }
 
-  suspend fun sendNextManifest() {
+  suspend fun sendNextManifest(isInitialManifest:Boolean = false) {
     Timber.i("in send next manifest")
     if (!dataSyncOrder.isEmpty()) {
       sendJsonDataManifest(dataSyncOrder.first())
     } else {
+      val name = if (isInitialManifest)  Constants.DATA_UP_TO_DATE else Constants.SYNC_COMPLETE
       val manifest =
         Manifest(
-          dataType = DataType(Constants.SYNC_COMPLETE, DataType.Filetype.JSON, 0),
+          dataType = DataType(name, DataType.Filetype.JSON, 0),
           recordsSize = 0,
           payloadSize = 0
         )

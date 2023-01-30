@@ -52,6 +52,7 @@ class P2PViewModel(
   var deviceRole: DeviceRole = DeviceRole.SENDER
   private var currentConnectedDevice: DeviceInfo? = null
   private var requestDisconnection = false
+  private var isSenderSyncComplete = false
 
   fun onEvent(event: P2PEvent) {
     when (event) {
@@ -148,7 +149,9 @@ class P2PViewModel(
           Timber.e("isSenderSyncComplete $view.isSenderSyncComplete")
           // But use a flag to determine if sync was completed
         }
-        _p2PState.postValue(P2PState.TRANSFER_COMPLETE)
+        if (isSenderSyncComplete) {
+          _p2PState.postValue(P2PState.TRANSFER_COMPLETE)
+        }
       }
     }
 
@@ -175,8 +178,8 @@ class P2PViewModel(
     )
   }
 
-  fun showTransferCompleteDialog() {
-    _p2PState.postValue(P2PState.TRANSFER_COMPLETE)
+  fun showTransferCompleteDialog(p2PState: P2PState) {
+    _p2PState.postValue(p2PState)
   }
 
   fun cancelTransfer(p2PState: P2PState = P2PState.TRANSFER_CANCELLED) {
@@ -248,6 +251,10 @@ class P2PViewModel(
   fun showCancelTransferDialog() {
     // show cancel transfer dialog
     p2PUiState.value = p2PUiState.value.copy(showP2PDialog = true)
+  }
+
+  fun updateSenderSyncComplete(complete:Boolean = false) {
+    this.isSenderSyncComplete = complete
   }
 
   class Factory(
