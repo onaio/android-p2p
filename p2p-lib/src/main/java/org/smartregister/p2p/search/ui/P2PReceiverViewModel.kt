@@ -46,7 +46,7 @@ class P2PReceiverViewModel(
   private val view: P2pModeSelectContract.View,
   private val dataSharingStrategy: DataSharingStrategy,
   private val dispatcherProvider: DispatcherProvider
-) : BaseViewModel(view), P2pModeSelectContract.ReceiverViewModel {
+) : BaseViewModel(view, dataSharingStrategy), P2pModeSelectContract.ReceiverViewModel {
 
   private lateinit var syncReceiverHandler: SyncReceiverHandler
   private var sendingDeviceAppLifetimeKey: String = ""
@@ -62,7 +62,8 @@ class P2PReceiverViewModel(
             var map: MutableMap<String, String?> = HashMap()
             val deviceDetails = Gson().fromJson((payload as StringPayload).string, map.javaClass)
 
-            if (deviceDetails != null &&
+            if (
+              deviceDetails != null &&
                 deviceDetails.containsKey(Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY)
             ) {
               checkIfDeviceKeyHasChanged(
@@ -84,6 +85,8 @@ class P2PReceiverViewModel(
 
             if (ex is SocketException) {
               handleSocketException()
+            } else {
+              disconnect()
             }
           }
         }
@@ -145,6 +148,8 @@ class P2PReceiverViewModel(
 
                   if (ex is SocketException) {
                     handleSocketException()
+                  } else {
+                    disconnect()
                   }
                 }
               }
@@ -164,6 +169,8 @@ class P2PReceiverViewModel(
 
           if (ex is SocketException) {
             handleSocketException()
+          } else {
+            disconnect()
           }
         }
       }
@@ -197,6 +204,8 @@ class P2PReceiverViewModel(
           // Reset and restart the page
           if (ex is SocketException) {
             handleSocketException()
+          } else {
+            disconnect()
           }
         }
       }
@@ -254,6 +263,8 @@ class P2PReceiverViewModel(
 
             if (ex is SocketException) {
               handleSocketException()
+            } else {
+              disconnect()
             }
           }
         }
@@ -292,8 +303,7 @@ class P2PReceiverViewModel(
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
       return P2PReceiverViewModel(context, dataSharingStrategy, dispatcherProvider).apply {
         dataSharingStrategy.setCoroutineScope(viewModelScope)
-      } as
-        T
+      } as T
     }
   }
 }
