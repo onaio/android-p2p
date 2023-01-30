@@ -184,7 +184,15 @@ fun BottomSheet(
 
     when (p2PState) {
       P2PState.TRANSFER_COMPLETE -> {
-        bottomSheetTitle = stringResource(id = R.string.send_data)
+        bottomSheetTitle = when (deviceRole) {
+          DeviceRole.SENDER -> {
+            stringResource(id = R.string.send_data)
+
+          }
+          DeviceRole.RECEIVER -> {
+            stringResource(id = R.string.receive_data)
+          }
+        }
         progressStatusTitle = stringResource(id = R.string.device_data_successfully_sent)
         progressStatusMsg = transferCompleteMsg
         showCircularProgressIndicator = false
