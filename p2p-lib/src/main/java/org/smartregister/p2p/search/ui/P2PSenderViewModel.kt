@@ -48,7 +48,7 @@ class P2PSenderViewModel(
   private val view: P2pModeSelectContract.View,
   private val dataSharingStrategy: DataSharingStrategy,
   private val dispatcherProvider: DispatcherProvider
-) : BaseViewModel(view), P2pModeSelectContract.SenderViewModel {
+) : BaseViewModel(view, dataSharingStrategy), P2pModeSelectContract.SenderViewModel {
 
   private var connectionLevel: Constants.ConnectionLevel? = null
 
@@ -93,6 +93,8 @@ class P2PSenderViewModel(
                 Timber.e("An error occured trying to receive last history", ex)
                 if (ex is SocketException) {
                   handleSocketException()
+                } else {
+                  disconnect()
                 }
               }
             }
@@ -104,6 +106,8 @@ class P2PSenderViewModel(
 
           if (ex is SocketException) {
             handleSocketException()
+          }  else {
+            disconnect()
           }
         }
       }
@@ -133,6 +137,8 @@ class P2PSenderViewModel(
 
           if (ex is SocketException) {
             handleSocketException()
+          }  else {
+            disconnect()
           }
         }
       }
@@ -176,6 +182,8 @@ class P2PSenderViewModel(
 
           if (ex is SocketException) {
             handleSocketException()
+          }  else {
+            disconnect()
           }
         }
       }
@@ -201,6 +209,8 @@ class P2PSenderViewModel(
 
             if (ex is SocketException) {
               handleSocketException()
+            }  else {
+              disconnect()
             }
           }
         }
@@ -268,6 +278,7 @@ class P2PSenderViewModel(
   fun notifyDataTransferStarting() {
     view.notifyDataTransferStarting(DeviceRole.SENDER)
   }
+
 
   class Factory(
     private val context: P2pModeSelectContract.View,
