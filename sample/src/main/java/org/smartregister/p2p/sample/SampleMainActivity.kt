@@ -8,7 +8,6 @@ import org.json.JSONArray
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.dao.ReceiverTransferDao
 import org.smartregister.p2p.dao.SenderTransferDao
-import org.smartregister.p2p.sample.dao.P2PSenderTransferDao
 import org.smartregister.p2p.search.data.JsonData
 import org.smartregister.p2p.sync.DataType
 import org.smartregister.p2p.utils.startP2PScreen
@@ -34,7 +33,8 @@ class SampleMainActivity : AppCompatActivity() {
                 override fun getJsonData(
                     dataType: DataType,
                     lastRecordId: Long,
-                    batchSize: Int
+                    batchSize: Int,
+                    offset: Int
                 ): JsonData? {
                     return null
                 }

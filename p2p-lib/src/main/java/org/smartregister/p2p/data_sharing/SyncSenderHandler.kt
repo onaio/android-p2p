@@ -42,6 +42,7 @@ constructor(
 
   private lateinit var awaitingPayload: PayloadContract<out Any>
   private var sendingSyncCompleteManifest = false
+  private var recordsBatchOffset = 0
 
   suspend fun startSyncProcess() {
     Timber.i("Start sync process")
@@ -100,7 +101,7 @@ constructor(
       val jsonData =
         P2PLibrary.getInstance()
           .getSenderTransferDao()
-          .getJsonData(dataType, lastRecordId, batchSize)
+          .getJsonData(dataType, lastRecordId, batchSize, recordsBatchOffset)
 
       // send actual manifest
 
@@ -109,6 +110,14 @@ constructor(
         val recordsArray = jsonData.getJsonArray()
 
         remainingLastRecordIds[dataType.name] = jsonData.getHighestRecordId()
+
+        if (jsonData.getHighestRecordId() == lastRecordId) {
+          recordsBatchOffset += batchSize
+        } else {
+          recordsBatchOffset = 0
+        }
+
+        Timber.i("Batch offset $recordsBatchOffset")
         Timber.i("remaining records last updated is ${remainingLastRecordIds[dataType.name]}")
 
         val recordsJsonString = recordsArray.toString()
@@ -133,6 +142,7 @@ constructor(
         }
       } else {
         // signifies all data has been sent
+        recordsBatchOffset = 0
         Timber.i("Json data is null")
         dataSyncOrder.remove(dataType)
         sendNextManifest()

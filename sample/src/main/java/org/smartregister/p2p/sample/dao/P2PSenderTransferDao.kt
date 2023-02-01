@@ -14,7 +14,12 @@ class P2PSenderTransferDao() :SenderTransferDao {
         return 0
     }
 
-    override fun getJsonData(dataType: DataType, lastRecordId: Long, batchSize: Int): JsonData? {
+    override fun getJsonData(
+        dataType: DataType,
+        lastRecordId: Long,
+        batchSize: Int,
+        offset: Int
+    ): JsonData? {
         return JsonData()
     }
 }
