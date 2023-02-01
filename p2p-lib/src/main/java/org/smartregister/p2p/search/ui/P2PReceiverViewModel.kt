@@ -218,7 +218,7 @@ class P2PReceiverViewModel(
     // Handle successfully received manifest
     if (incomingManifest != null) {
       if (incomingManifest.dataType.name == Constants.SYNC_COMPLETE) {
-        handleDataTransferCompleteManifest()
+        handleDataTransferCompleteManifest(P2PState.TRANSFER_COMPLETE)
       } else {
         syncReceiverHandler.processManifest(incomingManifest!!)
       }
@@ -229,10 +229,10 @@ class P2PReceiverViewModel(
     }
   }
 
-  fun handleDataTransferCompleteManifest() {
+  fun handleDataTransferCompleteManifest(p2PState: P2PState) {
     Timber.e("Data transfer complete")
     viewModelScope.launch {
-      withContext(dispatcherProvider.main()) { view.showTransferCompleteDialog() }
+      withContext(dispatcherProvider.main()) { view.showTransferCompleteDialog(p2PState) }
       dataSharingStrategy.disconnect(
         dataSharingStrategy.getCurrentDevice()!!,
         object : DataSharingStrategy.OperationListener {

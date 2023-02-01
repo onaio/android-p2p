@@ -84,7 +84,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     )
   }
   private var scanning = false
-  private var isSenderSyncComplete = false
 
   private lateinit var dataSharingStrategy: DataSharingStrategy
 
@@ -308,8 +307,8 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     p2PReceiverViewModel.processSenderDeviceDetails()
   }
 
-  override fun showTransferCompleteDialog() {
-    p2PViewModel.showTransferCompleteDialog()
+  override fun showTransferCompleteDialog(p2PState: P2PState) {
+    p2PViewModel.showTransferCompleteDialog(p2PState)
   }
 
   override fun showCancelTransferDialog() {
@@ -329,8 +328,8 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
   }
 
   override fun senderSyncComplete(complete: Boolean) {
-    isSenderSyncComplete = complete
-    Timber.e("sender sync complete $isSenderSyncComplete")
+    p2PViewModel.updateSenderSyncComplete(complete)
+    Timber.e("sender sync complete $complete")
   }
 
   override fun updateTransferProgress(transferProgress: TransferProgress) {
