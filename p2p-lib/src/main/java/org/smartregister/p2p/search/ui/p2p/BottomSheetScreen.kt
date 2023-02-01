@@ -327,15 +327,11 @@ fun BottomSheet(
               )
           )
         }
-        LazyColumn(
-          modifier = Modifier
-            .fillMaxWidth()
-            .testTag(P2P_BOTTOM_SHEET_LIST)
-            .background(WhiteColor)
-        ) {
-          itemsIndexed(deviceList) { index, item ->
-            PairDeviceRow(device = item, onEvent = onEvent)
-          }
+        when (p2PState) {
+          P2PState.WIFI_AND_LOCATION_ENABLE -> DisplayDeviceList(deviceList, onEvent = onEvent)
+          P2PState.SEARCHING_FOR_RECIPIENT -> DisplayDeviceList(deviceList, onEvent = onEvent)
+          P2PState.PAIR_DEVICES_FOUND -> DisplayDeviceList(deviceList, onEvent = onEvent)
+          else -> {}
         }
       }
 
@@ -364,6 +360,20 @@ fun DisplayButton(modifier: Modifier = Modifier, onEvent: (P2PEvent) -> Unit) {
       .fillMaxWidth()
       .testTag(BOTTOM_SHEET_BUTTON_TEST_TAG)
   ) { Text(text = stringResource(id = R.string.okay)) }
+}
+
+@Composable
+fun DisplayDeviceList(deviceList: List<DeviceInfo>, onEvent: (P2PEvent) -> Unit) {
+  LazyColumn(
+    modifier = Modifier
+      .fillMaxWidth()
+      .testTag(P2P_BOTTOM_SHEET_LIST)
+      .background(WhiteColor)
+  ) {
+    itemsIndexed(deviceList) { index, item ->
+      PairDeviceRow(device = item, onEvent = onEvent)
+    }
+  }
 }
 
 @OptIn(ExperimentalMaterialApi::class)
