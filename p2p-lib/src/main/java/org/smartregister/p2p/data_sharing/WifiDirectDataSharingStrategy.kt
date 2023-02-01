@@ -27,6 +27,7 @@ import android.net.wifi.p2p.WifiP2pGroup
 import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
 import android.os.Build
+import android.os.CountDownTimer
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import com.google.gson.Gson
@@ -37,6 +38,7 @@ import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
 import java.net.SocketException
+import java.text.NumberFormat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -82,6 +84,11 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   private lateinit var coroutineScope: CoroutineScope
 
   private val MANIFEST = "MANIFEST"
+
+  var pairingTimeout : CountDownTimer? = null
+
+  val successPairingListeners : MutableSet<() -> Unit> = mutableSetOf()
+  val failedPairingListeners : MutableSet<(Exception) -> Unit> = mutableSetOf()
 
   override fun setDispatcherProvider(dispatcherProvider: DispatcherProvider) {
     this.dispatcherProvider = dispatcherProvider
@@ -273,26 +280,88 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       ) {
         return handleAccessFineLocationNotGranted()
       }
+
+      val successPairingListener = {
+        disableConnectionCountdown(pairingTimeout!!)
+        Timber.i("Device successfully paired")
+
+        currentDevice = wifiDirectDevice
+        paired = true
+
+        onConnectionSucceeded(device)
+      }
+
+      val failedPairingListener = { exception : Exception ->
+        paired = false
+
+        disableConnectionCountdown(pairingTimeout!!)
+
+        onConnectionFailed(device, exception)
+        operationListener.onFailure(device, exception)
+      }
+
+      pairingTimeout = pairingCountdown {
+
+        successPairingListeners.remove(successPairingListener)
+        failedPairingListeners.remove(failedPairingListener)
+
+        wifiP2pManager.cancelConnect(wifiP2pChannel, object: WifiP2pManager.ActionListener {
+          override fun onSuccess() {
+            Timber.e("Cancel connection successful")
+            operationListener.onFailure(device, Exception("Pairing timeout"))
+          }
+
+          override fun onFailure(p0: Int) {
+            val ex = Exception("Cancel connect failure $p0")
+            Timber.e(ex)
+            operationListener.onFailure(device, ex)
+          }
+        })
+      }
+
       wifiP2pManager.connect(
         wifiP2pChannel,
         wifiP2pConfig,
         object : WifiP2pManager.ActionListener {
           override fun onSuccess() {
-            currentDevice = wifiDirectDevice
-            paired = true
+            Timber.i("Sending connection request is successful")
 
-            onConnectionSucceeded(device)
             operationListener.onSuccess(device)
+
+            successPairingListeners.add(successPairingListener)
+            failedPairingListeners.add(failedPairingListener)
           }
 
           override fun onFailure(reason: Int) {
             val exception = Exception("Error #$reason: ${getWifiP2pReason(reason)}")
-            onConnectionFailed(device, exception)
-            operationListener.onFailure(device, exception)
+            Timber.e("Failed to connect to the other device")
+            Timber.e(exception)
+
+            failedPairingListener(exception)
           }
         }
       )
     }
+  }
+
+  fun pairingCountdown(onTimeout: () -> Unit) : CountDownTimer {
+    val countDownTimer = object: CountDownTimer(connectionTimeout() * 1000L, 1000L) {
+      // https://developer.android.com/reference/android/os/CountDownTimer.html
+      override fun onTick(millisUntilFinished: Long) {
+        val formattedMillis = NumberFormat.getIntegerInstance().format(millisUntilFinished)
+        Timber.i("p2p wifi connection countdown until finished ${formattedMillis} ms")
+      }
+
+      override fun onFinish() {
+        onTimeout()
+      }
+    }.start()
+
+    return countDownTimer
+  }
+
+  fun disableConnectionCountdown(pairingCountDownTimer: CountDownTimer) {
+    pairingCountDownTimer.cancel()
   }
 
   override fun disconnect(
@@ -464,6 +533,8 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     withContext(dispatcherProvider.io()) {
       try {
         val serverSocket = ServerSocket(PORT)
+        serverSocket.soTimeout = connectionTimeout() * 1000
+        Timber.e("Attaching server socket")
         serverSocket.accept().apply { constructStreamsFromSocket(this) }
       } catch (e: Exception) {
         Timber.e(e)
@@ -649,6 +720,12 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     // TODO: Return this to the device
   }
 
+  override fun onPairingSucceeded() {
+    for (successPairingListener in successPairingListeners) {
+      successPairingListener.invoke()
+    }
+  }
+
   override fun onSendingFailed(ex: Exception) {
     // TODO: Return this to the device
     // Also show an error on the UI
@@ -743,6 +820,11 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
             override fun onConnectionInfoAvailable(info: WifiP2pInfo, wifiP2pGroup: WifiP2pGroup?) {
               this@WifiDirectDataSharingStrategy.onConnectionInfoAvailable(info, wifiP2pGroup)
 
+              Timber.e(Gson().toJson(info))
+              Timber.e(Gson().toJson(wifiP2pGroup))
+
+              Timber.e("WIFIp2p Group is $wifiP2pGroup")
+
               if (info.groupFormed) {
                 paired = true
                 onConnected.onSuccess(null)
@@ -750,6 +832,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
                 if (paired) {
                   closeSocketAndStreams()
+                  // TODO: Check whether this is disconnection or failed
                   if (!requestedDisconnection) {
                     onConnected.onDisconnected()
                   }
@@ -838,6 +921,8 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
         val isGroupOwner = info.isGroupOwner
         currentDevice = wifiP2pGroup.clientList.firstOrNull { it.isGroupOwner != isGroupOwner }
       }
+
+      onPairingSucceeded()
     }
 
     if (onConnectionInfo != null) {
@@ -889,6 +974,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
         Timber.e(e)
       }
       socket = null
+      Timber.e("Socket is closed")
     }
   }
 
