@@ -238,7 +238,7 @@ class P2PSenderViewModel(
       viewModelScope.launch(dispatcherProvider.io()) { syncSenderHandler.startSyncProcess() }
     } else {
       Timber.i("Process received history json data null")
-      sendSyncComplete()
+      disconnect()
     }
   }
 
