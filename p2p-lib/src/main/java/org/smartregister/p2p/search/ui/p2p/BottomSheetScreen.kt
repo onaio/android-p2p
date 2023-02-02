@@ -328,9 +328,9 @@ fun BottomSheet(
           )
         }
         when (p2PState) {
-          P2PState.WIFI_AND_LOCATION_ENABLE -> DisplayDeviceList(deviceList, onEvent = onEvent)
-          P2PState.SEARCHING_FOR_RECIPIENT -> DisplayDeviceList(deviceList, onEvent = onEvent)
-          P2PState.PAIR_DEVICES_FOUND -> DisplayDeviceList(deviceList, onEvent = onEvent)
+          P2PState.WIFI_AND_LOCATION_ENABLE -> DisplayDeviceList(deviceList, onEvent = onEvent, p2PState)
+          P2PState.SEARCHING_FOR_RECIPIENT -> DisplayDeviceList(deviceList, onEvent = onEvent, p2PState)
+          P2PState.PAIR_DEVICES_FOUND -> DisplayDeviceList(deviceList, onEvent = onEvent, p2PState)
           else -> {}
         }
       }
@@ -363,7 +363,7 @@ fun DisplayButton(modifier: Modifier = Modifier, onEvent: (P2PEvent) -> Unit) {
 }
 
 @Composable
-fun DisplayDeviceList(deviceList: List<DeviceInfo>, onEvent: (P2PEvent) -> Unit) {
+fun DisplayDeviceList(deviceList: List<DeviceInfo>, onEvent: (P2PEvent) -> Unit, p2PState: P2PState) {
   LazyColumn(
     modifier = Modifier
       .fillMaxWidth()
@@ -371,7 +371,7 @@ fun DisplayDeviceList(deviceList: List<DeviceInfo>, onEvent: (P2PEvent) -> Unit)
       .background(WhiteColor)
   ) {
     itemsIndexed(deviceList) { index, item ->
-      PairDeviceRow(device = item, onEvent = onEvent)
+      PairDeviceRow(device = item, onEvent = onEvent, p2PState = p2PState)
     }
   }
 }
