@@ -111,12 +111,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     }
 
     // Check if already connected and disconnect
-    requestDeviceInfo2()
-
-    initChannel(onDeviceFound = onDeviceFound, onConnected = onConnected)
-
-    listenForWifiP2pEventsIntents()
-    initiatePeerDiscovery(onDeviceFound)
+    requestDeviceInfo(onDeviceFound = onDeviceFound, onConnected = onConnected)
   }
 
   private fun requestConnectionInfo() {
@@ -136,6 +131,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
         }
       )
     }
+    Timber.e("Inside listenForWifiP2pEventsIntents")
   }
 
   private fun initiatePeerDiscoveryOnceAccessFineLocationGranted() {
@@ -199,29 +195,8 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     Timber.d("Peer discovery initiated")
   }
 
-  private fun requestDeviceInfo() {
-    wifiP2pChannel?.also { wifiP2pChannel ->
-      if (ActivityCompat.checkSelfPermission(
-          context,
-          android.Manifest.permission.ACCESS_FINE_LOCATION
-        ) != PackageManager.PERMISSION_GRANTED
-      ) {
-        return handleAccessFineLocationNotGranted()
-      }
-
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        wifiP2pManager.requestDeviceInfo(wifiP2pChannel) {
-          if (it != null) {
-            handleWifiP2pDevice(it)
-          }
-        }
-      } else {
-        /** This has been handled by [WifiDirectDataSharingStrategy.onDeviceInfoChanged] */
-      }
-    }
-  }
-
-  private fun requestDeviceInfo2() {
+  private fun requestDeviceInfo( onDeviceFound: OnDeviceFound,
+                                  onConnected: DataSharingStrategy.PairingListener) {
     wifiP2pChannel?.also { wifiP2pChannel ->
       if (ActivityCompat.checkSelfPermission(
           context,
@@ -236,13 +211,17 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
           if (it != null && it.status == WifiP2pDevice.CONNECTED) {
             disconnect(WifiDirectDevice(it), object: DataSharingStrategy.OperationListener {
               override fun onSuccess(device: DeviceInfo?) {
-                Timber.e("Successfully connected from Wifi-Direct")
+                Timber.e("Successfully disconnected from Wifi-Direct")
+                initChannelAndPeerDiscovery(onDeviceFound = onDeviceFound, onConnected = onConnected)
               }
 
               override fun onFailure(device: DeviceInfo?, ex: Exception) {
-                Timber.e(ex, "Successfully disconnect from Wifi-Direct")
+                Timber.e(ex, "Failed to disconnect from Wifi-Direct")
               }
             })
+          } else {
+            Timber.e("Wifi-Direct not connected")
+            initChannelAndPeerDiscovery(onDeviceFound = onDeviceFound, onConnected = onConnected)
           }
         }
       } else {
@@ -252,17 +231,28 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
               wifiP2pChannel,
               object : WifiP2pManager.ActionListener {
                 override fun onSuccess() {
-                  Timber.e("Successfully connected from Wifi-Direct")
+                  Timber.e("Successfully disconnected from Wifi-Direct")
+                  initChannelAndPeerDiscovery(onDeviceFound = onDeviceFound, onConnected = onConnected)
                 }
 
                 override fun onFailure(reason: Int) {
                   Timber.e(Exception(getWifiP2pReason(reason)), "Successfully disconnect from Wifi-Direct")
                 }
               })
+          }  else {
+            Timber.e("Wifi-Direct not connected")
+            initChannelAndPeerDiscovery(onDeviceFound = onDeviceFound, onConnected = onConnected)
           }
         }
       }
     }
+  }
+
+  private fun initChannelAndPeerDiscovery(onDeviceFound: OnDeviceFound,
+                                          onConnected: DataSharingStrategy.PairingListener) {
+    initChannel(onDeviceFound = onDeviceFound, onConnected = onConnected)
+    listenForWifiP2pEventsIntents()
+    initiatePeerDiscovery(onDeviceFound)
   }
 
   override fun connect(
@@ -747,10 +737,10 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   }
 
   override fun getCurrentDevice(): DeviceInfo? {
-    if (currentDevice != null) {
-      return WifiDirectDevice(currentDevice!!)
+    return if (currentDevice != null) {
+      WifiDirectDevice(currentDevice!!)
     } else {
-      return null
+      null
     }
   }
 
@@ -774,6 +764,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     onDeviceFound: OnDeviceFound,
     onConnected: DataSharingStrategy.PairingListener
   ) {
+    Timber.e("Inside initChannel")
     wifiP2pChannel = wifiP2pManager.initialize(context, context.mainLooper, null)
     wifiP2pChannel?.also { channel ->
       wifiP2pReceiver =
