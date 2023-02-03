@@ -43,10 +43,9 @@ import org.smartregister.p2p.utils.divideToPercent
 import timber.log.Timber
 
 class P2PReceiverViewModel(
-  private val view: P2pModeSelectContract.View,
   private val dataSharingStrategy: DataSharingStrategy,
   private val dispatcherProvider: DispatcherProvider
-) : BaseViewModel(view, dataSharingStrategy), P2pModeSelectContract.ReceiverViewModel {
+) : BaseViewModel(dataSharingStrategy), P2pModeSelectContract.ReceiverViewModel {
 
   private lateinit var syncReceiverHandler: SyncReceiverHandler
   private var sendingDeviceAppLifetimeKey: String = ""
@@ -71,7 +70,7 @@ class P2PReceiverViewModel(
               )
             } else {
               // Show error msg
-              view.updateP2PState(P2PState.RECEIVE_BASIC_DEVICE_DETAILS_FAILED)
+              updateP2PState(P2PState.RECEIVE_BASIC_DEVICE_DETAILS_FAILED)
               Timber.e("An error occurred and the APP-LIFETIME-KEY was not sent")
             }
           }
@@ -159,7 +158,8 @@ class P2PReceiverViewModel(
           if (receivedManifest != null) {
             Timber.i("Manifest with data successfully received")
             // notify UI data transfer is starting
-            view.notifyDataTransferStarting(DeviceRole.RECEIVER)
+            postUIAction(UIAction.NOTIFY_DATA_TRANSFER_STARTING, DeviceRole.RECEIVER)
+            //view.notifyDataTransferStarting(DeviceRole.RECEIVER)
             syncReceiverHandler.processManifest(receivedManifest)
           }
         }
@@ -224,15 +224,18 @@ class P2PReceiverViewModel(
       }
     } else {
       // TODO: See if there's something better to do here
-      view.showToast("An error occurred! Restarting")
-      view.restartActivity()
+      showToast("An error occurred! Restarting")
+      restartActivity()
     }
   }
 
   fun handleDataTransferCompleteManifest(p2PState: P2PState) {
     Timber.e("Data transfer complete")
     viewModelScope.launch {
-      withContext(dispatcherProvider.main()) { view.showTransferCompleteDialog(p2PState) }
+      withContext(dispatcherProvider.main()) {
+        //view.showTransferCompleteDialog(p2PState)
+        postUIAction(UIAction.SHOW_TRANSFER_COMPLETE_DIALOG, p2PState)
+      }
       dataSharingStrategy.disconnect(
         dataSharingStrategy.getCurrentDevice()!!,
         object : DataSharingStrategy.OperationListener {
@@ -280,28 +283,35 @@ class P2PReceiverViewModel(
     var percentageReceived = totalReceivedRecords.divideToPercent(totalRecords)
     viewModelScope.launch {
       withContext(dispatcherProvider.main()) {
-        view.updateTransferProgress(
+        postUIAction(UIAction.UPDATE_TRANSFER_PROGRESS, TransferProgress(
+          totalRecordCount = totalRecords,
+          transferredRecordCount = totalReceivedRecords,
+          percentageTransferred = percentageReceived
+        ))
+        /*view.updateTransferProgress(
           TransferProgress(
             totalRecordCount = totalRecords,
             transferredRecordCount = totalReceivedRecords,
             percentageTransferred = percentageReceived
           )
-        )
+        )*/
       }
     }
   }
 
   fun showCancelTransferDialog() {
-    viewModelScope.launch(dispatcherProvider.main()) { view.showCancelTransferDialog() }
+    viewModelScope.launch(dispatcherProvider.main()) {
+      //view.showCancelTransferDialog()
+      postUIAction(UIAction.SHOW_CANCEL_TRANSFER_DIALOG)
+    }
   }
 
   class Factory(
-    private val context: P2PDeviceSearchActivity,
     private val dataSharingStrategy: DataSharingStrategy,
     private val dispatcherProvider: DispatcherProvider
   ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-      return P2PReceiverViewModel(context, dataSharingStrategy, dispatcherProvider).apply {
+      return P2PReceiverViewModel(dataSharingStrategy, dispatcherProvider).apply {
         dataSharingStrategy.setCoroutineScope(viewModelScope)
       } as T
     }

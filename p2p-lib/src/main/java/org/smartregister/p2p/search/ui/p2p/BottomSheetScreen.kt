@@ -70,6 +70,7 @@ import org.smartregister.p2p.search.ui.theme.DangerColor
 import org.smartregister.p2p.search.ui.theme.DefaultColor
 import org.smartregister.p2p.search.ui.theme.WhiteColor
 import org.smartregister.p2p.utils.annotation.ExcludeFromJacocoGeneratedReport
+import timber.log.Timber
 
 const val P2P_BOTTOM_SHEET_LIST = "p2PBottomSheetList"
 const val BOTTOM_SHEET_CANCEL_ICON_TEST_TAG = "bottomSheetCancelIconTestTag"
@@ -314,6 +315,10 @@ fun BottomSheet(
       }
 
       Spacer(modifier = Modifier.size(5.dp))
+      Timber.e("BottomSheetScreen: Device Role: $deviceRole")
+      Timber.e("BottomSheetScreen: P2P State: $p2PState")
+      Timber.e("BottomSheetScreen: Devices list ${deviceList.size}")
+
       if (deviceRole == DeviceRole.SENDER) {
         if (p2PState == P2PState.PAIR_DEVICES_FOUND) {
           SelectPairDeviceRow(
@@ -331,7 +336,9 @@ fun BottomSheet(
           P2PState.WIFI_AND_LOCATION_ENABLE -> DisplayDeviceList(deviceList, onEvent = onEvent, p2PState)
           P2PState.SEARCHING_FOR_RECIPIENT -> DisplayDeviceList(deviceList, onEvent = onEvent, p2PState)
           P2PState.PAIR_DEVICES_FOUND -> DisplayDeviceList(deviceList, onEvent = onEvent, p2PState)
-          else -> {}
+          else -> {
+            Timber.e("Device list Else p2p state. State is ${p2PState.name}")
+          }
         }
       }
 

@@ -26,6 +26,7 @@ import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
 import androidx.core.app.ActivityCompat
 import org.smartregister.p2p.search.contract.P2PManagerListener
+import timber.log.Timber
 
 class WifiP2pBroadcastReceiver(
   private val manager: WifiP2pManager,
@@ -37,6 +38,7 @@ class WifiP2pBroadcastReceiver(
   override fun onReceive(context: Context, intent: Intent) {
     when (intent.action) {
       WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION -> {
+        Timber.e("Wifi p2p Connection changed action")
         val p2pGroupInfo =
           intent.getParcelableExtra<WifiP2pGroup>(WifiP2pManager.EXTRA_WIFI_P2P_GROUP)
         val wifiP2pInfo = intent.getParcelableExtra<WifiP2pInfo>(WifiP2pManager.EXTRA_WIFI_P2P_INFO)
