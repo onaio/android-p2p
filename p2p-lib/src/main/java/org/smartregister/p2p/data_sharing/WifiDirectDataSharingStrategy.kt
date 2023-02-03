@@ -86,7 +86,8 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
   private val MANIFEST = "MANIFEST"
 
-  var pairingTimeout: CountDownTimer? = null
+  var pairingTimeout : CountDownTimer? = null
+  var pairingInitiated = false
 
   val successPairingListeners: MutableSet<() -> Unit> = mutableSetOf()
   val failedPairingListeners: MutableSet<(Exception) -> Unit> = mutableSetOf()
@@ -267,6 +268,8 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
     Timber.d("Wifi P2P: Initiating connection to device: ${wifiDirectDevice.deviceName}")
     val wifiP2pConfig = WifiP2pConfig().apply { deviceAddress = wifiDirectDevice.deviceAddress }
+    pairingInitiated = true
+    Timber.e("connect() with pairing inititiated $pairingInitiated")
     wifiP2pChannel?.also { wifiP2pChannel ->
       if (ActivityCompat.checkSelfPermission(
           context,
@@ -282,12 +285,17 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
         currentDevice = wifiDirectDevice
         paired = true
+        pairingInitiated = false
+        Timber.e("connect() successfully paired with pairing inititiated $pairingInitiated")
 
         onConnectionSucceeded(device)
       }
 
       val failedPairingListener = { exception: Exception ->
         paired = false
+        pairingInitiated = false
+
+        Timber.e("connect() pairing failure with pairing inititiated $pairingInitiated")
 
         disableConnectionCountdown(pairingTimeout!!)
 
@@ -413,7 +421,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
         Timber.e("groupOwnerAddress is null")
         operationListener.onFailure(
           device,
-          Exception("An exception occurred and the socket is null")
+          Exception("An exception occurred and the groupOwnerAddress is null")
         )
 
         // TODO: Test this by returning null always from the getGroupOwnerAddress()
@@ -946,7 +954,12 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
         currentDevice = wifiP2pGroup.clientList.firstOrNull { it.isGroupOwner != isGroupOwner }
       }
 
-      onPairingSucceeded()
+      Timber.e("Before calling onPairingSucceeded() with pairing inititiated $pairingInitiated")
+      if(pairingInitiated) {
+        Timber.e("Calling onPairingSucceeded() with pairing inititiated $pairingInitiated")
+        onPairingSucceeded()
+      }
+
     }
 
     if (onConnectionInfo != null) {
@@ -985,6 +998,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   }
 
   fun closeSocketAndStreams() {
+    Timber.e("closeSocketAndStreams called ")
     stopSearchingDevices(null)
 
     dataInputStream?.run { close() }
@@ -1023,6 +1037,10 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       2 -> "Busy"
       else -> "Unknown"
     }
+
+  override fun isPairingInitiated(): Boolean {
+    return this.pairingInitiated
+  }
 
   class WifiDirectDevice(var wifiP2pDevice: WifiP2pDevice) : DeviceInfo {
 

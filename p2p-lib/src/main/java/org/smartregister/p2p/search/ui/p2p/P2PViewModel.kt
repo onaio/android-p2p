@@ -119,6 +119,9 @@ class P2PViewModel(
 
       override fun onSuccess(device: DeviceInfo?) {
 
+        if(!dataSharingStrategy.isPairingInitiated() && deviceRole == DeviceRole.SENDER) {
+          return
+        }
         if (currentConnectedDevice == null) {
           Timber.e("Devices paired with another: DeviceInfo is null")
         }
