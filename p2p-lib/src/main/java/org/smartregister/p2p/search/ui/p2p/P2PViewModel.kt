@@ -120,6 +120,7 @@ class P2PViewModel(
       override fun onSuccess(device: DeviceInfo?) {
 
         if(!dataSharingStrategy.isPairingInitiated() && deviceRole == DeviceRole.SENDER) {
+          Timber.e("pairingListener#onSuccess() -> pairingInitiated = false ${deviceRole.name}")
           return
         }
         if (currentConnectedDevice == null) {
@@ -154,6 +155,7 @@ class P2PViewModel(
       }
 
       override fun onDisconnected() {
+        Timber.e("onDisconnected()")
         if (!requestDisconnection) {
           //view.showToast("Connection was disconnected")
           showToast("Connection was disconnected")
