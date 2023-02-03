@@ -227,14 +227,17 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
           }
         }
       } else {
-        wifiP2pManager.requestConnectionInfo(wifiP2pChannel) {
-          if (it != null && it.groupFormed) {
+        wifiP2pManager.requestConnectionInfo(wifiP2pChannel) { info ->
+          if (info != null && info.groupFormed) {
             wifiP2pManager.removeGroup(
               wifiP2pChannel,
               object : WifiP2pManager.ActionListener {
                 override fun onSuccess() {
                   Timber.e("Successfully disconnected from Wifi-Direct")
-                  initChannelAndPeerDiscovery(onDeviceFound = onDeviceFound, onConnected = onConnected)
+                  wifiP2pManager.requestConnectionInfo(wifiP2pChannel) {
+                    Timber.e("groupformed : ${it.groupFormed} groupOwnerAddress : ${it.groupOwnerAddress}, isGroupOwner : ${it.isGroupOwner}")
+                    initChannelAndPeerDiscovery(onDeviceFound = onDeviceFound, onConnected = onConnected)
+                  }
                 }
 
                 override fun onFailure(reason: Int) {
