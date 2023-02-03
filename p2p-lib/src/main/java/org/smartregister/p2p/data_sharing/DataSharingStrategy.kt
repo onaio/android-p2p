@@ -102,5 +102,7 @@ interface DataSharingStrategy {
 
   fun onStop()
 
+  fun cleanup() {}
+
   fun connectionTimeout() : Int = 30
 }

@@ -32,7 +32,6 @@ import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
 import org.smartregister.p2p.data_sharing.SyncSenderHandler
 import org.smartregister.p2p.model.P2PReceivedHistory
-import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.model.TransferProgress
 import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.payload.StringPayload
@@ -45,10 +44,9 @@ import org.smartregister.p2p.utils.divideToPercent
 import timber.log.Timber
 
 class P2PSenderViewModel(
-  private val view: P2pModeSelectContract.View,
   private val dataSharingStrategy: DataSharingStrategy,
   private val dispatcherProvider: DispatcherProvider
-) : BaseViewModel(view, dataSharingStrategy), P2pModeSelectContract.SenderViewModel {
+) : BaseViewModel(dataSharingStrategy), P2pModeSelectContract.SenderViewModel {
 
   private var connectionLevel: Constants.ConnectionLevel? = null
 
@@ -148,7 +146,10 @@ class P2PSenderViewModel(
   override fun sendSyncComplete() {
     Timber.i("P2P sync complete")
     viewModelScope.launch {
-      withContext(dispatcherProvider.main()) { view.showTransferCompleteDialog(P2PState.TRANSFER_COMPLETE) }
+      withContext(dispatcherProvider.main()) {
+        //view.showTransferCompleteDialog(P2PState.TRANSFER_COMPLETE)
+        postUIAction(UIAction.SHOW_TRANSFER_COMPLETE_DIALOG)
+      }
       dataSharingStrategy.disconnect(
         getCurrentConnectedDevice()!!,
         object : DataSharingStrategy.OperationListener {
@@ -219,7 +220,7 @@ class P2PSenderViewModel(
   }
 
   override fun getCurrentConnectedDevice(): DeviceInfo? {
-    return view.getCurrentConnectedDevice()
+    return dataSharingStrategy.getCurrentDevice()
   }
 
   override fun processReceivedHistory(syncPayload: StringPayload) {
@@ -256,37 +257,45 @@ class P2PSenderViewModel(
 
   fun updateSenderSyncComplete(senderSyncComplete: Boolean) {
     viewModelScope.launch {
-      withContext(dispatcherProvider.main()) { view.senderSyncComplete(senderSyncComplete) }
+      withContext(dispatcherProvider.main()) {
+        //view.senderSyncComplete(senderSyncComplete)
+        postUIAction(UIAction.SENDER_SYNC_COMPLETE, senderSyncComplete)
+      }
     }
   }
 
   override fun updateTransferProgress(totalSentRecords: Long, totalRecords: Long) {
-    var percentageSent = totalSentRecords.divideToPercent(totalRecords)
+    val percentageSent = totalSentRecords.divideToPercent(totalRecords)
     viewModelScope.launch {
       withContext(dispatcherProvider.main()) {
-        view.updateTransferProgress(
+        postUIAction(UIAction.UPDATE_TRANSFER_PROGRESS, TransferProgress(
+          totalRecordCount = totalRecords,
+          transferredRecordCount = totalSentRecords,
+          percentageTransferred = percentageSent
+        ))
+        /*view.updateTransferProgress(
           TransferProgress(
             totalRecordCount = totalRecords,
             transferredRecordCount = totalSentRecords,
             percentageTransferred = percentageSent
           )
-        )
+        )*/
       }
     }
   }
 
   fun notifyDataTransferStarting() {
-    view.notifyDataTransferStarting(DeviceRole.SENDER)
+    //view.notifyDataTransferStarting(DeviceRole.SENDER)
+    postUIAction(UIAction.NOTIFY_DATA_TRANSFER_STARTING, DeviceRole.SENDER)
   }
 
 
   class Factory(
-    private val context: P2pModeSelectContract.View,
     private val dataSharingStrategy: DataSharingStrategy,
     private val dispatcherProvider: DispatcherProvider
   ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-      return P2PSenderViewModel(context, dataSharingStrategy, dispatcherProvider).apply {
+      return P2PSenderViewModel(dataSharingStrategy, dispatcherProvider).apply {
         dataSharingStrategy.setCoroutineScope(viewModelScope)
       } as
         T

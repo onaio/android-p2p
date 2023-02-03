@@ -70,6 +70,7 @@ import org.smartregister.p2p.search.ui.p2p.components.ProgressStatusIndicator
 import org.smartregister.p2p.search.ui.p2p.components.ProgressStatusText
 import org.smartregister.p2p.search.ui.theme.DefaultColor
 import org.smartregister.p2p.utils.annotation.ExcludeFromJacocoGeneratedReport
+import timber.log.Timber
 
 const val P2P_SCREEN_TOP_BAR_TEST_TAG = "p2pScreenTopBarTestTag"
 const val P2P_SCREEN_TOP_BAR_ICON_TEST_TAG = "p2pScreenTopBarIconTestTag"
@@ -248,10 +249,12 @@ fun P2PScreen(
           }
           p2PViewModel.updateP2PState(P2PState.INITIATE_DATA_TRANSFER)
         }
-        P2PState.DEVICE_DISCONNECTED -> {
+        P2PState.DEVICE_DISCONNECTED, P2PState.CONNECT_TO_DEVICE_FAILED -> {
           coroutineScope.launch { modalBottomSheetState.show() }
         }
-        else -> {}
+        else -> {
+          Timber.e("Unhandled p2p state ${p2PState.name} inside P2PScreen")
+        }
       }
     }
   }

@@ -64,21 +64,18 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
   private val accessFineLocationPermissionRequestInt: Int = 12345
   private val p2PReceiverViewModel by viewModels<P2PReceiverViewModel> {
     P2PReceiverViewModel.Factory(
-      context = this,
       dataSharingStrategy = dataSharingStrategy,
       DefaultDispatcherProvider()
     )
   }
   private val p2PSenderViewModel by viewModels<P2PSenderViewModel> {
     P2PSenderViewModel.Factory(
-      context = this,
       dataSharingStrategy = dataSharingStrategy,
       DefaultDispatcherProvider()
     )
   }
   private val p2PViewModel by viewModels<P2PViewModel> {
     P2PViewModel.Factory(
-      context = this,
       dataSharingStrategy = dataSharingStrategy,
       DefaultDispatcherProvider()
     )
@@ -124,6 +121,83 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     title = getString(R.string.device_to_device_sync)
 
     androidWifiManager = getAndroidWifiManager()
+
+    registerUIViewModelEvents()
+    registerSenderViewModelEvents()
+    registerReceiverViewModelEvents()
+  }
+
+  fun registerUIViewModelEvents() {
+    /*
+
+    val displayMessages = MutableLiveData<String>()
+    val restartActivity = MutableLiveData<Boolean>()
+    val p2pState = MutableLiveData<P2PState>()
+    val p2pUiAction = MutableLiveData<Pair<UIAction, Any?>>()
+     */
+    registerViewModelEvents(p2PViewModel)
+  }
+
+  fun registerViewModelEvents(baseViewModel: BaseViewModel) {
+    baseViewModel.displayMessages.observe(this) { msg ->
+      showToast(msg)
+    }
+    baseViewModel.restartActivity.observe(this) {
+      if (it) {
+        restartActivity()
+      }
+    }
+
+    baseViewModel.p2pState.observe(this) { p2pState ->
+      updateP2PState(p2pState)
+    }
+    baseViewModel.p2pUiAction.observe(this) { pair ->
+      val uiAction = pair.first
+      val data = pair.second
+
+      when (uiAction) {
+        UIAction.SHOW_TRANSFER_COMPLETE_DIALOG -> {
+          showTransferCompleteDialog(data as P2PState)
+        }
+        UIAction.NOTIFY_DATA_TRANSFER_STARTING -> {
+          notifyDataTransferStarting(data as DeviceRole)
+        }
+        UIAction.SHOW_CANCEL_TRANSFER_DIALOG -> {
+          showCancelTransferDialog()
+        }
+        UIAction.SENDER_SYNC_COMPLETE -> {
+          senderSyncComplete(data as Boolean)
+        }
+        UIAction.UPDATE_TRANSFER_PROGRESS -> {
+          updateTransferProgress(data as TransferProgress)
+        }
+        UIAction.REQUEST_LOCATION_PERMISSIONS_ENABLE_LOCATION -> {
+          requestLocationPermissionsAndEnableLocation()
+        }
+        UIAction.FINISH -> {
+          finish()
+        }
+        UIAction.KEEP_SCREEN_ON -> {
+          keepScreenOn(data as Boolean)
+        }
+        UIAction.PROCESS_SENDER_DEVICE_DETAILS -> {
+          processSenderDeviceDetails()
+        }
+        UIAction.SEND_DEVICE_DETAILS -> {
+          sendDeviceDetails()
+        }
+      }
+    }
+  }
+
+  fun registerSenderViewModelEvents() {
+
+    registerViewModelEvents(p2PSenderViewModel)
+  }
+
+  fun registerReceiverViewModelEvents() {
+
+    registerViewModelEvents(p2PReceiverViewModel)
   }
 
   override fun showToast(msg: String) {
@@ -275,12 +349,21 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
 
   override fun onResume() {
     super.onResume()
+/*
+    registerViewModelEvents()
+    registerSenderViewModelEvents()
+    registerReceiverViewModelEvents()*/
+
     p2PViewModel.initChannel()
     dataSharingStrategy.onResume(isScanning = scanning)
   }
 
   override fun onPause() {
     super.onPause()
+/*
+    unregisterViewModelEvents()
+    unregisterSenderViewModelEvents()
+    unregisterReceiverViewModelEvents()*/
 
     dataSharingStrategy.onPause()
   }
@@ -390,4 +473,10 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     dataSharingStrategy.onStop()
   }
 
+  override fun onDestroy() {
+    super.onDestroy()
+    Timber.e("P2PDeviceSearchActivity onDestroy")
+
+    viewModelStore.clear()
+  }
 }
