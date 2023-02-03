@@ -279,6 +279,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
         return handleAccessFineLocationNotGranted()
       }
 
+      // NB: This handles changing the last states of everything i.e. paired, pairingInitiated from both onConnectionInfoAvailable implementations
       val successPairingListener = {
         disableConnectionCountdown(pairingTimeout!!)
         Timber.i("Device successfully paired")
@@ -291,6 +292,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
         onConnectionSucceeded(device)
       }
 
+      // NB: This handles changing the last states of everything i.e. paired, pairingInitiated from both onConnectionInfoAvailable implementations
       val failedPairingListener = { exception: Exception ->
         paired = false
         pairingInitiated = false
@@ -849,15 +851,17 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
                 info: WifiP2pInfo,
                 wifiP2pGroup: WifiP2pGroup?
               ) {
-                this@WifiDirectDataSharingStrategy.onConnectionInfoAvailable(info, wifiP2pGroup)
-
                 Timber.e(Gson().toJson(info))
                 Timber.e(Gson().toJson(wifiP2pGroup))
 
-                Timber.e("WIFIp2p Group is $wifiP2pGroup")
+                Timber.e("onConnectionInfoAvailable() WIFIp2p Group is $wifiP2pGroup")
+                Timber.e("onConnectionInfoAvailable() Paired: $paired")
+                Timber.e("onConnectionInfoAvailable() Requested disconnection: $requestedDisconnection")
 
                 if (info.groupFormed) {
-                  paired = true
+                  // This is handled onConnectionInfoAvailable inside WifiDirectDataSharingStrategy
+                  //paired = true
+
                   onConnected.onSuccess(null)
                 } else {
 
@@ -868,10 +872,13 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
                       onConnected.onDisconnected()
                     }
 
-                    paired = false
+                    // This is handled onConnectionInfoAvailable inside WifiDirectDataSharingStrategy
+                    //paired = false
                   }
                   requestedDisconnection = false
                 }
+
+                this@WifiDirectDataSharingStrategy.onConnectionInfoAvailable(info, wifiP2pGroup)
               }
 
               override fun onConnectionInfoAvailable(info: WifiP2pInfo) {
