@@ -76,6 +76,9 @@ class P2PViewModel(
       P2PEvent.DataTransferCompleteConfirmed -> {
         updateP2PState(P2PState.PROMPT_NEXT_TRANSFER)
       }
+      P2PEvent.BottomSheetClosed -> {
+        cancelTransfer(P2PState.PROMPT_NEXT_TRANSFER)
+      }
     }
   }
 
