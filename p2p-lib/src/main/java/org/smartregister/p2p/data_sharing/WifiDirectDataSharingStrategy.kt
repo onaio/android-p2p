@@ -58,7 +58,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
   lateinit var context: Activity
   private val wifiP2pManager: WifiP2pManager by lazy(LazyThreadSafetyMode.NONE) {
-    context.getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager
+    context.application.getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager
   }
   private val accessFineLocationPermissionRequestInt: Int = 12345
   private var wifiP2pChannel: WifiP2pManager.Channel? = null
@@ -784,8 +784,13 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   }
 
   override fun onPause() {
-    runCatching { wifiP2pReceiver?.also { context.unregisterReceiver(it) } }.onFailure {
+    runCatching { wifiP2pReceiver?.also {
+      context.unregisterReceiver(it)
+      // TODO: Sample fix memory leak
+      wifiP2pReceiver = null
+    } }.onFailure {
       Timber.e(it)
+      wifiP2pReceiver = null
     }
 
     closeSocketAndStreams()

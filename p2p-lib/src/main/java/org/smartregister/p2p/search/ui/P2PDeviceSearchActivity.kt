@@ -100,7 +100,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     supportActionBar?.setHomeAsUpIndicator(android.R.drawable.ic_menu_close_clear_cancel)
 
     // Remaining setup for the DataSharingStrategy class
-    dataSharingStrategy = P2PLibrary.getInstance().dataSharingStrategy
+    dataSharingStrategy = P2PLibrary.getInstance().dataSharingStrategy!!
     dataSharingStrategy.setActivity(this)
 
     // use compose
@@ -478,5 +478,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     Timber.e("P2PDeviceSearchActivity onDestroy")
 
     viewModelStore.clear()
+    P2PLibrary.getInstance().clean()
   }
 }
