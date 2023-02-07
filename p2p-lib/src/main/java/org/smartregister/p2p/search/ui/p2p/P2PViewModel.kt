@@ -33,8 +33,6 @@ import org.smartregister.p2p.search.ui.UIAction
 import org.smartregister.p2p.utils.DispatcherProvider
 import timber.log.Timber
 
-const val START_DATA_TRANSFER_DELAY: Long = 5000
-
 class P2PViewModel(
   private val dataSharingStrategy: DataSharingStrategy,
   private val dispatcherProvider: DispatcherProvider
@@ -58,7 +56,6 @@ class P2PViewModel(
       is P2PEvent.StartScanning -> {
         // check whether location services are enabled
         postUIAction(UIAction.REQUEST_LOCATION_PERMISSIONS_ENABLE_LOCATION)
-        //view.requestLocationPermissionsAndEnableLocation()
       }
       is P2PEvent.PairWithDevice -> {
         // initiate pairing with device
@@ -83,8 +80,6 @@ class P2PViewModel(
   }
 
   fun startScanning() {
-    //view.keepScreenOn(true)
-
     postUIAction(UIAction.KEEP_SCREEN_ON, true)
     dataSharingStrategy.searchDevices(onDeviceFound, pairingListener)
   }
@@ -99,15 +94,14 @@ class P2PViewModel(
           updateP2PState(P2PState.PAIR_DEVICES_FOUND)
         }
 
-        Timber.e("onDeviceFound: State is ${p2PState.value?.name}")
-        Timber.e("Devices searching succeeded. Found ${devices.size} devices")
+        Timber.i("onDeviceFound: State is ${p2PState.value?.name}")
+        Timber.i("Devices searching succeeded. Found ${devices.size} devices")
       }
 
       override fun failed(ex: Exception) {
-        //view.keepScreenOn(false)
         postUIAction(UIAction.KEEP_SCREEN_ON, false)
 
-        Timber.e("Devices searching failed")
+        Timber.d("Devices searching failed")
         Timber.e(ex)
         updateP2PState(P2PState.PAIR_DEVICES_SEARCH_FAILED)
       }
@@ -120,27 +114,25 @@ class P2PViewModel(
       override fun onSuccess(device: DeviceInfo?) {
 
         if(!dataSharingStrategy.isPairingInitiated() && deviceRole == DeviceRole.SENDER) {
-          Timber.e("pairingListener#onSuccess() -> pairingInitiated = false ${deviceRole.name}")
+          Timber.i("pairingListener#onSuccess() -> pairingInitiated = false ${deviceRole.name}")
           return
         }
         if (currentConnectedDevice == null) {
-          Timber.e("Devices paired with another: DeviceInfo is null")
+          Timber.i("Devices paired with another: DeviceInfo is null")
         }
 
-        Timber.e("Devices paired with another: DeviceInfo is +++++")
+        Timber.i("Devices paired with another: DeviceInfo is +++++")
 
         currentConnectedDevice = device
 
-        Timber.e("Device role is ${deviceRole.name}")
+        Timber.i("Device role is ${deviceRole.name}")
 
         when (deviceRole) {
           DeviceRole.RECEIVER -> {
             updateP2PState(P2PState.WAITING_TO_RECEIVE_DATA)
-            //view.processSenderDeviceDetails()
             postUIAction(UIAction.PROCESS_SENDER_DEVICE_DETAILS)
           }
           DeviceRole.SENDER -> {
-            //view.sendDeviceDetails()
             postUIAction(UIAction.SEND_DEVICE_DETAILS)
           }
         }
@@ -149,7 +141,7 @@ class P2PViewModel(
       override fun onFailure(device: DeviceInfo?, ex: Exception) {
         //view.keepScreenOn(false)
         postUIAction(UIAction.KEEP_SCREEN_ON, false)
-        Timber.e("Devices pairing failed")
+        Timber.i("Devices pairing failed")
         Timber.e(ex)
         updateP2PState(P2PState.PROMPT_NEXT_TRANSFER)
       }
@@ -157,15 +149,12 @@ class P2PViewModel(
       override fun onDisconnected() {
         Timber.e("onDisconnected()")
         if (!requestDisconnection) {
-          //view.showToast("Connection was disconnected")
           showToast("Connection was disconnected")
 
-
-          //view.keepScreenOn(false)
           postUIAction(UIAction.KEEP_SCREEN_ON, false)
 
-          Timber.e("Successful on disconnect")
-          Timber.e("isSenderSyncComplete $isSenderSyncComplete")
+          Timber.i("Successful on disconnect")
+          Timber.i("isSenderSyncComplete $isSenderSyncComplete")
           // But use a flag to determine if sync was completed
           updateP2PState(P2PState.DEVICE_DISCONNECTED)
         }
@@ -207,13 +196,12 @@ class P2PViewModel(
   }
 
   fun cancelTransfer(p2PState: P2PState = P2PState.TRANSFER_CANCELLED) {
-    Timber.e("Connection terminated by user")
     viewModelScope.launch {
       dataSharingStrategy.disconnect(
         dataSharingStrategy.getCurrentDevice()!!,
         object : DataSharingStrategy.OperationListener {
           override fun onSuccess(device: DeviceInfo?) {
-            Timber.i("Diconnection successful")
+            Timber.d("Disconnection successful")
             updateP2PState(p2PState)
           }
 
@@ -234,16 +222,12 @@ class P2PViewModel(
   }
 
   override fun updateP2PState(state: P2PState) {
-    Timber.e("$this")
-    Timber.e(Exception("P2P state updated to ${state.name}"))
+    Timber.i("P2P state updated to ${state.name}")
     _p2PState.postValue(state)
-
-    //super.updateP2PState(state)
   }
 
   fun closeP2PScreen() {
     if (dataSharingStrategy.getCurrentDevice() == null) {
-      //view.finish()
       postUIAction(UIAction.FINISH)
       return
     }
@@ -253,13 +237,11 @@ class P2PViewModel(
         dataSharingStrategy.getCurrentDevice()!!,
         object : DataSharingStrategy.OperationListener {
           override fun onSuccess(device: DeviceInfo?) {
-            Timber.i("Diconnection successful")
-            //view.finish()
+            Timber.d("Disconnection successful")
             postUIAction(UIAction.FINISH)
           }
 
           override fun onFailure(device: DeviceInfo?, ex: Exception) {
-            //view.finish()
             postUIAction(UIAction.FINISH)
             Timber.e(ex, "P2P diconnection failed")
           }
@@ -289,8 +271,7 @@ class P2PViewModel(
   }
 
   override fun onCleared() {
-    Timber.e("P2PViewModel onCleared")
-
+    Timber.d("P2PViewModel onCleared")
     super.onCleared()
   }
 

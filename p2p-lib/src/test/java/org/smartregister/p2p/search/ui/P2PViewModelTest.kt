@@ -57,7 +57,6 @@ class P2PViewModelTest : RobolectricTest() {
     p2PViewModel =
       spyk(
         P2PViewModel(
-          view = view,
           dataSharingStrategy = dataSharingStrategy,
           dispatcherProvider = coroutinesTestRule.testDispatcherProvider
         )
