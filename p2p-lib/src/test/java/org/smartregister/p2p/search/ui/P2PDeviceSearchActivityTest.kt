@@ -381,8 +381,8 @@ class P2PDeviceSearchActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun `showTransferCompleteDialog() calls p2PViewModel#showTransferCompleteDialog()`() {
-    p2PDeviceSearchActivity.showTransferCompleteDialog()
-    verify { p2PViewModel.showTransferCompleteDialog() }
+    p2PDeviceSearchActivity.showTransferCompleteDialog(P2PState.TRANSFER_COMPLETE)
+    verify { p2PViewModel.showTransferCompleteDialog(P2PState.TRANSFER_COMPLETE) }
   }
 
   @Test

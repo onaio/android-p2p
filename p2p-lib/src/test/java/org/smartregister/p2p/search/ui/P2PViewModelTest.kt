@@ -295,7 +295,7 @@ class P2PViewModelTest : RobolectricTest() {
   @Test
   fun `showTransferCompleteDialog() updates p2PState to TRANSFER_COMPLETE`() {
     Assert.assertNull(p2PViewModel.p2PState.value)
-    p2PViewModel.showTransferCompleteDialog()
+    p2PViewModel.showTransferCompleteDialog(P2PState.TRANSFER_COMPLETE)
     Assert.assertEquals(P2PState.TRANSFER_COMPLETE, p2PViewModel.p2PState.getOrAwaitValue())
   }
 

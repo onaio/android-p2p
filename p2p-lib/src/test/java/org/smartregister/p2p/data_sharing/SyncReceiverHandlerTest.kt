@@ -39,6 +39,7 @@ import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.dao.P2pReceivedHistoryDao
 import org.smartregister.p2p.dao.ReceiverTransferDao
 import org.smartregister.p2p.model.P2PReceivedHistory
+import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.robolectric.RobolectricTest
 import org.smartregister.p2p.search.ui.P2PReceiverViewModel
 import org.smartregister.p2p.shadows.ShadowAppDatabase
@@ -100,11 +101,11 @@ class SyncReceiverHandlerTest : RobolectricTest() {
     dataType = DataType(name = Constants.SYNC_COMPLETE, type = DataType.Filetype.JSON, position = 0)
     val manifest = Manifest(dataType = dataType, recordsSize = 25, payloadSize = 50)
     every { p2PReceiverViewModel.updateTransferProgress(any(), any()) } just runs
-    every { p2PReceiverViewModel.handleDataTransferCompleteManifest() } just runs
+    every { p2PReceiverViewModel.handleDataTransferCompleteManifest(P2PState.TRANSFER_COMPLETE) } just runs
 
     syncReceiverHandler.processManifest(manifest = manifest)
 
-    verify(exactly = 1) { p2PReceiverViewModel.handleDataTransferCompleteManifest() }
+    verify(exactly = 1) { p2PReceiverViewModel.handleDataTransferCompleteManifest(P2PState.TRANSFER_COMPLETE) }
   }
 
   @Test
