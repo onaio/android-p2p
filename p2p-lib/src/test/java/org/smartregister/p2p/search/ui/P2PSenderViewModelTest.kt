@@ -46,6 +46,7 @@ import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
 import org.smartregister.p2p.data_sharing.SyncSenderHandler
 import org.smartregister.p2p.data_sharing.WifiDirectDataSharingStrategy
+import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.model.TransferProgress
 import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.payload.StringPayload
@@ -75,7 +76,7 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
     dataSharingStrategy = mockk()
     syncSenderHandler = mockk()
     p2PSenderViewModel =
-      spyk(P2PSenderViewModel(view, dataSharingStrategy, coroutinesTestRule.testDispatcherProvider))
+      spyk(P2PSenderViewModel( dataSharingStrategy, coroutinesTestRule.testDispatcherProvider))
     ReflectionHelpers.setField(p2PSenderViewModel, "syncSenderHandler", syncSenderHandler)
 
     p2pReceiverTransferDao = mockk()
@@ -172,14 +173,14 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
   @Test
   fun `sendSyncComplete() should call dataSharingStrategy#disconnect() and view#showTransferCompleteDialog()`() {
     every { dataSharingStrategy.disconnect(any(), any()) } just runs
-    every { view.showTransferCompleteDialog() } just runs
+    every { view.showTransferCompleteDialog(P2PState.TRANSFER_COMPLETE) } just runs
 
     p2PSenderViewModel.sendSyncComplete()
 
     Shadows.shadowOf(Looper.getMainLooper()).idle()
 
     verify(exactly = 1) { dataSharingStrategy.disconnect(deviceInfo, any()) }
-    verify(exactly = 1) { view.showTransferCompleteDialog() }
+    verify(exactly = 1) { view.showTransferCompleteDialog(P2PState.TRANSFER_COMPLETE) }
   }
 
   @Test
@@ -275,7 +276,6 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
 
     Assert.assertNotNull(
       P2PSenderViewModel.Factory(
-          mockk(),
           wifiDirectDataSharingStrategy,
           coroutinesTestRule.testDispatcherProvider
         )
@@ -283,7 +283,6 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
     )
     Assert.assertTrue(
       P2PSenderViewModel.Factory(
-          mockk(),
           wifiDirectDataSharingStrategy,
           coroutinesTestRule.testDispatcherProvider
         )

@@ -46,6 +46,7 @@ import org.smartregister.p2p.data_sharing.Manifest
 import org.smartregister.p2p.data_sharing.SyncReceiverHandler
 import org.smartregister.p2p.data_sharing.WifiDirectDataSharingStrategy
 import org.smartregister.p2p.model.P2PReceivedHistory
+import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.model.TransferProgress
 import org.smartregister.p2p.payload.BytePayload
 import org.smartregister.p2p.payload.PayloadContract
@@ -92,7 +93,7 @@ class P2PReceiverViewModelTest : RobolectricTest() {
     every { dataSharingStrategy.getCurrentDevice() } answers { expectedDeviceInfo }
     p2PReceiverViewModel =
       spyk(
-        P2PReceiverViewModel(view, dataSharingStrategy, coroutinesTestRule.testDispatcherProvider)
+        P2PReceiverViewModel(dataSharingStrategy, coroutinesTestRule.testDispatcherProvider)
       )
     ReflectionHelpers.setField(p2PReceiverViewModel, "syncReceiverHandler", syncReceiverHandler)
   }
@@ -121,7 +122,7 @@ class P2PReceiverViewModelTest : RobolectricTest() {
     expectedManifest = Manifest(dataType = dataType, recordsSize = 25, payloadSize = 50)
     every { p2PReceiverViewModel.listenForIncomingManifest() } answers { expectedManifest }
     p2PReceiverViewModel.processIncomingManifest()
-    verify(exactly = 1) { p2PReceiverViewModel.handleDataTransferCompleteManifest() }
+    verify(exactly = 1) { p2PReceiverViewModel.handleDataTransferCompleteManifest(P2PState.TRANSFER_COMPLETE) }
   }
 
   @Test
@@ -143,15 +144,15 @@ class P2PReceiverViewModelTest : RobolectricTest() {
   @Test
   fun `handleDataTransferCompleteManifest() calls showTransferCompleteDialog()`() {
 
-    p2PReceiverViewModel.handleDataTransferCompleteManifest()
+    p2PReceiverViewModel.handleDataTransferCompleteManifest(P2PState.TRANSFER_COMPLETE)
 
-    coVerify(exactly = 1) { view.showTransferCompleteDialog() }
+    coVerify(exactly = 1) { view.showTransferCompleteDialog(P2PState.TRANSFER_COMPLETE) }
   }
 
   @Test
   fun `handleDataTransferCompleteManifest() calls dataSharingStrategy#disconnect`() {
-    coEvery { view.showTransferCompleteDialog() } answers { null }
-    p2PReceiverViewModel.handleDataTransferCompleteManifest()
+    coEvery { view.showTransferCompleteDialog(P2PState.TRANSFER_COMPLETE) } answers { null }
+    p2PReceiverViewModel.handleDataTransferCompleteManifest(P2PState.TRANSFER_COMPLETE)
     verify(exactly = 1) { dataSharingStrategy.disconnect(device = expectedDeviceInfo, any()) }
   }
 
@@ -312,7 +313,6 @@ class P2PReceiverViewModelTest : RobolectricTest() {
 
     Assert.assertNotNull(
       P2PReceiverViewModel.Factory(
-          mockk(),
           wifiDirectDataSharingStrategy,
           coroutinesTestRule.testDispatcherProvider
         )
@@ -320,7 +320,6 @@ class P2PReceiverViewModelTest : RobolectricTest() {
     )
     Assert.assertTrue(
       P2PReceiverViewModel.Factory(
-          mockk(),
           wifiDirectDataSharingStrategy,
           coroutinesTestRule.testDispatcherProvider
         )
