@@ -210,6 +210,7 @@ class P2PViewModel(
 
           override fun onFailure(device: DeviceInfo?, ex: Exception) {
             Timber.e(ex, "P2P diconnection failed")
+            updateP2PState(p2PState)
           }
         }
       )
