@@ -740,6 +740,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
   override fun onDisconnectFailed(device: DeviceInfo, ex: Exception) {
     // TODO: Return this to the device
+    closeSocketAndStreams()
   }
 
   override fun onDisconnectSucceeded(device: DeviceInfo) {

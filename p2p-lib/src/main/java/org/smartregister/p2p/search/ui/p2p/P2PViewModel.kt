@@ -76,6 +76,9 @@ class P2PViewModel(
       P2PEvent.DataTransferCompleteConfirmed -> {
         updateP2PState(P2PState.PROMPT_NEXT_TRANSFER)
       }
+      P2PEvent.BottomSheetClosed -> {
+        cancelTransfer(P2PState.PROMPT_NEXT_TRANSFER)
+      }
     }
   }
 
@@ -207,6 +210,7 @@ class P2PViewModel(
 
           override fun onFailure(device: DeviceInfo?, ex: Exception) {
             Timber.e(ex, "P2P diconnection failed")
+            updateP2PState(p2PState)
           }
         }
       )
