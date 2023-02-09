@@ -61,8 +61,7 @@ class P2PReceiverViewModel(
             var map: MutableMap<String, String?> = HashMap()
             val deviceDetails = Gson().fromJson((payload as StringPayload).string, map.javaClass)
 
-            if (
-              deviceDetails != null &&
+            if (deviceDetails != null &&
                 deviceDetails.containsKey(Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY)
             ) {
               checkIfDeviceKeyHasChanged(
@@ -159,7 +158,7 @@ class P2PReceiverViewModel(
             Timber.i("Manifest with data successfully received")
             // notify UI data transfer is starting
             postUIAction(UIAction.NOTIFY_DATA_TRANSFER_STARTING, DeviceRole.RECEIVER)
-            //view.notifyDataTransferStarting(DeviceRole.RECEIVER)
+            // view.notifyDataTransferStarting(DeviceRole.RECEIVER)
             syncReceiverHandler.processManifest(receivedManifest)
           }
         }
@@ -282,11 +281,14 @@ class P2PReceiverViewModel(
     var percentageReceived = totalReceivedRecords.divideToPercent(totalRecords)
     viewModelScope.launch {
       withContext(dispatcherProvider.main()) {
-        postUIAction(UIAction.UPDATE_TRANSFER_PROGRESS, TransferProgress(
-          totalRecordCount = totalRecords,
-          transferredRecordCount = totalReceivedRecords,
-          percentageTransferred = percentageReceived
-        ))
+        postUIAction(
+          UIAction.UPDATE_TRANSFER_PROGRESS,
+          TransferProgress(
+            totalRecordCount = totalRecords,
+            transferredRecordCount = totalReceivedRecords,
+            percentageTransferred = percentageReceived
+          )
+        )
         /*view.updateTransferProgress(
           TransferProgress(
             totalRecordCount = totalRecords,
@@ -300,7 +302,7 @@ class P2PReceiverViewModel(
 
   fun showCancelTransferDialog() {
     viewModelScope.launch(dispatcherProvider.main()) {
-      //view.showCancelTransferDialog()
+      // view.showCancelTransferDialog()
       postUIAction(UIAction.SHOW_CANCEL_TRANSFER_DIALOG)
     }
   }
@@ -312,7 +314,8 @@ class P2PReceiverViewModel(
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
       return P2PReceiverViewModel(dataSharingStrategy, dispatcherProvider).apply {
         dataSharingStrategy.setCoroutineScope(viewModelScope)
-      } as T
+      } as
+        T
     }
   }
 }

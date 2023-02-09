@@ -27,7 +27,6 @@ import io.mockk.verify
 import kotlin.text.Typography.times
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.p2p.CoroutineTestRule
@@ -153,7 +152,6 @@ class P2PViewModelTest : RobolectricTest() {
       P2PState.PAIR_DEVICES_SEARCH_FAILED,
       p2PViewModel.p2PState.getOrAwaitValue()
     )
-
   }
 
   @Test
@@ -165,7 +163,7 @@ class P2PViewModelTest : RobolectricTest() {
     every { dataSharingStrategy.searchDevices(any(), capture(pairingListenerSlot)) } just runs
 
     p2PViewModel.setCurrentConnectedDevice(null)
-    //p2PViewModel.deviceRole = DeviceRole.RECEIVER
+    // p2PViewModel.deviceRole = DeviceRole.RECEIVER
     Assert.assertNull(p2PViewModel.getCurrentConnectedDevice())
 
     p2PViewModel.startScanning()
@@ -188,12 +186,11 @@ class P2PViewModelTest : RobolectricTest() {
     Assert.assertNull(p2PViewModel.getCurrentConnectedDevice())
 
     p2PViewModel.startScanning()
-    verify { p2PViewModel.postUIAction(UIAction.KEEP_SCREEN_ON, true)}
+    verify { p2PViewModel.postUIAction(UIAction.KEEP_SCREEN_ON, true) }
 
     pairingListenerSlot.captured.onSuccess(deviceInfo)
 
     Assert.assertEquals(deviceInfo, p2PViewModel.getCurrentConnectedDevice())
-
   }
 
   @Test
@@ -300,7 +297,6 @@ class P2PViewModelTest : RobolectricTest() {
   fun `closeP2PScreen() calls view#finish() when dataSharingStrategy#getCurrentDevice() is null`() {
     every { dataSharingStrategy.getCurrentDevice() } returns null
     p2PViewModel.closeP2PScreen()
-
   }
 
   @Test

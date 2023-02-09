@@ -90,9 +90,7 @@ class P2PReceiverViewModelTest : RobolectricTest() {
     expectedDeviceInfo = populateDeviceInfo()
     every { dataSharingStrategy.getCurrentDevice() } answers { expectedDeviceInfo }
     p2PReceiverViewModel =
-      spyk(
-        P2PReceiverViewModel(dataSharingStrategy, coroutinesTestRule.testDispatcherProvider)
-      )
+      spyk(P2PReceiverViewModel(dataSharingStrategy, coroutinesTestRule.testDispatcherProvider))
     ReflectionHelpers.setField(p2PReceiverViewModel, "syncReceiverHandler", syncReceiverHandler)
   }
 
@@ -120,7 +118,9 @@ class P2PReceiverViewModelTest : RobolectricTest() {
     expectedManifest = Manifest(dataType = dataType, recordsSize = 25, payloadSize = 50)
     every { p2PReceiverViewModel.listenForIncomingManifest() } answers { expectedManifest }
     p2PReceiverViewModel.processIncomingManifest()
-    verify(exactly = 1) { p2PReceiverViewModel.handleDataTransferCompleteManifest(P2PState.TRANSFER_COMPLETE) }
+    verify(exactly = 1) {
+      p2PReceiverViewModel.handleDataTransferCompleteManifest(P2PState.TRANSFER_COMPLETE)
+    }
   }
 
   @Test
@@ -142,7 +142,12 @@ class P2PReceiverViewModelTest : RobolectricTest() {
   @Test
   fun `handleDataTransferCompleteManifest() calls postUIAction() with UIAction#SHOW_TRANSFER_COMPLETE_DIALOG and P2PState#TRANSFER_COMPLETE params`() {
     p2PReceiverViewModel.handleDataTransferCompleteManifest(P2PState.TRANSFER_COMPLETE)
-    verify { p2PReceiverViewModel.postUIAction(UIAction.SHOW_TRANSFER_COMPLETE_DIALOG, P2PState.TRANSFER_COMPLETE) }
+    verify {
+      p2PReceiverViewModel.postUIAction(
+        UIAction.SHOW_TRANSFER_COMPLETE_DIALOG,
+        P2PState.TRANSFER_COMPLETE
+      )
+    }
   }
 
   @Test

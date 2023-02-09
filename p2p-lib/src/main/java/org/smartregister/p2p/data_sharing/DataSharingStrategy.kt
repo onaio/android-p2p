@@ -104,9 +104,7 @@ interface DataSharingStrategy {
 
   fun cleanup() {}
 
-  fun connectionTimeout() : Int = 30
+  fun connectionTimeout(): Int = 30
 
-  fun isPairingInitiated() : Boolean
-
-
+  fun isPairingInitiated(): Boolean
 }

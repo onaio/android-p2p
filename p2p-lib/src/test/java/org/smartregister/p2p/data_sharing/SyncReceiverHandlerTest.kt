@@ -101,11 +101,15 @@ class SyncReceiverHandlerTest : RobolectricTest() {
     dataType = DataType(name = Constants.SYNC_COMPLETE, type = DataType.Filetype.JSON, position = 0)
     val manifest = Manifest(dataType = dataType, recordsSize = 25, payloadSize = 50)
     every { p2PReceiverViewModel.updateTransferProgress(any(), any()) } just runs
-    every { p2PReceiverViewModel.handleDataTransferCompleteManifest(P2PState.TRANSFER_COMPLETE) } just runs
+    every {
+      p2PReceiverViewModel.handleDataTransferCompleteManifest(P2PState.TRANSFER_COMPLETE)
+    } just runs
 
     syncReceiverHandler.processManifest(manifest = manifest)
 
-    verify(exactly = 1) { p2PReceiverViewModel.handleDataTransferCompleteManifest(P2PState.TRANSFER_COMPLETE) }
+    verify(exactly = 1) {
+      p2PReceiverViewModel.handleDataTransferCompleteManifest(P2PState.TRANSFER_COMPLETE)
+    }
   }
 
   @Test

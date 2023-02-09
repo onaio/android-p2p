@@ -75,10 +75,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     )
   }
   private val p2PViewModel by viewModels<P2PViewModel> {
-    P2PViewModel.Factory(
-      dataSharingStrategy = dataSharingStrategy,
-      DefaultDispatcherProvider()
-    )
+    P2PViewModel.Factory(dataSharingStrategy = dataSharingStrategy, DefaultDispatcherProvider())
   }
   private var scanning = false
 
@@ -139,18 +136,14 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
   }
 
   fun registerViewModelEvents(baseViewModel: BaseViewModel) {
-    baseViewModel.displayMessages.observe(this) { msg ->
-      showToast(msg)
-    }
+    baseViewModel.displayMessages.observe(this) { msg -> showToast(msg) }
     baseViewModel.restartActivity.observe(this) {
       if (it) {
         restartActivity()
       }
     }
 
-    baseViewModel.p2pState.observe(this) { p2pState ->
-      updateP2PState(p2pState)
-    }
+    baseViewModel.p2pState.observe(this) { p2pState -> updateP2PState(p2pState) }
     baseViewModel.p2pUiAction.observe(this) { pair ->
       val uiAction = pair.first
       val data = pair.second
@@ -201,9 +194,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
   }
 
   override fun showToast(msg: String) {
-    runOnUiThread {
-      Toast.makeText(this@P2PDeviceSearchActivity, msg, Toast.LENGTH_LONG).show()
-    }
+    runOnUiThread { Toast.makeText(this@P2PDeviceSearchActivity, msg, Toast.LENGTH_LONG).show() }
   }
 
   override fun requestLocationPermissionsAndEnableLocation() {
@@ -216,7 +207,8 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     }
   }
 
-  fun hasPermission(permission: String) : Boolean = checkCallingOrSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
+  fun hasPermission(permission: String): Boolean =
+    checkCallingOrSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
 
   fun checkEnableWifi() {
 
@@ -349,7 +341,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
 
   override fun onResume() {
     super.onResume()
-/*
+    /*
     registerViewModelEvents()
     registerSenderViewModelEvents()
     registerReceiverViewModelEvents()*/
@@ -360,7 +352,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
 
   override fun onPause() {
     super.onPause()
-/*
+    /*
     unregisterViewModelEvents()
     unregisterSenderViewModelEvents()
     unregisterReceiverViewModelEvents()*/
@@ -462,8 +454,10 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
   ) {
     super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
-    if (accessFineLocationPermissionRequestInt == requestCode && hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
-        checkLocationEnabled()
+    if (accessFineLocationPermissionRequestInt == requestCode &&
+        hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+    ) {
+      checkLocationEnabled()
     }
   }
 

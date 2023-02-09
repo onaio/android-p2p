@@ -58,7 +58,6 @@ interface P2pModeSelectContract {
     fun sendDeviceDetails()
 
     fun finish()
-
   }
 
   interface SenderViewModel {
