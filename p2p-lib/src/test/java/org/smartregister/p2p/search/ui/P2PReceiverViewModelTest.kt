@@ -63,7 +63,6 @@ class P2PReceiverViewModelTest : RobolectricTest() {
 
   private val entity = "Group"
   private val lastUpdatedAt = 12345L
-  private lateinit var view: P2PDeviceSearchActivity
   private lateinit var dataSharingStrategy: DataSharingStrategy
   private lateinit var p2PReceiverViewModel: P2PReceiverViewModel
   private lateinit var syncReceiverHandler: SyncReceiverHandler
@@ -75,7 +74,6 @@ class P2PReceiverViewModelTest : RobolectricTest() {
   @Before
   fun setUp() {
     clearAllMocks()
-    view = mockk()
     dataSharingStrategy = mockk(relaxed = false)
     syncReceiverHandler = mockk()
     val p2pLibraryOptions =
@@ -142,16 +140,13 @@ class P2PReceiverViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun `handleDataTransferCompleteManifest() calls showTransferCompleteDialog()`() {
-
+  fun `handleDataTransferCompleteManifest() calls postUIAction() with UIAction#SHOW_TRANSFER_COMPLETE_DIALOG and P2PState#TRANSFER_COMPLETE params`() {
     p2PReceiverViewModel.handleDataTransferCompleteManifest(P2PState.TRANSFER_COMPLETE)
-
-    coVerify(exactly = 1) { view.showTransferCompleteDialog(P2PState.TRANSFER_COMPLETE) }
+    verify { p2PReceiverViewModel.postUIAction(UIAction.SHOW_TRANSFER_COMPLETE_DIALOG, P2PState.TRANSFER_COMPLETE) }
   }
 
   @Test
   fun `handleDataTransferCompleteManifest() calls dataSharingStrategy#disconnect`() {
-    coEvery { view.showTransferCompleteDialog(P2PState.TRANSFER_COMPLETE) } answers { null }
     p2PReceiverViewModel.handleDataTransferCompleteManifest(P2PState.TRANSFER_COMPLETE)
     verify(exactly = 1) { dataSharingStrategy.disconnect(device = expectedDeviceInfo, any()) }
   }
@@ -339,7 +334,7 @@ class P2PReceiverViewModelTest : RobolectricTest() {
     p2PReceiverViewModel.updateTransferProgress(totalReceivedRecords = 10, totalRecords = 40)
 
     val transferProgressSlot = slot<TransferProgress>()
-    coVerify { view.updateTransferProgress(capture(transferProgressSlot)) }
+    verify { p2PReceiverViewModel.postUIAction(any(), capture(transferProgressSlot)) }
 
     Assert.assertEquals(
       expectedTransferProgress.transferredRecordCount,

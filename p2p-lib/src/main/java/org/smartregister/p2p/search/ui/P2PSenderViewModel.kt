@@ -273,19 +273,11 @@ class P2PSenderViewModel(
           transferredRecordCount = totalSentRecords,
           percentageTransferred = percentageSent
         ))
-        /*view.updateTransferProgress(
-          TransferProgress(
-            totalRecordCount = totalRecords,
-            transferredRecordCount = totalSentRecords,
-            percentageTransferred = percentageSent
-          )
-        )*/
       }
     }
   }
 
   fun notifyDataTransferStarting() {
-    //view.notifyDataTransferStarting(DeviceRole.SENDER)
     postUIAction(UIAction.NOTIFY_DATA_TRANSFER_STARTING, DeviceRole.SENDER)
   }
 

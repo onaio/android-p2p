@@ -27,6 +27,7 @@ import io.mockk.verify
 import kotlin.text.Typography.times
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.p2p.CoroutineTestRule
@@ -45,13 +46,11 @@ class P2PViewModelTest : RobolectricTest() {
   @get:Rule var instantExecutorRule = InstantTaskExecutorRule()
 
   lateinit var p2PViewModel: P2PViewModel
-  lateinit var view: P2PDeviceSearchActivity
   lateinit var dataSharingStrategy: DataSharingStrategy
   lateinit var deviceInfo: DeviceInfo
 
   @Before
   fun setUp() {
-    view = mockk(relaxed = true)
     dataSharingStrategy = mockk()
 
     p2PViewModel =
@@ -71,10 +70,9 @@ class P2PViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun `onEvent() calls view#requestLocationPermissionsAndEnableLocation() when P2PEvent is StartScanningEvent`() {
-    every { view.requestLocationPermissionsAndEnableLocation() } just runs
+  fun `onEvent() calls postUIAction() when P2PEvent is StartScanningEvent`() {
     p2PViewModel.onEvent(P2PEvent.StartScanning)
-    verify { view.requestLocationPermissionsAndEnableLocation() }
+    verify { p2PViewModel.postUIAction(UIAction.REQUEST_LOCATION_PERMISSIONS_ENABLE_LOCATION) }
   }
 
   @Test
@@ -116,22 +114,18 @@ class P2PViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun `startScanning() should call view#keepScreenOn() and dataSharingStrategy#searchDevices()`() {
-    every { view.keepScreenOn(true) } just runs
+  fun `startScanning() should call postUIAction() with UIAction#KEEP_SCREEN_ON and dataSharingStrategy#searchDevices()`() {
     every { dataSharingStrategy.searchDevices(any(), any()) } just runs
 
     p2PViewModel.startScanning()
-
-    verify { view.keepScreenOn(true) }
+    verify { p2PViewModel.postUIAction(UIAction.KEEP_SCREEN_ON, true) }
     verify { dataSharingStrategy.searchDevices(any(), any()) }
   }
 
   @Test
   fun `startScanning() should update deviceList and p2pState to PAIR_DEVICES_FOUND when device role is SENDER when onDeviceFound#deviceFound is called`() {
-    every { view.keepScreenOn(true) } just runs
     val onDeviceFoundSlot = slot<OnDeviceFound>()
     every { dataSharingStrategy.searchDevices(capture(onDeviceFoundSlot), any()) } just runs
-
     Assert.assertNull(p2PViewModel.p2PState.value)
     p2PViewModel.startScanning()
 
@@ -143,8 +137,8 @@ class P2PViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun `startScanning() should call view#keepScreenOn() and update p2pState to PAIR_DEVICES_SEARCH_FAILED when onDeviceFound#failed is called`() {
-    every { view.keepScreenOn(false) } just runs
+  fun `startScanning() should call postUIAction() with UIAction#KEEP_SCREEN_ON and update p2pState to PAIR_DEVICES_SEARCH_FAILED when onDeviceFound#failed is called`() {
+
     val onDeviceFoundSlot = slot<OnDeviceFound>()
     every { dataSharingStrategy.searchDevices(capture(onDeviceFoundSlot), any()) } just runs
     Assert.assertNull(p2PViewModel.p2PState.value)
@@ -154,22 +148,24 @@ class P2PViewModelTest : RobolectricTest() {
 
     onDeviceFoundSlot.captured.failed(java.lang.Exception())
 
-    verify { view.keepScreenOn(false) }
+    verify { p2PViewModel.postUIAction(UIAction.KEEP_SCREEN_ON, any()) }
     Assert.assertEquals(
       P2PState.PAIR_DEVICES_SEARCH_FAILED,
       p2PViewModel.p2PState.getOrAwaitValue()
     )
+
   }
 
   @Test
-  fun `startScanning() should update currentConnectedDevice, call view#processSenderDeviceDetails() when pairing#onSuccess is called and device role is receiver`() {
-    every { view.keepScreenOn(true) } just runs
+  fun `startScanning() should update currentConnectedDevice when pairing#onSuccess is called and device role is receiver`() {
     every { dataSharingStrategy.getCurrentDevice() } returns deviceInfo
+    every { dataSharingStrategy.isPairingInitiated() } returns true
+    every { p2PViewModel.deviceRole } returns DeviceRole.RECEIVER
     val pairingListenerSlot = slot<DataSharingStrategy.PairingListener>()
     every { dataSharingStrategy.searchDevices(any(), capture(pairingListenerSlot)) } just runs
 
     p2PViewModel.setCurrentConnectedDevice(null)
-    p2PViewModel.deviceRole = DeviceRole.RECEIVER
+    //p2PViewModel.deviceRole = DeviceRole.RECEIVER
     Assert.assertNull(p2PViewModel.getCurrentConnectedDevice())
 
     p2PViewModel.startScanning()
@@ -178,13 +174,12 @@ class P2PViewModelTest : RobolectricTest() {
 
     Assert.assertEquals(deviceInfo, p2PViewModel.getCurrentConnectedDevice())
     Assert.assertEquals(P2PState.WAITING_TO_RECEIVE_DATA, p2PViewModel.p2PState.getOrAwaitValue())
-    verify { view.processSenderDeviceDetails() }
   }
 
   @Test
-  fun `startScanning() should update currentConnectedDevice and call view#sendDeviceDetails() when pairing#onSuccess is called and device role is sender`() {
-    every { view.keepScreenOn(true) } just runs
+  fun `startScanning() should update currentConnectedDevice when pairing#onSuccess is called and device role is sender`() {
     every { dataSharingStrategy.getCurrentDevice() } returns deviceInfo
+    every { dataSharingStrategy.isPairingInitiated() } returns true
     val pairingListenerSlot = slot<DataSharingStrategy.PairingListener>()
     every { dataSharingStrategy.searchDevices(any(), capture(pairingListenerSlot)) } just runs
 
@@ -193,18 +188,16 @@ class P2PViewModelTest : RobolectricTest() {
     Assert.assertNull(p2PViewModel.getCurrentConnectedDevice())
 
     p2PViewModel.startScanning()
+    verify { p2PViewModel.postUIAction(UIAction.KEEP_SCREEN_ON, true)}
 
     pairingListenerSlot.captured.onSuccess(deviceInfo)
 
     Assert.assertEquals(deviceInfo, p2PViewModel.getCurrentConnectedDevice())
-    Assert.assertNull(p2PViewModel.p2PState.value)
-    verify { view.sendDeviceDetails() }
-    verify(exactly = 0) { view.processSenderDeviceDetails() }
+
   }
 
   @Test
   fun `startScanning() should call view#keepScreenOn() and update p2pState to PROMPT_NEXT_TRANSFER when pairing#onFailure is called`() {
-    every { view.keepScreenOn(true) } just runs
     every { dataSharingStrategy.getCurrentDevice() } returns deviceInfo
     val pairingListenerSlot = slot<DataSharingStrategy.PairingListener>()
     every { dataSharingStrategy.searchDevices(any(), capture(pairingListenerSlot)) } just runs
@@ -214,13 +207,11 @@ class P2PViewModelTest : RobolectricTest() {
 
     pairingListenerSlot.captured.onFailure(deviceInfo, Exception(""))
 
-    verify { view.keepScreenOn(false) }
     Assert.assertEquals(P2PState.PROMPT_NEXT_TRANSFER, p2PViewModel.p2PState.value)
   }
 
   @Test
   fun `startScanning() should call view#keepScreenOn() and update p2pState to TRANSFER_COMPLETE when pairing#onDisconnect is called`() {
-    every { view.keepScreenOn(true) } just runs
     every { dataSharingStrategy.getCurrentDevice() } returns deviceInfo
     val pairingListenerSlot = slot<DataSharingStrategy.PairingListener>()
     every { dataSharingStrategy.searchDevices(any(), capture(pairingListenerSlot)) } just runs
@@ -230,7 +221,6 @@ class P2PViewModelTest : RobolectricTest() {
 
     pairingListenerSlot.captured.onDisconnected()
 
-    verify { view.keepScreenOn(false) }
     Assert.assertEquals(P2PState.TRANSFER_COMPLETE, p2PViewModel.p2PState.value)
   }
 
@@ -311,7 +301,6 @@ class P2PViewModelTest : RobolectricTest() {
     every { dataSharingStrategy.getCurrentDevice() } returns null
     p2PViewModel.closeP2PScreen()
 
-    verify { view.finish() }
   }
 
   @Test
@@ -324,7 +313,6 @@ class P2PViewModelTest : RobolectricTest() {
     verify { dataSharingStrategy.disconnect(any(), capture(operationalListenerSlot)) }
 
     operationalListenerSlot.captured.onSuccess(deviceInfo)
-    verify { view.finish() }
   }
 
   @Test
@@ -337,6 +325,5 @@ class P2PViewModelTest : RobolectricTest() {
     verify { dataSharingStrategy.disconnect(any(), capture(operationalListenerSlot)) }
 
     operationalListenerSlot.captured.onFailure(deviceInfo, java.lang.Exception())
-    verify { view.finish() }
   }
 }

@@ -233,7 +233,6 @@ class P2PReceiverViewModel(
     Timber.e("Data transfer complete")
     viewModelScope.launch {
       withContext(dispatcherProvider.main()) {
-        //view.showTransferCompleteDialog(p2PState)
         postUIAction(UIAction.SHOW_TRANSFER_COMPLETE_DIALOG, p2PState)
       }
       dataSharingStrategy.disconnect(
