@@ -15,6 +15,7 @@
  */
 package org.smartregister.p2p.search.ui.p2p
 
+import android.net.wifi.p2p.WifiP2pDevice
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
@@ -26,6 +27,8 @@ import androidx.compose.ui.test.performClick
 import org.junit.Rule
 import org.junit.Test
 import org.smartregister.p2p.authentication.model.DeviceRole
+import org.smartregister.p2p.data_sharing.DeviceInfo
+import org.smartregister.p2p.data_sharing.WifiDirectDataSharingStrategy
 import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.search.ui.p2p.components.CIRCULAR_PROGRESS_INDICATOR_TEST_TAG
 
@@ -37,13 +40,13 @@ class BottomSheetScreenTest {
   fun bottomSheetScreenRendersCorrectlyForSenderDevice() {
     composeRule.setContent {
       BottomSheet(
-        deviceList = emptyList(),
+        deviceList = listOf(populateDeviceInfo()),
         onEvent = {},
         modalBottomSheetState = ModalBottomSheetState(ModalBottomSheetValue.HalfExpanded),
         p2PUiState = P2PUiState(),
         deviceName = "John",
         deviceRole = DeviceRole.SENDER,
-        p2PState = P2PState.RECEIVING_DATA
+        p2PState = P2PState.SEARCHING_FOR_RECIPIENT
       )
     }
 
@@ -100,7 +103,7 @@ class BottomSheetScreenTest {
     }
 
     composeRule.onNodeWithText("OKay").assertExists().assertIsDisplayed()
-    composeRule.onNodeWithText("Send Data").assertExists().assertIsDisplayed()
+    composeRule.onNodeWithText("Receive Data").assertExists().assertIsDisplayed()
     composeRule.onNodeWithText("Device data successfully sent").assertExists().assertIsDisplayed()
     composeRule
       .onNodeWithTag(BOTTOM_SHEET_BUTTON_TEST_TAG)
@@ -233,4 +236,14 @@ class BottomSheetScreenTest {
       .assertIsDisplayed()
       .performClick()
   }
+
+  private fun populateDeviceInfo(): DeviceInfo {
+    val wifiP2pDevice =
+      WifiP2pDevice().apply {
+        deviceName = "Google Pixel 7 android 12"
+        deviceAddress = "00:00:5e:00:53:af"
+      }
+    return WifiDirectDataSharingStrategy.WifiDirectDevice(wifiP2pDevice)
+  }
+
 }
