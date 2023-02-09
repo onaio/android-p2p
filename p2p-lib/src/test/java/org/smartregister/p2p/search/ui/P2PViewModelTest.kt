@@ -30,7 +30,6 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
-import org.robolectric.util.ReflectionHelpers
 import org.smartregister.p2p.CoroutineTestRule
 import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
@@ -154,7 +153,6 @@ class P2PViewModelTest : RobolectricTest() {
       P2PState.PAIR_DEVICES_SEARCH_FAILED,
       p2PViewModel.p2PState.getOrAwaitValue()
     )
-
   }
 
   @Ignore("Fix  mocks not working  in lazy function")
@@ -190,12 +188,11 @@ class P2PViewModelTest : RobolectricTest() {
     Assert.assertNull(p2PViewModel.getCurrentConnectedDevice())
 
     p2PViewModel.startScanning()
-    verify { p2PViewModel.postUIAction(UIAction.KEEP_SCREEN_ON, true)}
+    verify { p2PViewModel.postUIAction(UIAction.KEEP_SCREEN_ON, true) }
 
     pairingListenerSlot.captured.onSuccess(deviceInfo)
 
     Assert.assertEquals(deviceInfo, p2PViewModel.getCurrentConnectedDevice())
-
   }
 
   @Test
@@ -304,7 +301,6 @@ class P2PViewModelTest : RobolectricTest() {
   fun `closeP2PScreen() calls view#finish() when dataSharingStrategy#getCurrentDevice() is null`() {
     every { dataSharingStrategy.getCurrentDevice() } returns null
     p2PViewModel.closeP2PScreen()
-
   }
 
   @Test

@@ -245,5 +245,4 @@ class BottomSheetScreenTest {
       }
     return WifiDirectDataSharingStrategy.WifiDirectDevice(wifiP2pDevice)
   }
-
 }
