@@ -82,8 +82,10 @@ class P2PViewModel(
     }
   }
 
+
   fun startScanning() {
     postUIAction(UIAction.KEEP_SCREEN_ON, true)
+    val derol= deviceRole
     dataSharingStrategy.searchDevices(onDeviceFound, pairingListener)
   }
 

@@ -389,13 +389,13 @@ fun DisplayDeviceList(deviceList: List<DeviceInfo>, onEvent: (P2PEvent) -> Unit,
 @ExcludeFromJacocoGeneratedReport
 fun PreviewBottomSheetScreen() {
   BottomSheet(
-    deviceList = emptyList(),
+    deviceList = listOf(populateDeviceInfo()),
     onEvent = {},
     modalBottomSheetState = ModalBottomSheetState(ModalBottomSheetValue.HalfExpanded),
     p2PUiState = P2PUiState(),
     deviceName = "John",
     deviceRole = DeviceRole.SENDER,
-    p2PState = P2PState.DEVICE_DISCONNECTED
+    p2PState = P2PState.SEARCHING_FOR_RECIPIENT
   )
 }
 
