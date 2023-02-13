@@ -808,11 +808,17 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
         context.unregisterReceiver(it)
         // TODO: Sample fix memory leak
         wifiP2pReceiver = null
+        // Set this to null so that wifi direct is turned on during on resume
+        // Fixes https://github.com/opensrp/fhircore/issues/1960#issuecomment-1427424971
+        wifiP2pChannel = null
       }
     }
       .onFailure {
         Timber.e(it)
         wifiP2pReceiver = null
+        // Set this to null so that wifi direct is turned on during on resume
+        // https://github.com/opensrp/fhircore/issues/1960#issuecomment-1427424971
+        wifiP2pChannel = null
       }
 
     closeSocketAndStreams()
