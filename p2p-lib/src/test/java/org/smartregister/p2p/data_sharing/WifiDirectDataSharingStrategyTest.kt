@@ -327,8 +327,12 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
 
     ReflectionHelpers.callInstanceMethod<WifiDirectDataSharingStrategy>(
       wifiDirectDataSharingStrategy,
-      "requestDeviceInfo", ReflectionHelpers.ClassParameter.from(OnDeviceFound::class.java, onDeviceFound),
-      ReflectionHelpers.ClassParameter.from(DataSharingStrategy.PairingListener::class.java, pairingListener)
+      "requestDeviceInfo",
+      ReflectionHelpers.ClassParameter.from(OnDeviceFound::class.java, onDeviceFound),
+      ReflectionHelpers.ClassParameter.from(
+        DataSharingStrategy.PairingListener::class.java,
+        pairingListener
+      )
     )
 
     verify { wifiDirectDataSharingStrategy invokeNoArgs "handleAccessFineLocationNotGranted" }
@@ -375,7 +379,7 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     actionListenerSlot.captured.onSuccess()
 
     // TODO verify what happens on successPairingListener
-/*    Assert.assertTrue(ReflectionHelpers.getField(wifiDirectDataSharingStrategy, "paired"))
+    /*    Assert.assertTrue(ReflectionHelpers.getField(wifiDirectDataSharingStrategy, "paired"))
     val actualCurrentDevice =
       ReflectionHelpers.getField(wifiDirectDataSharingStrategy, "currentDevice") as WifiP2pDevice
     Assert.assertEquals(wifiP2pDevice.deviceName, actualCurrentDevice.deviceName)
@@ -808,7 +812,8 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
 
   @Test
   fun `onResume() calls listenForWifiP2pEventsIntents(), initiatePeerDiscoveryOnceAccessFineLocationGranted(), requestConnectionInfo() when isScanning is true`() {
-    every { wifiDirectDataSharingStrategy invokeNoArgs "listenForWifiP2pEventsIntents" } returns null
+    every { wifiDirectDataSharingStrategy invokeNoArgs "listenForWifiP2pEventsIntents" } returns
+      null
     every {
       wifiDirectDataSharingStrategy invokeNoArgs
         "initiatePeerDiscoveryOnceAccessFineLocationGranted"

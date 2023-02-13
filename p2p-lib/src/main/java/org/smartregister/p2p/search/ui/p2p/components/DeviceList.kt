@@ -50,7 +50,7 @@ const val SELECT_PAIR_DEVICE_TEXT_TAG = "selectPairDeviceTextTestTag"
 const val PAIR_DEVICE_ROW_ICON_TAG = "pairDeviceRowIconTestTag"
 const val PAIR_DEVICE_ROW_NAME_TEXT_TAG = "pairDeviceRowNameTextTestTag"
 const val PAIR_DEVICE_ROW_BUTTON_TAG = "pairDeviceRowButtonTestTag"
-var pairingInitiated:Boolean = false
+var pairingInitiated: Boolean = false
 
 @Composable
 fun SelectPairDeviceRow(modifier: Modifier = Modifier, p2PUiState: P2PUiState) {
@@ -73,8 +73,12 @@ fun SelectPairDeviceRow(modifier: Modifier = Modifier, p2PUiState: P2PUiState) {
 }
 
 @Composable
-fun PairDeviceRow(modifier: Modifier = Modifier, device: DeviceInfo?, onEvent: (P2PEvent) -> Unit,
-      p2PState: P2PState) {
+fun PairDeviceRow(
+  modifier: Modifier = Modifier,
+  device: DeviceInfo?,
+  onEvent: (P2PEvent) -> Unit,
+  p2PState: P2PState
+) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
     verticalAlignment = Alignment.CenterVertically,
@@ -94,9 +98,11 @@ fun PairDeviceRow(modifier: Modifier = Modifier, device: DeviceInfo?, onEvent: (
         maxLines = 1
       )
 
-      var pairText:String = stringResource(id = R.string.pair)
-      when(p2PState) {
-        P2PState.WIFI_AND_LOCATION_ENABLE -> {pairText = stringResource(id = R.string.pair)}
+      var pairText: String = stringResource(id = R.string.pair)
+      when (p2PState) {
+        P2PState.WIFI_AND_LOCATION_ENABLE -> {
+          pairText = stringResource(id = R.string.pair)
+        }
         else -> {
           if (pairingInitiated) {
             pairText = stringResource(id = R.string.pairing)
@@ -111,8 +117,10 @@ fun PairDeviceRow(modifier: Modifier = Modifier, device: DeviceInfo?, onEvent: (
       )
     }
     Button(
-      onClick = { device?.let { P2PEvent.PairWithDevice(it) }?.let { onEvent(it) }
-        pairingInitiated = true},
+      onClick = {
+        device?.let { P2PEvent.PairWithDevice(it) }?.let { onEvent(it) }
+        pairingInitiated = true
+      },
       modifier = modifier.testTag(PAIR_DEVICE_ROW_BUTTON_TAG)
     ) { Text(text = stringResource(id = R.string.pair)) }
   }

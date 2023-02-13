@@ -41,20 +41,17 @@ constructor(
     totalRecordCount =
       if (manifest.totalRecordCount > 0) manifest.totalRecordCount else totalRecordCount
 
-    when(manifest.dataType.name) {
+    when (manifest.dataType.name) {
       Constants.SYNC_COMPLETE -> {
         p2PReceiverViewModel.handleDataTransferCompleteManifest(P2PState.TRANSFER_COMPLETE)
       }
-
       Constants.DATA_UP_TO_DATE -> {
         p2PReceiverViewModel.handleDataTransferCompleteManifest(P2PState.DATA_UP_TO_DATE)
       }
-
       else -> {
         p2PReceiverViewModel.processChunkData()
       }
     }
-
   }
 
   suspend fun processData(data: JSONArray) {
@@ -64,8 +61,12 @@ constructor(
       P2PLibrary.getInstance().getReceiverTransferDao().receiveJson(currentManifest.dataType, data)
 
     totalReceivedRecordCount += data!!.length()
-    Timber.e("Progress update: Updating received data ${currentManifest.dataType.name} x ${currentManifest.recordsSize} | UPTO $lastUpdatedAt")
-    Timber.e("Progress update: Record count vs JSONArray size | ${currentManifest.recordsSize} - ${data.length()}")
+    Timber.e(
+      "Progress update: Updating received data ${currentManifest.dataType.name} x ${currentManifest.recordsSize} | UPTO $lastUpdatedAt"
+    )
+    Timber.e(
+      "Progress update: Record count vs JSONArray size | ${currentManifest.recordsSize} - ${data.length()}"
+    )
     p2PReceiverViewModel.updateTransferProgress(
       totalReceivedRecords = totalReceivedRecordCount,
       totalRecords = totalRecordCount

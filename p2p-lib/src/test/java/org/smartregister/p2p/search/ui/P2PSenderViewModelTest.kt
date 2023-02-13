@@ -46,12 +46,10 @@ import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
 import org.smartregister.p2p.data_sharing.SyncSenderHandler
 import org.smartregister.p2p.data_sharing.WifiDirectDataSharingStrategy
-import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.model.TransferProgress
 import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.payload.StringPayload
 import org.smartregister.p2p.robolectric.RobolectricTest
-import org.smartregister.p2p.search.contract.P2pModeSelectContract
 import org.smartregister.p2p.shadows.ShadowAppDatabase
 import org.smartregister.p2p.sync.DataType
 import org.smartregister.p2p.utils.Constants
@@ -74,7 +72,7 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
     dataSharingStrategy = mockk()
     syncSenderHandler = mockk()
     p2PSenderViewModel =
-      spyk(P2PSenderViewModel( dataSharingStrategy, coroutinesTestRule.testDispatcherProvider))
+      spyk(P2PSenderViewModel(dataSharingStrategy, coroutinesTestRule.testDispatcherProvider))
     ReflectionHelpers.setField(p2PSenderViewModel, "syncSenderHandler", syncSenderHandler)
 
     p2pReceiverTransferDao = mockk()

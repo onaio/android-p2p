@@ -46,7 +46,9 @@ class DeviceListTest {
 
   @Test
   fun testPairDeviceRowIsRendered() {
-    composeTestRule.setContent { PairDeviceRow(device = null, onEvent = {}, p2PState = P2PState.PAIR_DEVICES_FOUND) }
+    composeTestRule.setContent {
+      PairDeviceRow(device = null, onEvent = {}, p2PState = P2PState.PAIR_DEVICES_FOUND)
+    }
     composeTestRule.onNodeWithTag(PAIR_DEVICE_ROW_ICON_TAG).assertExists().assertIsDisplayed()
     composeTestRule.onNodeWithTag(PAIR_DEVICE_ROW_NAME_TEXT_TAG).assertExists().assertIsDisplayed()
     composeTestRule.onNodeWithTag(PAIR_DEVICE_ROW_BUTTON_TAG).assertExists().assertIsDisplayed()

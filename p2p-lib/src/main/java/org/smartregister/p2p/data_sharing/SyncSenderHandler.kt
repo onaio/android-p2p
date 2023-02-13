@@ -73,12 +73,12 @@ constructor(
       P2PLibrary.getInstance().getSenderTransferDao().getTotalRecordCount(remainingLastRecordIds)
   }
 
-  suspend fun sendNextManifest(isInitialManifest:Boolean = false) {
+  suspend fun sendNextManifest(isInitialManifest: Boolean = false) {
     Timber.i("in send next manifest")
     if (!dataSyncOrder.isEmpty()) {
       sendJsonDataManifest(dataSyncOrder.first())
     } else {
-      val name = if (isInitialManifest)  Constants.DATA_UP_TO_DATE else Constants.SYNC_COMPLETE
+      val name = if (isInitialManifest) Constants.DATA_UP_TO_DATE else Constants.SYNC_COMPLETE
       val manifest =
         Manifest(
           dataType = DataType(name, DataType.Filetype.JSON, 0),
@@ -122,7 +122,9 @@ constructor(
 
         val recordsJsonString = recordsArray.toString()
         awaitingDataTypeRecordsBatchSize = recordsArray!!.length()
-        Timber.e("Progress update: Sending | ${dataType.name} x $awaitingDataTypeRecordsBatchSize | UPTO ${jsonData.getHighestRecordId()}")
+        Timber.e(
+          "Progress update: Sending | ${dataType.name} x $awaitingDataTypeRecordsBatchSize | UPTO ${jsonData.getHighestRecordId()}"
+        )
         awaitingPayload =
           BytePayload(
             recordsArray.toString().toByteArray(),

@@ -82,10 +82,9 @@ class P2PViewModel(
     }
   }
 
-
   fun startScanning() {
     postUIAction(UIAction.KEEP_SCREEN_ON, true)
-    val derol= deviceRole
+    val derol = deviceRole
     dataSharingStrategy.searchDevices(onDeviceFound, pairingListener)
   }
 
@@ -111,14 +110,14 @@ class P2PViewModel(
         updateP2PState(P2PState.PAIR_DEVICES_SEARCH_FAILED)
       }
     }
-    }
+  }
 
   val pairingListener: DataSharingStrategy.PairingListener by lazy {
     object : DataSharingStrategy.PairingListener {
 
       override fun onSuccess(device: DeviceInfo?) {
 
-        if(!dataSharingStrategy.isPairingInitiated() && deviceRole == DeviceRole.SENDER) {
+        if (!dataSharingStrategy.isPairingInitiated() && deviceRole == DeviceRole.SENDER) {
           Timber.i("pairingListener#onSuccess() -> pairingInitiated = false ${deviceRole.name}")
           return
         }
@@ -144,7 +143,7 @@ class P2PViewModel(
       }
 
       override fun onFailure(device: DeviceInfo?, ex: Exception) {
-        //view.keepScreenOn(false)
+        // view.keepScreenOn(false)
         postUIAction(UIAction.KEEP_SCREEN_ON, false)
         Timber.i("Devices pairing failed")
         Timber.e(ex)
@@ -171,7 +170,7 @@ class P2PViewModel(
         }
       }
     }
-    }
+  }
 
   fun initChannel() {
     dataSharingStrategy.initChannel(onDeviceFound, pairingListener)
@@ -197,7 +196,7 @@ class P2PViewModel(
   }
 
   fun showTransferCompleteDialog(p2PState: P2PState) {
-   updateP2PState(p2PState)
+    updateP2PState(p2PState)
   }
 
   fun cancelTransfer(p2PState: P2PState = P2PState.TRANSFER_CANCELLED) {
@@ -272,7 +271,7 @@ class P2PViewModel(
     p2PUiState.value = p2PUiState.value.copy(showP2PDialog = true)
   }
 
-  fun updateSenderSyncComplete(complete:Boolean = false) {
+  fun updateSenderSyncComplete(complete: Boolean = false) {
     this.isSenderSyncComplete = complete
   }
 

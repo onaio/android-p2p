@@ -104,7 +104,7 @@ class P2PSenderViewModel(
 
           if (ex is SocketException) {
             handleSocketException()
-          }  else {
+          } else {
             disconnect()
           }
         }
@@ -135,7 +135,7 @@ class P2PSenderViewModel(
 
           if (ex is SocketException) {
             handleSocketException()
-          }  else {
+          } else {
             disconnect()
           }
         }
@@ -147,7 +147,7 @@ class P2PSenderViewModel(
     Timber.i("P2P sync complete")
     viewModelScope.launch {
       withContext(dispatcherProvider.main()) {
-        //view.showTransferCompleteDialog(P2PState.TRANSFER_COMPLETE)
+        // view.showTransferCompleteDialog(P2PState.TRANSFER_COMPLETE)
         postUIAction(UIAction.SHOW_TRANSFER_COMPLETE_DIALOG)
       }
       dataSharingStrategy.disconnect(
@@ -183,7 +183,7 @@ class P2PSenderViewModel(
 
           if (ex is SocketException) {
             handleSocketException()
-          }  else {
+          } else {
             disconnect()
           }
         }
@@ -210,7 +210,7 @@ class P2PSenderViewModel(
 
             if (ex is SocketException) {
               handleSocketException()
-            }  else {
+            } else {
               disconnect()
             }
           }
@@ -258,7 +258,7 @@ class P2PSenderViewModel(
   fun updateSenderSyncComplete(senderSyncComplete: Boolean) {
     viewModelScope.launch {
       withContext(dispatcherProvider.main()) {
-        //view.senderSyncComplete(senderSyncComplete)
+        // view.senderSyncComplete(senderSyncComplete)
         postUIAction(UIAction.SENDER_SYNC_COMPLETE, senderSyncComplete)
       }
     }
@@ -268,11 +268,14 @@ class P2PSenderViewModel(
     val percentageSent = totalSentRecords.divideToPercent(totalRecords)
     viewModelScope.launch {
       withContext(dispatcherProvider.main()) {
-        postUIAction(UIAction.UPDATE_TRANSFER_PROGRESS, TransferProgress(
-          totalRecordCount = totalRecords,
-          transferredRecordCount = totalSentRecords,
-          percentageTransferred = percentageSent
-        ))
+        postUIAction(
+          UIAction.UPDATE_TRANSFER_PROGRESS,
+          TransferProgress(
+            totalRecordCount = totalRecords,
+            transferredRecordCount = totalSentRecords,
+            percentageTransferred = percentageSent
+          )
+        )
       }
     }
   }
@@ -280,7 +283,6 @@ class P2PSenderViewModel(
   fun notifyDataTransferStarting() {
     postUIAction(UIAction.NOTIFY_DATA_TRANSFER_STARTING, DeviceRole.SENDER)
   }
-
 
   class Factory(
     private val dataSharingStrategy: DataSharingStrategy,
