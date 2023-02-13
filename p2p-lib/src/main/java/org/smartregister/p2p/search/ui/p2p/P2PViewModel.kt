@@ -200,6 +200,10 @@ class P2PViewModel(
   }
 
   fun cancelTransfer(p2PState: P2PState = P2PState.TRANSFER_CANCELLED) {
+    if (dataSharingStrategy.getCurrentDevice() == null) {
+      updateP2PState(p2PState)
+      return
+    }
     viewModelScope.launch {
       dataSharingStrategy.disconnect(
         dataSharingStrategy.getCurrentDevice()!!,

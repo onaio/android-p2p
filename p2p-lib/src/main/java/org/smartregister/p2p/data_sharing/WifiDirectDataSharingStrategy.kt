@@ -808,11 +808,13 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
         context.unregisterReceiver(it)
         // TODO: Sample fix memory leak
         wifiP2pReceiver = null
+        wifiP2pChannel = null
       }
     }
       .onFailure {
         Timber.e(it)
         wifiP2pReceiver = null
+        wifiP2pChannel = null
       }
 
     closeSocketAndStreams()
