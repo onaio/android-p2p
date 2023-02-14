@@ -44,6 +44,7 @@ import org.smartregister.p2p.R
 import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
+import org.smartregister.p2p.model.P2PDialogState
 import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.model.TransferProgress
 import org.smartregister.p2p.search.contract.P2pModeSelectContract
@@ -299,8 +300,11 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     p2PViewModel.showTransferCompleteDialog()
   }
 
+  override fun showCancelTransferDialog(p2PDialogState: P2PDialogState) {
+    p2PViewModel.showCancelTransferDialog(p2PDialogState = p2PDialogState)
+  }
+
   private fun logDebug(message: String) {
-    // Snackbar.make(rootView, message, Snackbar.LENGTH_SHORT).show()
     Timber.d(message)
   }
 
@@ -326,6 +330,10 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
       DeviceRole.SENDER -> p2PViewModel.updateP2PState(P2PState.TRANSFERRING_DATA)
       DeviceRole.RECEIVER -> p2PViewModel.updateP2PState(P2PState.RECEIVING_DATA)
     }
+  }
+
+  fun updateP2PState(p2PState: P2PState) {
+    p2PViewModel.updateP2PState(p2PState)
   }
 
   /**

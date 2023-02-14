@@ -385,6 +385,12 @@ class P2PDeviceSearchActivityTest : ActivityRobolectricTest() {
     verify { p2PViewModel.showTransferCompleteDialog() }
   }
 
+  @Test
+  fun `updateP2PState() should call p2PViewModel#updateP2PState() with correct value`() {
+    p2PDeviceSearchActivity.updateP2PState(P2PState.RECEIVING_DATA)
+    verify { p2PViewModel.updateP2PState(P2PState.RECEIVING_DATA) }
+  }
+
   fun Dialog.isCancellable(): Boolean {
     return ReflectionHelpers.getField<Boolean>(this, "mCancelable")
   }

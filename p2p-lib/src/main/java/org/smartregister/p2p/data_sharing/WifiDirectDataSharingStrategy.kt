@@ -203,7 +203,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
           }
         }
       } else {
-        // TODO: Handle fetching device details
+        /** This has been handled by [WifiDirectDataSharingStrategy.onDeviceInfoChanged] */
       }
     }
   }
@@ -418,8 +418,12 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
     dataOutputStream?.apply {
       val manifestString = Gson().toJson(manifest)
-      writeUTF(MANIFEST)
-      writeUTF(manifestString)
+      try {
+        writeUTF(MANIFEST)
+        writeUTF(manifestString)
+      } catch (e: Exception) {
+        operationListener.onFailure(device = device, ex = e)
+      }
       flush()
       operationListener.onSuccess(device = device)
     }
@@ -450,7 +454,13 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
         if (socket != null) {
 
           dataInputStream?.run {
-            val dataType = readUTF()
+            val dataType =
+              try {
+                readUTF()
+              } catch (e: Exception) {
+                operationListener.onFailure(getCurrentDevice(), e)
+                return@makeSocketConnections
+              }
 
             if (dataType == SyncPayloadType.STRING.name) {
               val stringPayload = readUTF()
@@ -493,7 +503,13 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     // Check if this is the receiver/sender
 
     return dataInputStream?.run {
-      val dataType = readUTF()
+      val dataType =
+        try {
+          readUTF()
+        } catch (e: Exception) {
+          operationListener.onFailure(device = device, e)
+          return null
+        }
 
       if (dataType == MANIFEST) {
 
@@ -554,7 +570,6 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     if (isScanning) {
       listenForWifiP2pIntents()
       initiatePeerDiscoveryOnceAccessFineLocationGranted()
-      requestDeviceInfo()
       requestConnectionInfo()
     }
   }
@@ -674,8 +689,9 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   }
 
   override fun handleWifiP2pDevice(device: WifiP2pDevice) {
-    // TODO: Handle the issue here
-    // This is a new p2p device
+    if (device != null) {
+      currentDevice = device
+    }
   }
 
   override fun handleP2pDiscoveryStarted() {

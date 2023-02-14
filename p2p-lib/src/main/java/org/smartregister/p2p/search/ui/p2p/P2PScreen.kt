@@ -191,6 +191,9 @@ fun P2PScreen(
               )
           )
         }
+        P2PState.RECEIVE_BASIC_DEVICE_DETAILS_FAILED -> {
+          coroutineScope.launch { modalBottomSheetState.show() }
+        }
         P2PState.RECEIVING_DATA -> {
           coroutineScope.launch { modalBottomSheetState.hide() }
           TransferProgressScreen(
@@ -294,10 +297,6 @@ fun DefaultScreen(
         }
       )
       Spacer(modifier = modifier.height(20.dp))
-
-      if (p2PUiState.showP2PDialog) {
-        P2PDialog(onEvent = onEvent)
-      }
     }
   }
 }
@@ -326,6 +325,9 @@ fun TransferProgressScreen(
         onClick = { onEvent(P2PEvent.CancelDataTransfer) },
         modifier = modifier.testTag(CANCEL_BUTTON_TEST_TAG)
       ) { Text(text = stringResource(id = R.string.cancel)) }
+    }
+    if (p2PUiState.p2PDialogState.showCancelTransferDialog) {
+      P2PDialog(onEvent = onEvent)
     }
   }
 }

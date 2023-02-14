@@ -20,10 +20,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.wifi.p2p.WifiP2pDevice
 import android.net.wifi.p2p.WifiP2pGroup
 import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
-import android.os.Build
 import androidx.core.app.ActivityCompat
 import org.smartregister.p2p.search.contract.P2PManagerListener
 
@@ -47,7 +47,11 @@ class WifiP2pBroadcastReceiver(
       WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION -> handlePeersChanged()
       WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION ->
         handleStateChanged(intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1))
-      WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION -> handleDeviceChanged()
+      WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION -> {
+        val device =
+          intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE) as WifiP2pDevice?
+        handleDeviceChanged(device = device)
+      }
     }
   }
 
@@ -101,32 +105,11 @@ class WifiP2pBroadcastReceiver(
   /**
    * https://developer.android.com/reference/android/net/wifi/p2p/WifiP2pManager#WIFI_P2P_THIS_DEVICE_CHANGED_ACTION
    */
-  private fun handleDeviceChanged() {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-      if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) !=
-          PackageManager.PERMISSION_GRANTED
-      ) {
-        // TODO: Consider calling
-        //    ActivityCompat#requestPermissions
-        // here to request the missing permissions, and then overriding
-        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-        //                                          int[] grantResults)
-        // to handle the case where the user grants the permission. See the documentation
-        // for ActivityCompat#requestPermissions for more details.
-        listener.handleAccessFineLocationNotGranted()
-        return
-      }
-      manager.requestDeviceInfo(channel) {
-        if (it == null) {
-          listener.handleWifiP2pDisabled()
-        } else {
-          listener.handleWifiP2pDevice(it)
-        }
-      }
+  private fun handleDeviceChanged(device: WifiP2pDevice?) {
+    if (device == null) {
+      listener.handleWifiP2pDisabled()
     } else {
-      listener.handleMinimumSDKVersionNotMet(
-        Build.VERSION_CODES.Q,
-      )
+      listener.handleWifiP2pDevice(device)
     }
   }
 }

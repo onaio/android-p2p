@@ -28,7 +28,9 @@ import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
 import org.smartregister.p2p.data_sharing.SyncReceiverHandler
+import org.smartregister.p2p.model.P2PDialogState
 import org.smartregister.p2p.model.P2PReceivedHistory
+import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.model.TransferProgress
 import org.smartregister.p2p.payload.BytePayload
 import org.smartregister.p2p.payload.PayloadContract
@@ -65,14 +67,9 @@ class P2PReceiverViewModel(
             checkIfDeviceKeyHasChanged(
               deviceDetails[Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY]!!
             )
-
-            viewModelScope.launch {
-              withContext(dispatcherProvider.main()) {
-                // TODO update to use compose
-                // view.showTransferProgressDialog()
-              }
-            }
           } else {
+            // Show error msg
+            view.updateP2PState(P2PState.RECEIVE_BASIC_DEVICE_DETAILS_FAILED)
             Timber.e("An error occurred and the APP-LIFETIME-KEY was not sent")
           }
         }
@@ -136,6 +133,7 @@ class P2PReceiverViewModel(
 
                 override fun onFailure(device: DeviceInfo?, ex: Exception) {
                   Timber.e(ex, "Failed to receive manifest")
+                  showCancelTransferDialog(P2PDialogState(showCancelTransferDialog = true))
                 }
               }
             )
@@ -179,6 +177,7 @@ class P2PReceiverViewModel(
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
           Timber.e(ex, "Failed to receive chunk data")
+          showCancelTransferDialog(P2PDialogState(showCancelTransferDialog = true))
         }
       }
     )
@@ -226,6 +225,7 @@ class P2PReceiverViewModel(
 
           override fun onFailure(device: DeviceInfo?, ex: Exception) {
             Timber.e(ex, "Failed to receive manifest")
+            showCancelTransferDialog(P2PDialogState(showCancelTransferDialog = true))
           }
         }
       )
@@ -249,6 +249,10 @@ class P2PReceiverViewModel(
         )
       }
     }
+  }
+
+  fun showCancelTransferDialog(p2PDialogState: P2PDialogState) {
+    view.showCancelTransferDialog(p2PDialogState = p2PDialogState)
   }
 
   class Factory(

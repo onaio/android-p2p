@@ -21,14 +21,12 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import java.util.Timer
-import kotlin.concurrent.schedule
 import kotlinx.coroutines.launch
-import org.smartregister.p2p.R
 import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.OnDeviceFound
+import org.smartregister.p2p.model.P2PDialogState
 import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.model.TransferProgress
 import org.smartregister.p2p.search.ui.P2PDeviceSearchActivity
@@ -67,7 +65,7 @@ class P2PViewModel(
       }
       is P2PEvent.CancelDataTransfer -> {
         // show cancel transfer dialog
-        p2PUiState.value = p2PUiState.value.copy(showP2PDialog = true)
+        showCancelTransferDialog(P2PDialogState(showCancelTransferDialog = true))
       }
       P2PEvent.ConnectionBreakConfirmed -> {
         // cancel data transfer
@@ -75,7 +73,8 @@ class P2PViewModel(
         setRequestDisconnection(true)
       }
       P2PEvent.DismissConnectionBreakDialog -> {
-        p2PUiState.value = p2PUiState.value.copy(showP2PDialog = false)
+        p2PUiState.value =
+          p2PUiState.value.copy(p2PDialogState = P2PDialogState(showCancelTransferDialog = false))
       }
       P2PEvent.DataTransferCompleteConfirmed -> {
         _p2PState.postValue(P2PState.PROMPT_NEXT_TRANSFER)
@@ -105,7 +104,7 @@ class P2PViewModel(
         view.keepScreenOn(false)
         Timber.e("Devices searching failed")
         Timber.e(ex)
-        view.showToast(view.getString(R.string.device_searching_failed))
+        _p2PState.postValue(P2PState.PAIR_DEVICES_SEARCH_FAILED)
       }
     }
 
@@ -122,10 +121,14 @@ class P2PViewModel(
 
         currentConnectedDevice = device
 
-        // find better way to track this
-        if (deviceRole == DeviceRole.RECEIVER) {
-          _p2PState.postValue(P2PState.WAITING_TO_RECEIVE_DATA)
-          view.processSenderDeviceDetails()
+        when (deviceRole) {
+          DeviceRole.RECEIVER -> {
+            _p2PState.postValue(P2PState.WAITING_TO_RECEIVE_DATA)
+            view.processSenderDeviceDetails()
+          }
+          DeviceRole.SENDER -> {
+            view.sendDeviceDetails()
+          }
         }
       }
 
@@ -144,9 +147,12 @@ class P2PViewModel(
 
           Timber.e("Successful on disconnect")
           Timber.e("isSenderSyncComplete $view.isSenderSyncComplete")
-          // But use a flag to determine if sync was completed
+          // But use a flag to determine if sync was
+          showCancelTransferDialog(
+            P2PDialogState(showCancelTransferDialog = true, closeConnection = false)
+          )
         }
-        _p2PState.postValue(P2PState.TRANSFER_COMPLETE)
+        // _p2PState.postValue(P2PState.TRANSFER_COMPLETE)
       }
     }
 
@@ -162,15 +168,12 @@ class P2PViewModel(
           currentConnectedDevice = device
           Timber.d("Connecting to device %s success", device?.getDisplayName() ?: "Unknown")
           _p2PState.postValue(P2PState.PREPARING_TO_SEND_DATA)
-
-          Timer().schedule(START_DATA_TRANSFER_DELAY) { view.sendDeviceDetails() }
         }
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
           Timber.d("Connecting to device %s failure", device?.getDisplayName() ?: "Unknown")
           Timber.e(ex)
-
-          view.showToast(view.getString(R.string.connecting_to_device_failed))
+          _p2PState.postValue(P2PState.CONNECT_TO_DEVICE_FAILED)
         }
       }
     )
@@ -182,6 +185,10 @@ class P2PViewModel(
 
   fun cancelTransfer(p2PState: P2PState = P2PState.TRANSFER_CANCELLED) {
     Timber.e("Connection terminated by user")
+    if (!p2PUiState.value.p2PDialogState.closeConnection) {
+      _p2PState.postValue(P2PState.PROMPT_NEXT_TRANSFER)
+      return
+    }
     viewModelScope.launch {
       dataSharingStrategy.disconnect(
         dataSharingStrategy.getCurrentDevice()!!,
@@ -197,6 +204,8 @@ class P2PViewModel(
         }
       )
     }
+    // close connection already handled
+    p2PUiState.value.copy(p2PDialogState = P2PDialogState(closeConnection = false))
   }
 
   fun updateTransferProgress(transferProgress: TransferProgress) {
@@ -212,7 +221,27 @@ class P2PViewModel(
   }
 
   fun closeP2PScreen() {
-    view.finish()
+    if (dataSharingStrategy.getCurrentDevice() == null) {
+      view.finish()
+      return
+    }
+
+    viewModelScope.launch {
+      dataSharingStrategy.disconnect(
+        dataSharingStrategy.getCurrentDevice()!!,
+        object : DataSharingStrategy.OperationListener {
+          override fun onSuccess(device: DeviceInfo?) {
+            Timber.i("Diconnection successful")
+            view.finish()
+          }
+
+          override fun onFailure(device: DeviceInfo?, ex: Exception) {
+            view.finish()
+            Timber.e(ex, "P2P diconnection failed")
+          }
+        }
+      )
+    }
   }
 
   fun setCurrentConnectedDevice(device: DeviceInfo?) {
@@ -224,6 +253,11 @@ class P2PViewModel(
   }
   fun getRequestDisconnection(): Boolean {
     return requestDisconnection
+  }
+
+  fun showCancelTransferDialog(p2PDialogState: P2PDialogState) {
+    // show cancel transfer dialog
+    p2PUiState.value = p2PUiState.value.copy(p2PDialogState = p2PDialogState)
   }
 
   class Factory(

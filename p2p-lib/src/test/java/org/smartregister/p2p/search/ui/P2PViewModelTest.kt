@@ -144,10 +144,11 @@ class P2PViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun `startScanning() should call view#keepScreenOn() and view#showToast when onDeviceFound#failed is called`() {
+  fun `startScanning() should call view#keepScreenOn() and update p2pState to PAIR_DEVICES_SEARCH_FAILED when onDeviceFound#failed is called`() {
     every { view.keepScreenOn(false) } just runs
     val onDeviceFoundSlot = slot<OnDeviceFound>()
     every { dataSharingStrategy.searchDevices(capture(onDeviceFoundSlot), any()) } just runs
+    Assert.assertNull(p2PViewModel.p2PState.value)
 
     Assert.assertNull(p2PViewModel.p2PState.value)
     p2PViewModel.startScanning()
@@ -155,7 +156,10 @@ class P2PViewModelTest : RobolectricTest() {
     onDeviceFoundSlot.captured.failed(java.lang.Exception())
 
     verify { view.keepScreenOn(false) }
-    verify { view.showToast(any()) }
+    Assert.assertEquals(
+      P2PState.PAIR_DEVICES_SEARCH_FAILED,
+      p2PViewModel.p2PState.getOrAwaitValue()
+    )
   }
 
   @Test
@@ -179,7 +183,7 @@ class P2PViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun `startScanning() should update currentConnectedDevice when pairing#onSuccess is called and device role is sender`() {
+  fun `startScanning() should update currentConnectedDevice and call view#sendDeviceDetails() when pairing#onSuccess is called and device role is sender`() {
     every { view.keepScreenOn(true) } just runs
     every { dataSharingStrategy.getCurrentDevice() } returns deviceInfo
     val pairingListenerSlot = slot<DataSharingStrategy.PairingListener>()
@@ -195,6 +199,7 @@ class P2PViewModelTest : RobolectricTest() {
 
     Assert.assertEquals(deviceInfo, p2PViewModel.getCurrentConnectedDevice())
     Assert.assertNull(p2PViewModel.p2PState.value)
+    verify { view.sendDeviceDetails() }
     verify(exactly = 0) { view.processSenderDeviceDetails() }
   }
 
@@ -303,9 +308,36 @@ class P2PViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun `closeP2PScreen() calls view#finish()`() {
+  fun `closeP2PScreen() calls view#finish() when dataSharingStrategy#getCurrentDevice() is null`() {
+    every { dataSharingStrategy.getCurrentDevice() } returns null
     p2PViewModel.closeP2PScreen()
 
+    verify { view.finish() }
+  }
+
+  @Test
+  fun `closeP2PScreen() calls view#finish() dataSharingStrategy#disconnect() is successful`() {
+    every { dataSharingStrategy.disconnect(any(), any()) } just runs
+    every { dataSharingStrategy.getCurrentDevice() } returns deviceInfo
+    p2PViewModel.closeP2PScreen()
+
+    val operationalListenerSlot = slot<DataSharingStrategy.OperationListener>()
+    verify { dataSharingStrategy.disconnect(any(), capture(operationalListenerSlot)) }
+
+    operationalListenerSlot.captured.onSuccess(deviceInfo)
+    verify { view.finish() }
+  }
+
+  @Test
+  fun `closeP2PScreen() calls view#finish() dataSharingStrategy#disconnect() fails`() {
+    every { dataSharingStrategy.disconnect(any(), any()) } just runs
+    every { dataSharingStrategy.getCurrentDevice() } returns deviceInfo
+    p2PViewModel.closeP2PScreen()
+
+    val operationalListenerSlot = slot<DataSharingStrategy.OperationListener>()
+    verify { dataSharingStrategy.disconnect(any(), capture(operationalListenerSlot)) }
+
+    operationalListenerSlot.captured.onFailure(deviceInfo, java.lang.Exception())
     verify { view.finish() }
   }
 }
