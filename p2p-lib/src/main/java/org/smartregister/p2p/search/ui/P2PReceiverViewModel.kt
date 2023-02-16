@@ -24,6 +24,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.smartregister.p2p.P2PLibrary
+import org.smartregister.p2p.R
 import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
@@ -70,7 +71,7 @@ class P2PReceiverViewModel(
             } else {
               // Show error msg
               updateP2PState(P2PState.RECEIVE_BASIC_DEVICE_DETAILS_FAILED)
-              Timber.e("An error occurred and the APP-LIFETIME-KEY was not sent")
+              Timber.e(Exception("An error occurred and the APP-LIFETIME-KEY was not sent"))
             }
           }
         },
@@ -92,7 +93,7 @@ class P2PReceiverViewModel(
   }
 
   fun checkIfDeviceKeyHasChanged(appLifetimeKey: String) {
-    Timber.e("In check if device key has changed with app lifetime key $appLifetimeKey")
+    Timber.d("In check if device key has changed with app lifetime key $appLifetimeKey")
     viewModelScope.launch(dispatcherProvider.io()) {
       val receivedHistory = getReceivedHistory(appLifetimeKey = appLifetimeKey)
 
@@ -158,7 +159,6 @@ class P2PReceiverViewModel(
             Timber.i("Manifest with data successfully received")
             // notify UI data transfer is starting
             postUIAction(UIAction.NOTIFY_DATA_TRANSFER_STARTING, DeviceRole.RECEIVER)
-            // view.notifyDataTransferStarting(DeviceRole.RECEIVER)
             syncReceiverHandler.processManifest(receivedManifest)
           }
         }
@@ -222,8 +222,7 @@ class P2PReceiverViewModel(
         syncReceiverHandler.processManifest(incomingManifest!!)
       }
     } else {
-      // TODO: See if there's something better to do here
-      showToast("An error occurred! Restarting")
+      showToast(R.string.an_error_occurred_restarting_the_p2p_screen)
       restartActivity()
     }
   }
@@ -289,20 +288,12 @@ class P2PReceiverViewModel(
             percentageTransferred = percentageReceived
           )
         )
-        /*view.updateTransferProgress(
-          TransferProgress(
-            totalRecordCount = totalRecords,
-            transferredRecordCount = totalReceivedRecords,
-            percentageTransferred = percentageReceived
-          )
-        )*/
       }
     }
   }
 
   fun showCancelTransferDialog() {
     viewModelScope.launch(dispatcherProvider.main()) {
-      // view.showCancelTransferDialog()
       postUIAction(UIAction.SHOW_CANCEL_TRANSFER_DIALOG)
     }
   }

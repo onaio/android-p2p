@@ -147,7 +147,6 @@ class P2PSenderViewModel(
     Timber.i("P2P sync complete")
     viewModelScope.launch {
       withContext(dispatcherProvider.main()) {
-        // view.showTransferCompleteDialog(P2PState.TRANSFER_COMPLETE)
         postUIAction(UIAction.SHOW_TRANSFER_COMPLETE_DIALOG)
       }
       dataSharingStrategy.disconnect(
@@ -258,7 +257,6 @@ class P2PSenderViewModel(
   fun updateSenderSyncComplete(senderSyncComplete: Boolean) {
     viewModelScope.launch {
       withContext(dispatcherProvider.main()) {
-        // view.senderSyncComplete(senderSyncComplete)
         postUIAction(UIAction.SENDER_SYNC_COMPLETE, senderSyncComplete)
       }
     }

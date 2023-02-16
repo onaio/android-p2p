@@ -93,4 +93,6 @@
     <string name="sender_data_upto_date_msg">No new records to transfer, receiver data up-to date</string>
     <string name="device_disconnected">Device disconnected</string>
     <string name="device_disconnected_msg">Devices disconnected without completing the data transfer</string>
+    <string name="an_error_occurred_restarting_the_p2p_screen">An error occurred! Restarting P2P screen</string>
+    <string name="connection_was_disconnected">Connection was disconnected</string>
 </resources>

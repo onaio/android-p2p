@@ -314,9 +314,9 @@ fun BottomSheet(
       }
 
       Spacer(modifier = Modifier.size(5.dp))
-      Timber.e("BottomSheetScreen: Device Role: $deviceRole")
-      Timber.e("BottomSheetScreen: P2P State: $p2PState")
-      Timber.e("BottomSheetScreen: Devices list ${deviceList.size}")
+      Timber.d("BottomSheetScreen: Device Role: $deviceRole")
+      Timber.d("BottomSheetScreen: P2P State: $p2PState")
+      Timber.d("BottomSheetScreen: Devices list ${deviceList.size}")
 
       if (deviceRole == DeviceRole.SENDER) {
         if (p2PState == P2PState.PAIR_DEVICES_FOUND) {
@@ -332,11 +332,8 @@ fun BottomSheet(
           )
         }
         when (p2PState) {
-          P2PState.WIFI_AND_LOCATION_ENABLE ->
+          P2PState.WIFI_AND_LOCATION_ENABLE, P2PState.SEARCHING_FOR_RECIPIENT, P2PState.PAIR_DEVICES_FOUND ->
             DisplayDeviceList(deviceList, onEvent = onEvent, p2PState)
-          P2PState.SEARCHING_FOR_RECIPIENT ->
-            DisplayDeviceList(deviceList, onEvent = onEvent, p2PState)
-          P2PState.PAIR_DEVICES_FOUND -> DisplayDeviceList(deviceList, onEvent = onEvent, p2PState)
           else -> {
             Timber.e("Device list Else p2p state. State is ${p2PState.name}")
           }
@@ -346,13 +343,11 @@ fun BottomSheet(
       Spacer(modifier = Modifier.size(5.dp))
 
       when (p2PState) {
-        P2PState.TRANSFER_COMPLETE -> DisplayButton(onEvent = onEvent)
-        P2PState.PAIR_DEVICES_SEARCH_FAILED -> DisplayButton(onEvent = onEvent)
-        P2PState.CONNECT_TO_DEVICE_FAILED -> DisplayButton(onEvent = onEvent)
-        P2PState.RECEIVE_BASIC_DEVICE_DETAILS_FAILED -> DisplayButton(onEvent = onEvent)
-        P2PState.DATA_UP_TO_DATE -> DisplayButton(onEvent = onEvent)
-        P2PState.DEVICE_DISCONNECTED -> DisplayButton(onEvent = onEvent)
-        else -> {}
+        P2PState.TRANSFER_COMPLETE,P2PState.PAIR_DEVICES_SEARCH_FAILED, P2PState.CONNECT_TO_DEVICE_FAILED, P2PState.RECEIVE_BASIC_DEVICE_DETAILS_FAILED, P2PState.DATA_UP_TO_DATE, P2PState.DEVICE_DISCONNECTED ->
+          DisplayButton(onEvent = onEvent)
+        else -> {
+          Timber.i("p2p state $p2PState is not handled")
+        }
       }
     }
   }

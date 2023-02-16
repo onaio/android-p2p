@@ -29,8 +29,6 @@ interface P2pModeSelectContract {
 
   interface View {
 
-    // fun showP2PSelectPage(deviceRole: DeviceRole, deviceName: String)
-
     fun showTransferCompleteDialog(p2PState: P2PState)
 
     fun getCurrentConnectedDevice(): DeviceInfo?

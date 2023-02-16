@@ -92,8 +92,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
       Timber.plant(Timber.DebugTree())
     }
 
-    Timber.e("Just a random log message")
-
     supportActionBar?.setHomeAsUpIndicator(android.R.drawable.ic_menu_close_clear_cancel)
 
     // Remaining setup for the DataSharingStrategy class
@@ -125,18 +123,11 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
   }
 
   fun registerUIViewModelEvents() {
-    /*
-
-    val displayMessages = MutableLiveData<String>()
-    val restartActivity = MutableLiveData<Boolean>()
-    val p2pState = MutableLiveData<P2PState>()
-    val p2pUiAction = MutableLiveData<Pair<UIAction, Any?>>()
-     */
     registerViewModelEvents(p2PViewModel)
   }
 
   fun registerViewModelEvents(baseViewModel: BaseViewModel) {
-    baseViewModel.displayMessages.observe(this) { msg -> showToast(msg) }
+    baseViewModel.displayMessages.observe(this) { stringResId -> showToast(getString(stringResId)) }
     baseViewModel.restartActivity.observe(this) {
       if (it) {
         restartActivity()
@@ -184,12 +175,10 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
   }
 
   fun registerSenderViewModelEvents() {
-
     registerViewModelEvents(p2PSenderViewModel)
   }
 
   fun registerReceiverViewModelEvents() {
-
     registerViewModelEvents(p2PReceiverViewModel)
   }
 
@@ -341,10 +330,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
 
   override fun onResume() {
     super.onResume()
-    /*
-    registerViewModelEvents()
-    registerSenderViewModelEvents()
-    registerReceiverViewModelEvents()*/
 
     p2PViewModel.initChannel()
     dataSharingStrategy.onResume(isScanning = scanning)
@@ -352,11 +337,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
 
   override fun onPause() {
     super.onPause()
-    /*
-    unregisterViewModelEvents()
-    unregisterSenderViewModelEvents()
-    unregisterReceiverViewModelEvents()*/
-
     dataSharingStrategy.onPause()
   }
 
@@ -404,7 +384,7 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
 
   override fun senderSyncComplete(complete: Boolean) {
     p2PViewModel.updateSenderSyncComplete(complete)
-    Timber.e("sender sync complete $complete")
+    Timber.d("sender sync complete $complete")
   }
 
   override fun updateTransferProgress(transferProgress: TransferProgress) {
@@ -468,10 +448,9 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
   }
 
   override fun onDestroy() {
-    super.onDestroy()
-    Timber.e("P2PDeviceSearchActivity onDestroy")
-
     viewModelStore.clear()
     P2PLibrary.getInstance().clean()
+
+    super.onDestroy()
   }
 }

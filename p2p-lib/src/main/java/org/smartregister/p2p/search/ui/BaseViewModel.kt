@@ -20,6 +20,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
+import org.smartregister.p2p.R
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.model.P2PState
@@ -28,31 +29,33 @@ import timber.log.Timber
 /** Created by Ephraim Kigamba - nek.eam@gmail.com on 13-01-2023. */
 open class BaseViewModel(private val dataSharingStrategy: DataSharingStrategy) : ViewModel() {
 
-  val displayMessages = MutableLiveData<String>()
-  val restartActivity = MutableLiveData<Boolean>()
+  val displayMessages: LiveData<Int>
+    get() = _displayMessages
+  val _displayMessages = MutableLiveData<Int>()
+
+  val restartActivity: LiveData<Boolean>
+    get() = _restartActivity
+  val _restartActivity = MutableLiveData<Boolean>()
+
   val _p2pState = MutableLiveData<P2PState>()
   val p2pState: LiveData<P2PState>
     get() = _p2pState
+
   val p2pUiAction: LiveData<Pair<UIAction, Any?>>
     get() = _p2pUiAction
   val _p2pUiAction = MutableLiveData<Pair<UIAction, Any?>>()
 
-  /**
-   * - update state
-   * - restart the activity
-   * - show toast
-   */
   fun handleSocketException() {
-    showToast("An error occurred")
+    showToast(R.string.an_error_occurred_restarting_the_p2p_screen)
     restartActivity()
   }
 
-  fun showToast(msg: String) {
-    displayMessages.postValue(msg)
+  fun showToast(msgResId: Int) {
+    _displayMessages.postValue(msgResId)
   }
 
   fun restartActivity() {
-    restartActivity.postValue(true)
+    _restartActivity.postValue(true)
   }
 
   open fun updateP2PState(state: P2PState) {

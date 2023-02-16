@@ -122,7 +122,7 @@ constructor(
 
         val recordsJsonString = recordsArray.toString()
         awaitingDataTypeRecordsBatchSize = recordsArray!!.length()
-        Timber.e(
+        Timber.i(
           "Progress update: Sending | ${dataType.name} x $awaitingDataTypeRecordsBatchSize | UPTO ${jsonData.getHighestRecordId()}"
         )
         awaitingPayload =
@@ -162,7 +162,7 @@ constructor(
 
   open fun updateTotalSentRecordCount() {
     this.totalSentRecordCount = totalSentRecordCount + awaitingDataTypeRecordsBatchSize
-    Timber.e("Progress update: Updating progress to $totalSentRecordCount out of $totalRecordCount")
+    Timber.i("Progress update: Updating progress to $totalSentRecordCount out of $totalRecordCount")
     p2PSenderViewModel.updateTransferProgress(
       totalSentRecords = totalSentRecordCount,
       totalRecords = totalRecordCount

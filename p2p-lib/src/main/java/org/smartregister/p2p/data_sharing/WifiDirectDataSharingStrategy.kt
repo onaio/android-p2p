@@ -447,7 +447,6 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
           Exception("An exception occurred and the groupOwnerAddress is null")
         )
 
-        // TODO: Test this by returning null always from the getGroupOwnerAddress()
         return@launch
       }
 
@@ -536,7 +535,8 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
   private fun getGroupOwnerAddress(): String? {
     // This also causes a crash on the app
-    return wifiP2pInfo?.groupOwnerAddress?.hostAddress
+    //return wifiP2pInfo?.groupOwnerAddress?.hostAddress
+    return null
   }
 
   suspend fun makeSocketConnections(
@@ -580,14 +580,6 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
         serverSocket!!.soTimeout = connectionTimeout() * 1000
         Timber.e("Attaching server socket")
-        /*
-        if (serverSocket.isBound) {
-          Timber.e("Socket is bound!")
-          serverSocket.reuseAddress = true
-        } else {
-          Timber.e("Socket is not bound")
-        }*/
-
         serverSocket!!.accept().apply { constructStreamsFromSocket(this) }
       } catch (e: Exception) {
         Timber.e(e)
@@ -602,8 +594,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
   private suspend fun connectToServerSocket(groupOwnerAddress: String): Socket? =
     withContext(dispatcherProvider.io()) {
-      var retryCount = 3
-      val retryDuration = 5000L
+      var retryCount = CONNECT_TO_SERVER_RETRIES
       var clientSocket: Socket? = null
 
       while (retryCount > 0) {
@@ -618,7 +609,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
         } catch (e: Exception) {
           Timber.e(e)
           clientSocket = null
-          delay(retryDuration)
+          delay(CONNECT_TO_SERVER_TIMEOUT)
         }
 
         retryCount--
@@ -632,9 +623,6 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     manifest: Manifest,
     operationListener: DataSharingStrategy.OperationListener
   ) {
-    // Check if the socket is setup for sending
-    // Check if this is the sender/receiver
-
     try {
       dataOutputStream?.apply {
         val manifestString = Gson().toJson(manifest)
@@ -1000,19 +988,14 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
         currentDevice = wifiP2pGroup.clientList.firstOrNull { it.isGroupOwner != isGroupOwner }
       }
 
-      Timber.e("Before calling onPairingSucceeded() with pairing inititiated $pairingInitiated")
       if (pairingInitiated) {
-        Timber.e("Calling onPairingSucceeded() with pairing inititiated $pairingInitiated")
         onPairingSucceeded()
       }
     }
 
     if (onConnectionInfo != null) {
-      Timber.e("onConnectionInfo is not null and is about to be invoked")
       onConnectionInfo?.invoke()
       onConnectionInfo = null
-    } else {
-      Timber.e("onConnectionInfo is null")
     }
   }
 
@@ -1043,7 +1026,6 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   }
 
   fun closeSocketAndStreams() {
-    Timber.e("closeSocketAndStreams called ")
     stopSearchingDevices(null)
 
     dataInputStream?.run { close() }
@@ -1060,9 +1042,6 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
         Timber.e(e)
       }
       socket = null
-      Timber.e("Socket closed")
-    } else {
-      Timber.e("Socket is null")
     }
 
     if (serverSocket != null) {
@@ -1108,9 +1087,8 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   }
 
   override fun onStop() {
-    requestedDisconnection = true
-
     if (paired) {
+      requestedDisconnection = true
       wifiP2pManager.removeGroup(
         wifiP2pChannel,
         object : WifiP2pManager.ActionListener {
@@ -1130,5 +1108,11 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
   override fun cleanup() {
     closeSocketAndStreams()
+  }
+
+  companion object {
+
+    const val CONNECT_TO_SERVER_RETRIES = 3
+    const val CONNECT_TO_SERVER_TIMEOUT = 5000L
   }
 }

@@ -22,6 +22,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
+import org.smartregister.p2p.R
 import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
@@ -84,7 +85,6 @@ class P2PViewModel(
 
   fun startScanning() {
     postUIAction(UIAction.KEEP_SCREEN_ON, true)
-    val derol = deviceRole
     dataSharingStrategy.searchDevices(onDeviceFound, pairingListener)
   }
 
@@ -151,9 +151,9 @@ class P2PViewModel(
       }
 
       override fun onDisconnected() {
-        Timber.e("onDisconnected()")
+        Timber.d("onDisconnected()")
         if (!requestDisconnection) {
-          showToast("Connection was disconnected")
+          showToast(R.string.connection_was_disconnected)
 
           postUIAction(UIAction.KEEP_SCREEN_ON, false)
 
