@@ -212,7 +212,9 @@ class P2PReceiverViewModel(
   }
 
   fun processIncomingManifest() {
+    Timber.e("processIncomingManifest() started")
     val incomingManifest = listenForIncomingManifest()
+    Timber.e("processIncomingManifest() completed")
 
     // Handle successfully received manifest
     if (incomingManifest != null) {

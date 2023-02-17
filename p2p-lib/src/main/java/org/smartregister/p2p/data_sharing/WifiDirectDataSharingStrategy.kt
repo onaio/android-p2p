@@ -535,8 +535,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
   private fun getGroupOwnerAddress(): String? {
     // This also causes a crash on the app
-    //return wifiP2pInfo?.groupOwnerAddress?.hostAddress
-    return null
+    return wifiP2pInfo?.groupOwnerAddress?.hostAddress
   }
 
   suspend fun makeSocketConnections(
@@ -718,8 +717,10 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
         if (dataType == MANIFEST) {
           val manifestString = readUTF()
+          operationListener.onSuccess(device)
           Gson().fromJson(manifestString, Manifest::class.java)
         } else {
+          operationListener.onFailure(device, Exception("dataType of manifest is $dataType"))
           null
         }
       } catch (ex: SocketException) {
@@ -796,17 +797,11 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
         context.unregisterReceiver(it)
         // TODO: Sample fix memory leak
         wifiP2pReceiver = null
-        // Set this to null so that wifi direct is turned on during on resume
-        // Fixes https://github.com/opensrp/fhircore/issues/1960#issuecomment-1427424971
-        wifiP2pChannel = null
       }
     }
       .onFailure {
         Timber.e(it)
         wifiP2pReceiver = null
-        // Set this to null so that wifi direct is turned on during on resume
-        // https://github.com/opensrp/fhircore/issues/1960#issuecomment-1427424971
-        wifiP2pChannel = null
       }
 
     closeSocketAndStreams()
@@ -1011,6 +1006,12 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
           override fun onSuccess() {
             logDebug("Successfully stopped peer discovery")
             operationListener?.onSuccess(null)
+
+            if (!paired) {
+              // Set this to null so that wifi direct is turned on during on resume
+              // Fixes https://github.com/opensrp/fhircore/issues/1960#issuecomment-1427424971
+              wifiP2pChannel = null
+            }
           }
 
           override fun onFailure(reason: Int) {
@@ -1018,10 +1019,24 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
               Exception("Error occurred trying to stop peer discovery ${getWifiP2pReason(reason)}")
             Timber.e(ex)
             operationListener?.onFailure(null, ex)
+
+
+            if (!paired) {
+              // Set this to null so that wifi direct is turned on during on resume
+              // Fixes https://github.com/opensrp/fhircore/issues/1960#issuecomment-1427424971
+              wifiP2pChannel = null
+            }
           }
         }
       )
       isSearchingDevices = false
+    } else {
+
+      if (!paired) {
+        // Set this to null so that wifi direct is turned on during on resume
+        // Fixes https://github.com/opensrp/fhircore/issues/1960#issuecomment-1427424971
+        wifiP2pChannel = null
+      }
     }
   }
 
@@ -1095,11 +1110,20 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
           override fun onSuccess() {
             Timber.i("Device successfully disconnected")
             paired = false
+
+
+            // Set this to null so that wifi direct is turned on during on resume
+            // Fixes https://github.com/opensrp/fhircore/issues/1960#issuecomment-1427424971
+            wifiP2pChannel = null
           }
 
           override fun onFailure(reason: Int) {
             val exception = Exception("Error #$reason: ${getWifiP2pReason(reason)}")
             Timber.e(exception)
+
+            // Set this to null so that wifi direct is turned on during on resume
+            // Fixes https://github.com/opensrp/fhircore/issues/1960#issuecomment-1427424971
+            wifiP2pChannel = null
           }
         }
       )
