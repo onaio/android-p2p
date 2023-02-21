@@ -399,6 +399,14 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     device: DeviceInfo,
     operationListener: DataSharingStrategy.OperationListener
   ) {
+    // TODO: Remove and fix this correctly
+    if (wifiP2pChannel == null) {
+      val ex = Exception("wifiP2Channel was null")
+      onDisconnectFailed(device, ex)
+      operationListener.onFailure(device, ex)
+      return
+    }
+
     requestedDisconnection = true
     wifiP2pManager.removeGroup(
       wifiP2pChannel,
