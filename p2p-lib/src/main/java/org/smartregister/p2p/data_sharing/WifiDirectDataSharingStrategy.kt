@@ -44,6 +44,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.smartregister.p2p.WifiP2pBroadcastReceiver
+import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.payload.BytePayload
 import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.payload.StringPayload
@@ -91,6 +92,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
   val successPairingListeners: MutableSet<() -> Unit> = mutableSetOf()
   val failedPairingListeners: MutableSet<(Exception) -> Unit> = mutableSetOf()
+  var _deviceRole = DeviceRole.SENDER
 
   override fun setDispatcherProvider(dispatcherProvider: DispatcherProvider) {
     this.dispatcherProvider = dispatcherProvider
@@ -191,6 +193,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
           val exception = Exception("$reason: ${getWifiP2pReason(reason)}")
           onDeviceFound?.failed(exception)
           onSearchingFailed(exception)
+          isSearchingDevices = false
         }
       }
     )
@@ -302,9 +305,11 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       // both onConnectionInfoAvailable implementations
       val successPairingListener = {
         disableConnectionCountdown(pairingTimeout!!)
-        Timber.i("Device successfully paired")
+        Timber.i("Device successfully paired on device [$_deviceRole]")
 
         currentDevice = wifiDirectDevice
+
+        // This only happens on the sender device
         paired = true
         pairingInitiated = false
         Timber.e("connect() successfully paired with pairing inititiated $pairingInitiated")
@@ -399,6 +404,14 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     device: DeviceInfo,
     operationListener: DataSharingStrategy.OperationListener
   ) {
+    // TODO: Remove and fix this correctly
+    if (wifiP2pChannel == null) {
+      val ex = Exception("wifiP2Channel was null")
+      onDisconnectFailed(device, ex)
+      operationListener.onFailure(device, ex)
+      return
+    }
+
     requestedDisconnection = true
     wifiP2pManager.removeGroup(
       wifiP2pChannel,
@@ -883,7 +896,16 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
                   // This is handled onConnectionInfoAvailable inside WifiDirectDataSharingStrategy
                   // paired = true
 
+                  if (_deviceRole == DeviceRole.RECEIVER) {
+                    paired = true
+                  }
+
                   onConnected.onSuccess(null)
+
+
+                  // Let's stop searching once connected to another device
+                  stopSearchingDevices(null)
+
                 } else {
 
                   if (paired) {
@@ -1020,6 +1042,8 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
             Timber.e(ex)
             operationListener?.onFailure(null, ex)
 
+            isSearchingDevices = true
+
 
             if (!paired) {
               // Set this to null so that wifi direct is turned on during on resume
@@ -1132,6 +1156,14 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
   override fun cleanup() {
     closeSocketAndStreams()
+  }
+
+  override fun getDeviceRole(): DeviceRole {
+    return _deviceRole
+  }
+
+  override fun setDeviceRole(deviceRole: DeviceRole) {
+    _deviceRole = deviceRole
   }
 
   companion object {

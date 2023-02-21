@@ -17,6 +17,7 @@ package org.smartregister.p2p.data_sharing
 
 import android.app.Activity
 import kotlinx.coroutines.CoroutineScope
+import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.utils.DispatcherProvider
 
@@ -107,4 +108,8 @@ interface DataSharingStrategy {
   fun connectionTimeout(): Int = 30
 
   fun isPairingInitiated(): Boolean
+
+  fun getDeviceRole(): DeviceRole
+
+  fun setDeviceRole(deviceRole: DeviceRole)
 }
