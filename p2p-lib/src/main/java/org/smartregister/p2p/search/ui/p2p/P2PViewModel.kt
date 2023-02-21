@@ -47,7 +47,11 @@ class P2PViewModel(
   val p2PState: LiveData<P2PState>
     get() = _p2PState
 
-  var deviceRole: DeviceRole = DeviceRole.SENDER
+  var deviceRole: DeviceRole
+    get() = dataSharingStrategy.getDeviceRole()
+    set(dRole) {
+      dataSharingStrategy.setDeviceRole(dRole)
+    }
   private var currentConnectedDevice: DeviceInfo? = null
   private var requestDisconnection = false
   private var isSenderSyncComplete = false

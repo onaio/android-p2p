@@ -44,6 +44,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.smartregister.p2p.WifiP2pBroadcastReceiver
+import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.payload.BytePayload
 import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.payload.StringPayload
@@ -91,6 +92,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
   val successPairingListeners: MutableSet<() -> Unit> = mutableSetOf()
   val failedPairingListeners: MutableSet<(Exception) -> Unit> = mutableSetOf()
+  var _deviceRole = DeviceRole.SENDER
 
   override fun setDispatcherProvider(dispatcherProvider: DispatcherProvider) {
     this.dispatcherProvider = dispatcherProvider
@@ -302,9 +304,11 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       // both onConnectionInfoAvailable implementations
       val successPairingListener = {
         disableConnectionCountdown(pairingTimeout!!)
-        Timber.i("Device successfully paired")
+        Timber.i("Device successfully paired on device [$_deviceRole]")
 
         currentDevice = wifiDirectDevice
+
+        // This only happens on the sender device
         paired = true
         pairingInitiated = false
         Timber.e("connect() successfully paired with pairing inititiated $pairingInitiated")
@@ -891,6 +895,10 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
                   // This is handled onConnectionInfoAvailable inside WifiDirectDataSharingStrategy
                   // paired = true
 
+                  if (_deviceRole == DeviceRole.RECEIVER) {
+                    paired = true
+                  }
+
                   onConnected.onSuccess(null)
                 } else {
 
@@ -1140,6 +1148,14 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
   override fun cleanup() {
     closeSocketAndStreams()
+  }
+
+  override fun getDeviceRole(): DeviceRole {
+    return _deviceRole
+  }
+
+  override fun setDeviceRole(deviceRole: DeviceRole) {
+    _deviceRole = deviceRole
   }
 
   companion object {
