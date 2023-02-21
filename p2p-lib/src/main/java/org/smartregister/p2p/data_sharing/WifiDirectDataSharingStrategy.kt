@@ -193,6 +193,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
           val exception = Exception("$reason: ${getWifiP2pReason(reason)}")
           onDeviceFound?.failed(exception)
           onSearchingFailed(exception)
+          isSearchingDevices = false
         }
       }
     )
@@ -900,6 +901,11 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
                   }
 
                   onConnected.onSuccess(null)
+
+
+                  // Let's stop searching once connected to another device
+                  stopSearchingDevices(null)
+
                 } else {
 
                   if (paired) {
@@ -1035,6 +1041,8 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
               Exception("Error occurred trying to stop peer discovery ${getWifiP2pReason(reason)}")
             Timber.e(ex)
             operationListener?.onFailure(null, ex)
+
+            isSearchingDevices = true
 
 
             if (!paired) {
