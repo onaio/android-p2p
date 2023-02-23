@@ -1020,7 +1020,6 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
             Timber.e(ex)
             operationListener?.onFailure(null, ex)
 
-
             if (!paired) {
               // Set this to null so that wifi direct is turned on during on resume
               // Fixes https://github.com/opensrp/fhircore/issues/1960#issuecomment-1427424971
@@ -1110,7 +1109,6 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
           override fun onSuccess() {
             Timber.i("Device successfully disconnected")
             paired = false
-
 
             // Set this to null so that wifi direct is turned on during on resume
             // Fixes https://github.com/opensrp/fhircore/issues/1960#issuecomment-1427424971
