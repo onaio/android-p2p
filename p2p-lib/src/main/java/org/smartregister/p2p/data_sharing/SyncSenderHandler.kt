@@ -104,19 +104,11 @@ constructor(
           .getJsonData(dataType, lastRecordId, batchSize, recordsBatchOffset)
 
       // send actual manifest
-
       if (jsonData != null && (jsonData.getJsonArray()?.length()!! > 0)) {
         Timber.i("Json data is has content")
         val recordsArray = jsonData.getJsonArray()
 
-        remainingLastRecordIds[dataType.name] = jsonData.getHighestRecordId()
-
-        if (jsonData.getHighestRecordId() == lastRecordId) {
-          recordsBatchOffset += batchSize
-        } else {
-          recordsBatchOffset = 0
-        }
-
+        recordsBatchOffset += batchSize
         Timber.i("Batch offset $recordsBatchOffset")
         Timber.i("remaining records last updated is ${remainingLastRecordIds[dataType.name]}")
 
@@ -143,7 +135,7 @@ constructor(
           p2PSenderViewModel.sendManifest(manifest = manifest)
         }
       } else {
-        // signifies all data has been sent
+        // signifies all data has been sent for a particular datatype
         recordsBatchOffset = 0
         Timber.i("Json data is null")
         dataSyncOrder.remove(dataType)
