@@ -832,8 +832,6 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
               }
 
               override fun handleWifiP2pDevice(device: WifiP2pDevice) {
-                onDeviceFound.deviceFound(listOf(WifiDirectDevice(device)))
-
                 this@WifiDirectDataSharingStrategy.handleWifiP2pDevice(device)
               }
 
