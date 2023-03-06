@@ -764,6 +764,7 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   fun `receiveManifest() call dataOutputStream#readUTF()`() {
     val manifestString = Gson().toJson(expectedManifest)
     every { dataInputStream.readUTF() } returnsMany (listOf("MANIFEST", manifestString))
+    every { operationListener.onSuccess(device) } just runs
 
     val actualManifest = wifiDirectDataSharingStrategy.receiveManifest(device, operationListener)
 

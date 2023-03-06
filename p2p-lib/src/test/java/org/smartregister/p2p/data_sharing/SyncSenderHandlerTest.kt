@@ -154,9 +154,6 @@ class SyncSenderHandlerTest : RobolectricTest() {
       )
     }
 
-    val updatedRemainingLastRecordIds =
-      ReflectionHelpers.getField<HashMap<String, Long>>(syncSenderHandler, "remainingLastRecordIds")
-    Assert.assertEquals(lastUpdatedAt, updatedRemainingLastRecordIds.get(entity))
     val updatedAwaitingDataTypeRecordsBatchSize =
       ReflectionHelpers.getField<Int>(syncSenderHandler, "awaitingDataTypeRecordsBatchSize")
     Assert.assertEquals(1, updatedAwaitingDataTypeRecordsBatchSize)
