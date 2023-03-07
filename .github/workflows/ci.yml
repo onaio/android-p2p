@@ -63,3 +63,4 @@ jobs:
             p2p-lib/build/reports/
             p2p-lib/build/outputs/unit_test_code_coverage/
             p2p-lib/build/outputs/code_coverage/
+            p2p-lib/build/outputs/androidTest-results/
