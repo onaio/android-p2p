@@ -121,14 +121,7 @@ class P2PViewModel(
           Timber.i("pairingListener#onSuccess() -> pairingInitiated = false ${deviceRole.name}")
           return
         }
-        if (currentConnectedDevice == null) {
-          Timber.i("Devices paired with another: DeviceInfo is null")
-        }
-
-        Timber.i("Devices paired with another: DeviceInfo is +++++")
-
         currentConnectedDevice = device
-
         Timber.i("Device role is ${deviceRole.name}")
 
         when (deviceRole) {

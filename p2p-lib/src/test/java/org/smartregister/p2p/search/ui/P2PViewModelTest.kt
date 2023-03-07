@@ -114,6 +114,13 @@ class P2PViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun `onEvent() calls cancelTransfer() when P2PEvent is BottomSheetClosed`() {
+    every { p2PViewModel.cancelTransfer(any()) } just runs
+    p2PViewModel.onEvent(P2PEvent.BottomSheetClosed)
+    verify { p2PViewModel.cancelTransfer(P2PState.PROMPT_NEXT_TRANSFER) }
+  }
+
+  @Test
   fun `startScanning() should call postUIAction() with UIAction#KEEP_SCREEN_ON and dataSharingStrategy#searchDevices()`() {
     every { dataSharingStrategy.searchDevices(any(), any()) } just runs
 
@@ -284,6 +291,21 @@ class P2PViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun `connectToDevice() updates p2PState on operationalListener failure`() {
+    every { dataSharingStrategy.connect(any(), any()) } just runs
+
+    Assert.assertNull(p2PViewModel.p2PState.value)
+    p2PViewModel.connectToDevice(deviceInfo)
+
+    val operationalListenerSlot = slot<DataSharingStrategy.OperationListener>()
+    verify { dataSharingStrategy.connect(any(), capture(operationalListenerSlot)) }
+
+    operationalListenerSlot.captured.onFailure(deviceInfo, mockk())
+
+    Assert.assertEquals(P2PState.CONNECT_TO_DEVICE_FAILED, p2PViewModel.p2PState.getOrAwaitValue())
+  }
+
+  @Test
   fun `showTransferCompleteDialog() updates p2PState to TRANSFER_COMPLETE`() {
     Assert.assertNull(p2PViewModel.p2PState.value)
     p2PViewModel.showTransferCompleteDialog(p2PState = P2PState.TRANSFER_COMPLETE)
@@ -325,5 +347,31 @@ class P2PViewModelTest : RobolectricTest() {
     verify { dataSharingStrategy.disconnect(any(), capture(operationalListenerSlot)) }
 
     operationalListenerSlot.captured.onFailure(deviceInfo, java.lang.Exception())
+  }
+
+  @Test
+  fun `cancelTransfer() should update p2PState when dataSharingStrategy#disconnect() fails`() {
+    every { dataSharingStrategy.disconnect(any(), any()) } just runs
+    every { dataSharingStrategy.getCurrentDevice() } returns deviceInfo
+    p2PViewModel.cancelTransfer(P2PState.TRANSFER_CANCELLED)
+
+    Assert.assertNull(p2PViewModel.p2PState.value)
+    val operationalListenerSlot = slot<DataSharingStrategy.OperationListener>()
+    verify { dataSharingStrategy.disconnect(any(), capture(operationalListenerSlot)) }
+
+    operationalListenerSlot.captured.onFailure(deviceInfo, mockk())
+    Assert.assertEquals(P2PState.TRANSFER_CANCELLED, p2PViewModel.p2PState.value)
+  }
+
+  @Test
+  fun `cancelTransfer() should update p2PState when dataSharingStrategy#getCurrentDevice() returns null`() {
+    every { dataSharingStrategy.disconnect(any(), any()) } just runs
+    every { dataSharingStrategy.getCurrentDevice() } returns null
+    Assert.assertNull(p2PViewModel.p2PState.value)
+    p2PViewModel.cancelTransfer(P2PState.TRANSFER_CANCELLED)
+
+    verify(exactly = 0) { dataSharingStrategy.disconnect(any(), any()) }
+
+    Assert.assertEquals(P2PState.TRANSFER_CANCELLED, p2PViewModel.p2PState.value)
   }
 }

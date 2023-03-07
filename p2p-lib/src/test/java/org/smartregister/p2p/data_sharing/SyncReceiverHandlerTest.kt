@@ -113,6 +113,22 @@ class SyncReceiverHandlerTest : RobolectricTest() {
   }
 
   @Test
+  fun `processManifest() calls p2PReceiverViewModel#handleDataTransferCompleteManifest() when data type name is data up to date`() {
+    dataType =
+      DataType(name = Constants.DATA_UP_TO_DATE, type = DataType.Filetype.JSON, position = 0)
+    val manifest = Manifest(dataType = dataType, recordsSize = 0, payloadSize = 0)
+    every { p2PReceiverViewModel.updateTransferProgress(any(), any()) } just runs
+    every { p2PReceiverViewModel.handleDataTransferCompleteManifest(P2PState.DATA_UP_TO_DATE) } just
+      runs
+
+    syncReceiverHandler.processManifest(manifest = manifest)
+
+    verify(exactly = 1) {
+      p2PReceiverViewModel.handleDataTransferCompleteManifest(P2PState.DATA_UP_TO_DATE)
+    }
+  }
+
+  @Test
   fun `processManifest() calls p2PReceiverViewModel#processChunkData() when manifest has does not have sync complete data type name`() {
     every { p2PReceiverViewModel.updateTransferProgress(any(), any()) } just runs
     every { p2PReceiverViewModel.processChunkData() } just runs

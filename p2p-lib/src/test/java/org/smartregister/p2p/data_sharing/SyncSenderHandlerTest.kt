@@ -266,6 +266,14 @@ class SyncSenderHandlerTest : RobolectricTest() {
     verify { p2PSenderViewModel.updateTransferProgress(35, 40) }
   }
 
+  @Test
+  fun `populateTotalRecordCount() returns correct data`() {
+    every { senderTransferDao.getTotalRecordCount(any()) } returns 23
+    Assert.assertEquals(0, ReflectionHelpers.getField<Long>(syncSenderHandler, "totalRecordCount"))
+    syncSenderHandler.populateTotalRecordCount()
+    Assert.assertEquals(23, ReflectionHelpers.getField<Long>(syncSenderHandler, "totalRecordCount"))
+  }
+
   fun getDataTypes(): TreeSet<DataType> =
     TreeSet<DataType>(
       listOf("Group").mapIndexed { index, resourceType ->
