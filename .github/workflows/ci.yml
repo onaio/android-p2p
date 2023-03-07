@@ -52,6 +52,6 @@ jobs:
           force-avd-creation: true
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: ./gradlew p2p-lib:clean p2p-lib:jacocoTestReport p2p-lib:coveralls --stacktrace
+          script: ./gradlew p2p-lib:clean p2p-lib:coveralls --stacktrace
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
