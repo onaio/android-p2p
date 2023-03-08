@@ -170,7 +170,7 @@ def locationDependencies(configuration) {
 }
 
 task jacocoTestReport(type: JacocoReport, dependsOn: [
-        /*'testDebugUnitTest',*/
+        'testDebugUnitTest',
         'connectedDebugAndroidTest'/*, 'createDebugCoverageReport'*/]) {
 
     reports {
