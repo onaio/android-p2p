@@ -237,6 +237,138 @@ class BottomSheetScreenTest {
       .performClick()
   }
 
+  @Test
+  @OptIn(ExperimentalMaterialApi::class)
+  fun senderDeviceBottomSheetScreenRendersCorrectlyForDataUpToDateStatus() {
+    composeRule.setContent {
+      BottomSheet(
+        deviceList = emptyList(),
+        onEvent = {},
+        modalBottomSheetState = ModalBottomSheetState(ModalBottomSheetValue.HalfExpanded),
+        p2PUiState = P2PUiState(),
+        deviceName = "John",
+        deviceRole = DeviceRole.SENDER,
+        p2PState = P2PState.DATA_UP_TO_DATE
+      )
+    }
+
+    composeRule.onNodeWithText("OKay").assertExists().assertIsDisplayed()
+    composeRule.onNodeWithText("Receiver up-to date").assertExists().assertIsDisplayed()
+    composeRule
+      .onNodeWithText("No new records to transfer, receiver data up-to date")
+      .assertExists()
+      .assertIsDisplayed()
+    composeRule
+      .onNodeWithTag(BOTTOM_SHEET_BUTTON_TEST_TAG)
+      .assertExists()
+      .assertIsDisplayed()
+      .performClick()
+    composeRule
+      .onNodeWithTag(BOTTOM_SHEET_CANCEL_ICON_TEST_TAG)
+      .assertExists()
+      .assertIsDisplayed()
+      .performClick()
+  }
+
+  @Test
+  @OptIn(ExperimentalMaterialApi::class)
+  fun senderDeviceBottomSheetScreenRendersCorrectlyForDeviceDisconnectedStatus() {
+    composeRule.setContent {
+      BottomSheet(
+        deviceList = emptyList(),
+        onEvent = {},
+        modalBottomSheetState = ModalBottomSheetState(ModalBottomSheetValue.HalfExpanded),
+        p2PUiState = P2PUiState(),
+        deviceName = "John",
+        deviceRole = DeviceRole.SENDER,
+        p2PState = P2PState.DEVICE_DISCONNECTED
+      )
+    }
+
+    composeRule.onNodeWithText("OKay").assertExists().assertIsDisplayed()
+    composeRule.onNodeWithText("Device disconnected").assertExists().assertIsDisplayed()
+    composeRule
+      .onNodeWithText("Devices disconnected without completing the data transfer")
+      .assertExists()
+      .assertIsDisplayed()
+    composeRule
+      .onNodeWithTag(BOTTOM_SHEET_BUTTON_TEST_TAG)
+      .assertExists()
+      .assertIsDisplayed()
+      .performClick()
+    composeRule
+      .onNodeWithTag(BOTTOM_SHEET_CANCEL_ICON_TEST_TAG)
+      .assertExists()
+      .assertIsDisplayed()
+      .performClick()
+  }
+
+  @Test
+  @OptIn(ExperimentalMaterialApi::class)
+  fun receiverDeviceBottomSheetScreenRendersCorrectlyForDataUpToDateStatus() {
+    composeRule.setContent {
+      BottomSheet(
+        deviceList = emptyList(),
+        onEvent = {},
+        modalBottomSheetState = ModalBottomSheetState(ModalBottomSheetValue.HalfExpanded),
+        p2PUiState = P2PUiState(),
+        deviceName = "John",
+        deviceRole = DeviceRole.RECEIVER,
+        p2PState = P2PState.DATA_UP_TO_DATE
+      )
+    }
+
+    composeRule.onNodeWithText("OKay").assertExists().assertIsDisplayed()
+    composeRule.onNodeWithText("Your data is up-to date").assertExists().assertIsDisplayed()
+    composeRule
+      .onNodeWithText("No new records to sync with your device")
+      .assertExists()
+      .assertIsDisplayed()
+    composeRule
+      .onNodeWithTag(BOTTOM_SHEET_BUTTON_TEST_TAG)
+      .assertExists()
+      .assertIsDisplayed()
+      .performClick()
+    composeRule
+      .onNodeWithTag(BOTTOM_SHEET_CANCEL_ICON_TEST_TAG)
+      .assertExists()
+      .assertIsDisplayed()
+      .performClick()
+  }
+
+  @Test
+  @OptIn(ExperimentalMaterialApi::class)
+  fun receiverDeviceBottomSheetScreenRendersCorrectlyForDeviceDisconnectedStatus() {
+    composeRule.setContent {
+      BottomSheet(
+        deviceList = emptyList(),
+        onEvent = {},
+        modalBottomSheetState = ModalBottomSheetState(ModalBottomSheetValue.HalfExpanded),
+        p2PUiState = P2PUiState(),
+        deviceName = "John",
+        deviceRole = DeviceRole.RECEIVER,
+        p2PState = P2PState.DEVICE_DISCONNECTED
+      )
+    }
+
+    composeRule.onNodeWithText("OKay").assertExists().assertIsDisplayed()
+    composeRule.onNodeWithText("Device disconnected").assertExists().assertIsDisplayed()
+    composeRule
+      .onNodeWithText("Devices disconnected without completing the data transfer")
+      .assertExists()
+      .assertIsDisplayed()
+    composeRule
+      .onNodeWithTag(BOTTOM_SHEET_BUTTON_TEST_TAG)
+      .assertExists()
+      .assertIsDisplayed()
+      .performClick()
+    composeRule
+      .onNodeWithTag(BOTTOM_SHEET_CANCEL_ICON_TEST_TAG)
+      .assertExists()
+      .assertIsDisplayed()
+      .performClick()
+  }
+
   private fun populateDeviceInfo(): DeviceInfo {
     val wifiP2pDevice =
       WifiP2pDevice().apply {
