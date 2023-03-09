@@ -133,7 +133,6 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
         }
       )
     }
-    Timber.e("Inside listenForWifiP2pEventsIntents")
   }
 
   private fun initiatePeerDiscoveryOnceAccessFineLocationGranted() {
@@ -194,7 +193,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
         }
       }
     )
-    Timber.d("Peer discovery initiated")
+    logDebug("Peer discovery initiated")
   }
 
   private fun requestDeviceInfo(
@@ -230,7 +229,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
               }
             )
           } else {
-            Timber.e("Wifi-Direct not connected")
+            logDebug("Wifi-Direct not connected")
             initChannelAndPeerDiscovery(onDeviceFound = onDeviceFound, onConnected = onConnected)
           }
         }
@@ -241,9 +240,9 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
               wifiP2pChannel,
               object : WifiP2pManager.ActionListener {
                 override fun onSuccess() {
-                  Timber.e("Successfully disconnected from Wifi-Direct")
+                  logDebug("Successfully disconnected from Wifi-Direct")
                   wifiP2pManager.requestConnectionInfo(wifiP2pChannel) {
-                    Timber.e(
+                    logDebug(
                       "groupformed : ${it.groupFormed} groupOwnerAddress : ${it.groupOwnerAddress}, isGroupOwner : ${it.isGroupOwner}"
                     )
                     initChannelAndPeerDiscovery(
@@ -262,7 +261,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
               }
             )
           } else {
-            Timber.e("Wifi-Direct not connected")
+            logDebug("Wifi-Direct not connected")
             initChannelAndPeerDiscovery(onDeviceFound = onDeviceFound, onConnected = onConnected)
           }
         }
@@ -285,10 +284,10 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   ) {
     val wifiDirectDevice = device.strategySpecificDevice as WifiP2pDevice
 
-    Timber.d("Wifi P2P: Initiating connection to device: ${wifiDirectDevice.deviceName}")
+    logDebug("Wifi P2P: Initiating connection to device: ${wifiDirectDevice.deviceName}")
     val wifiP2pConfig = WifiP2pConfig().apply { deviceAddress = wifiDirectDevice.deviceAddress }
     pairingInitiated = true
-    Timber.e("connect() with pairing inititiated $pairingInitiated")
+    logDebug("connect() with pairing inititiated $pairingInitiated")
     wifiP2pChannel?.also { wifiP2pChannel ->
       if (ActivityCompat.checkSelfPermission(
           context,
@@ -307,7 +306,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
         currentDevice = wifiDirectDevice
         paired = true
         pairingInitiated = false
-        Timber.e("connect() successfully paired with pairing inititiated $pairingInitiated")
+        logDebug("connect() successfully paired with pairing inititiated $pairingInitiated")
 
         onConnectionSucceeded(device)
       }
@@ -363,7 +362,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
           override fun onFailure(reason: Int) {
             val exception = Exception("Error #$reason: ${getWifiP2pReason(reason)}")
-            Timber.e("Failed to connect to the other device")
+            logDebug("Failed to connect to the other device")
             Timber.e(exception)
 
             failedPairingListener(exception)
@@ -404,14 +403,14 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       wifiP2pChannel,
       object : WifiP2pManager.ActionListener {
         override fun onSuccess() {
-          Timber.e("disconnect succesfull")
+          logDebug("disconnect succesfull")
           paired = false
           onDisconnectSucceeded(device)
           operationListener.onSuccess(device)
         }
 
         override fun onFailure(reason: Int) {
-          Timber.e("disconnect failed")
+          logDebug("disconnect failed")
           val exception = Exception("Error #$reason: ${getWifiP2pReason(reason)}")
           onDisconnectFailed(device, exception)
           operationListener.onFailure(device, exception)
@@ -547,7 +546,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     if (socket != null) {
       socketResult = socket
     } else if (wifiP2pInfo == null) {
-      Timber.e("makeSocketConnections wifip2pInfo is null and socket is being set to null")
+      logDebug("makeSocketConnections wifip2pInfo is null and socket is being set to null")
       // Request connections
       requestConnectionInfo()
 
@@ -555,11 +554,11 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
       socket = socketResult
     } else if (wifiP2pInfo?.isGroupOwner == true) {
       // Start a server to accept connections.
-      Timber.e("Accepting connections")
+      logDebug("Accepting connections")
       socketResult = acceptConnectionsToServerSocket()
       socket = socketResult
     } else {
-      Timber.e("Making connection to server")
+      logDebug("Making connection to server")
       // Connect to the server running on the group owner device.
       socketResult = connectToServerSocket(groupOwnerAddress)
       socket = socketResult
@@ -571,14 +570,12 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   private suspend fun acceptConnectionsToServerSocket(): Socket? =
     withContext(dispatcherProvider.io()) {
       try {
-        Timber.e(Exception("server socket about to bind!!"))
         if (serverSocket == null) {
-          Timber.e("Server socket is already initialised")
+          logDebug("Server socket is already initialised")
           serverSocket = ServerSocket(PORT)
         }
 
         serverSocket!!.soTimeout = connectionTimeout() * 1000
-        Timber.e("Attaching server socket")
         serverSocket!!.accept().apply { constructStreamsFromSocket(this) }
       } catch (e: Exception) {
         Timber.e(e)
