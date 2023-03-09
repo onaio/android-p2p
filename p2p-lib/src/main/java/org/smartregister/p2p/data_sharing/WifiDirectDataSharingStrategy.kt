@@ -865,8 +865,6 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
                 info: WifiP2pInfo,
                 wifiP2pGroup: WifiP2pGroup?
               ) {
-                Timber.e(Gson().toJson(info))
-                Timber.e(Gson().toJson(wifiP2pGroup))
 
                 Timber.e("onConnectionInfoAvailable() WIFIp2p Group is $wifiP2pGroup")
                 Timber.e("onConnectionInfoAvailable() Paired: $paired")

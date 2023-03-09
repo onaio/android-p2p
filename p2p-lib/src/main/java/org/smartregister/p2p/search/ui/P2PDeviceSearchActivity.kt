@@ -374,10 +374,6 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     Timber.d(message)
   }
 
-  fun sendSyncParams() {
-    // Respond with the acceptable data types each with its lastUpdated timestamp and batch size
-  }
-
   override fun getCurrentConnectedDevice(): DeviceInfo? {
     return dataSharingStrategy.getCurrentDevice()
   }
