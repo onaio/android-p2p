@@ -81,8 +81,8 @@
     <string name="preparing_to_send_data_to">Preparing to send data to %1$s</string>
     <string name="waiting_for_sender_to_initiate_sync">Waiting for sender to initiate data sync</string>
     <string name="turn_on_wifi">Please turn on Wifi connection for P2P to work</string>
-    <string name="searching_failed">Searching failed</string>
-    <string name="searching_failed_msg">Sorry could not find devices to pair with</string>
+    <string name="searching_failed_dialog_title">Searching failed</string>
+    <string name="searching_failed_dialog_msg">Sorry could not find devices to pair with</string>
     <string name="pairing_failed">Pairing failed</string>
     <string name="pairing_failed_msg">Sorry could not pair with device</string>
     <string name="receive_device_details_failed">Receiving device details failed</string>

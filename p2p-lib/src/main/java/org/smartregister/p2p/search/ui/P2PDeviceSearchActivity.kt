@@ -438,9 +438,8 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
   }
 
   override fun onStop() {
-    super.onStop()
-
     dataSharingStrategy.onStop()
+    super.onStop()
   }
 
   override fun onDestroy() {

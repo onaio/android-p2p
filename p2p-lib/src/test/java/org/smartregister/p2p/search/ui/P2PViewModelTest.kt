@@ -320,13 +320,14 @@ class P2PViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun `closeP2PScreen() calls view#finish() when dataSharingStrategy#getCurrentDevice() is null`() {
+  fun `closeP2PScreen() calls postUIAction(UIAction#FINISH) when dataSharingStrategy#getCurrentDevice() is null`() {
     every { dataSharingStrategy.getCurrentDevice() } returns null
     p2PViewModel.closeP2PScreen()
+    verify { p2PViewModel.postUIAction(UIAction.FINISH) }
   }
 
   @Test
-  fun `closeP2PScreen() calls view#finish() dataSharingStrategy#disconnect() is successful`() {
+  fun `closeP2PScreen() calls view#finish() when dataSharingStrategy#disconnect() is successful`() {
     every { dataSharingStrategy.disconnect(any(), any()) } just runs
     every { dataSharingStrategy.getCurrentDevice() } returns deviceInfo
     p2PViewModel.closeP2PScreen()
@@ -338,7 +339,7 @@ class P2PViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun `closeP2PScreen() calls view#finish() dataSharingStrategy#disconnect() fails`() {
+  fun `closeP2PScreen() calls view#finish() when dataSharingStrategy#disconnect() fails`() {
     every { dataSharingStrategy.disconnect(any(), any()) } just runs
     every { dataSharingStrategy.getCurrentDevice() } returns deviceInfo
     p2PViewModel.closeP2PScreen()

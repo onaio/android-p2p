@@ -131,8 +131,8 @@ fun BottomSheet(
 
         when (p2PState) {
           P2PState.PAIR_DEVICES_SEARCH_FAILED -> {
-            progressStatusTitle = stringResource(id = R.string.searching_failed)
-            progressStatusMsg = stringResource(id = R.string.searching_failed_msg)
+            progressStatusTitle = stringResource(id = R.string.searching_failed_dialog_title)
+            progressStatusMsg = stringResource(id = R.string.searching_failed_dialog_msg)
           }
           P2PState.CONNECT_TO_DEVICE_FAILED -> {
             progressStatusTitle = stringResource(id = R.string.pairing_failed)
@@ -336,7 +336,7 @@ fun BottomSheet(
           P2PState.SEARCHING_FOR_RECIPIENT,
           P2PState.PAIR_DEVICES_FOUND -> DisplayDeviceList(deviceList, onEvent = onEvent, p2PState)
           else -> {
-            Timber.e("Device list Else p2p state. State is ${p2PState.name}")
+            Timber.d("Device list Else p2p state. State is ${p2PState.name}")
           }
         }
       }

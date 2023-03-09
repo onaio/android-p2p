@@ -135,7 +135,6 @@ class P2PReceiverViewModel(
           // Listen for incoming manifest
           val receivedManifest =
             dataSharingStrategy.receiveManifest(
-              // TODO: Fix this is null for some weird issue causing an NPE
               device = dataSharingStrategy.getCurrentDevice()!!,
               object : DataSharingStrategy.OperationListener {
                 override fun onSuccess(device: DeviceInfo?) {
@@ -212,9 +211,7 @@ class P2PReceiverViewModel(
   }
 
   fun processIncomingManifest() {
-    Timber.e("processIncomingManifest() started")
     val incomingManifest = listenForIncomingManifest()
-    Timber.e("processIncomingManifest() completed")
 
     // Handle successfully received manifest
     if (incomingManifest != null) {
