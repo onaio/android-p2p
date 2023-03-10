@@ -729,12 +729,10 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   }
 
   override fun onErrorOccurred(ex: Exception) {
-    // TODO: Show random error occurred
     closeSocketAndStreams()
   }
 
   override fun onConnectionFailed(device: DeviceInfo, ex: Exception) {
-    // TODO: Return this to the device
     closeSocketAndStreams()
   }
 
@@ -743,13 +741,10 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   }
 
   override fun onDisconnectFailed(device: DeviceInfo, ex: Exception) {
-    // TODO: Return this to the device
     closeSocketAndStreams()
   }
 
   override fun onDisconnectSucceeded(device: DeviceInfo) {
-    // TODO: Return this to the device
-
     closeSocketAndStreams()
   }
 
