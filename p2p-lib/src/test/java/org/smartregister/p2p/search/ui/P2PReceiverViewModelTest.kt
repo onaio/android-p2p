@@ -46,6 +46,7 @@ import org.smartregister.p2p.data_sharing.Manifest
 import org.smartregister.p2p.data_sharing.SyncReceiverHandler
 import org.smartregister.p2p.data_sharing.WifiDirectDataSharingStrategy
 import org.smartregister.p2p.model.P2PReceivedHistory
+import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.model.TransferProgress
 import org.smartregister.p2p.payload.BytePayload
 import org.smartregister.p2p.payload.PayloadContract
@@ -62,7 +63,6 @@ class P2PReceiverViewModelTest : RobolectricTest() {
 
   private val entity = "Group"
   private val lastUpdatedAt = 12345L
-  private lateinit var view: P2PDeviceSearchActivity
   private lateinit var dataSharingStrategy: DataSharingStrategy
   private lateinit var p2PReceiverViewModel: P2PReceiverViewModel
   private lateinit var syncReceiverHandler: SyncReceiverHandler
@@ -74,7 +74,6 @@ class P2PReceiverViewModelTest : RobolectricTest() {
   @Before
   fun setUp() {
     clearAllMocks()
-    view = mockk()
     dataSharingStrategy = mockk(relaxed = false)
     syncReceiverHandler = mockk()
     val p2pLibraryOptions =
@@ -91,9 +90,7 @@ class P2PReceiverViewModelTest : RobolectricTest() {
     expectedDeviceInfo = populateDeviceInfo()
     every { dataSharingStrategy.getCurrentDevice() } answers { expectedDeviceInfo }
     p2PReceiverViewModel =
-      spyk(
-        P2PReceiverViewModel(view, dataSharingStrategy, coroutinesTestRule.testDispatcherProvider)
-      )
+      spyk(P2PReceiverViewModel(dataSharingStrategy, coroutinesTestRule.testDispatcherProvider))
     ReflectionHelpers.setField(p2PReceiverViewModel, "syncReceiverHandler", syncReceiverHandler)
   }
 
@@ -121,7 +118,9 @@ class P2PReceiverViewModelTest : RobolectricTest() {
     expectedManifest = Manifest(dataType = dataType, recordsSize = 25, payloadSize = 50)
     every { p2PReceiverViewModel.listenForIncomingManifest() } answers { expectedManifest }
     p2PReceiverViewModel.processIncomingManifest()
-    verify(exactly = 1) { p2PReceiverViewModel.handleDataTransferCompleteManifest() }
+    verify(exactly = 1) {
+      p2PReceiverViewModel.handleDataTransferCompleteManifest(P2PState.TRANSFER_COMPLETE)
+    }
   }
 
   @Test
@@ -141,17 +140,19 @@ class P2PReceiverViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun `handleDataTransferCompleteManifest() calls showTransferCompleteDialog()`() {
-
-    p2PReceiverViewModel.handleDataTransferCompleteManifest()
-
-    coVerify(exactly = 1) { view.showTransferCompleteDialog() }
+  fun `handleDataTransferCompleteManifest() calls postUIAction() with UIAction#SHOW_TRANSFER_COMPLETE_DIALOG and P2PState#TRANSFER_COMPLETE params`() {
+    p2PReceiverViewModel.handleDataTransferCompleteManifest(P2PState.TRANSFER_COMPLETE)
+    verify {
+      p2PReceiverViewModel.postUIAction(
+        UIAction.SHOW_TRANSFER_COMPLETE_DIALOG,
+        P2PState.TRANSFER_COMPLETE
+      )
+    }
   }
 
   @Test
   fun `handleDataTransferCompleteManifest() calls dataSharingStrategy#disconnect`() {
-    coEvery { view.showTransferCompleteDialog() } answers { null }
-    p2PReceiverViewModel.handleDataTransferCompleteManifest()
+    p2PReceiverViewModel.handleDataTransferCompleteManifest(P2PState.TRANSFER_COMPLETE)
     verify(exactly = 1) { dataSharingStrategy.disconnect(device = expectedDeviceInfo, any()) }
   }
 
@@ -312,7 +313,6 @@ class P2PReceiverViewModelTest : RobolectricTest() {
 
     Assert.assertNotNull(
       P2PReceiverViewModel.Factory(
-          mockk(),
           wifiDirectDataSharingStrategy,
           coroutinesTestRule.testDispatcherProvider
         )
@@ -320,7 +320,6 @@ class P2PReceiverViewModelTest : RobolectricTest() {
     )
     Assert.assertTrue(
       P2PReceiverViewModel.Factory(
-          mockk(),
           wifiDirectDataSharingStrategy,
           coroutinesTestRule.testDispatcherProvider
         )
@@ -340,7 +339,7 @@ class P2PReceiverViewModelTest : RobolectricTest() {
     p2PReceiverViewModel.updateTransferProgress(totalReceivedRecords = 10, totalRecords = 40)
 
     val transferProgressSlot = slot<TransferProgress>()
-    coVerify { view.updateTransferProgress(capture(transferProgressSlot)) }
+    verify { p2PReceiverViewModel.postUIAction(any(), capture(transferProgressSlot)) }
 
     Assert.assertEquals(
       expectedTransferProgress.transferredRecordCount,

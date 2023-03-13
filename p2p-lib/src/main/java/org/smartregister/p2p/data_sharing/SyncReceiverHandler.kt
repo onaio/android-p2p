@@ -20,6 +20,7 @@ import org.json.JSONArray
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.dao.P2pReceivedHistoryDao
 import org.smartregister.p2p.model.P2PReceivedHistory
+import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.search.ui.P2PReceiverViewModel
 import org.smartregister.p2p.utils.Constants
 import org.smartregister.p2p.utils.DispatcherProvider
@@ -33,16 +34,23 @@ constructor(
 
   private lateinit var currentManifest: Manifest
   private var totalRecordCount: Long = 0
-  private var totalSentRecordCount: Long = 0
+  private var totalReceivedRecordCount: Long = 0
 
   fun processManifest(manifest: Manifest) {
     currentManifest = manifest
     totalRecordCount =
       if (manifest.totalRecordCount > 0) manifest.totalRecordCount else totalRecordCount
-    if (manifest.dataType.name == Constants.SYNC_COMPLETE) {
-      p2PReceiverViewModel.handleDataTransferCompleteManifest()
-    } else {
-      p2PReceiverViewModel.processChunkData()
+
+    when (manifest.dataType.name) {
+      Constants.SYNC_COMPLETE -> {
+        p2PReceiverViewModel.handleDataTransferCompleteManifest(P2PState.TRANSFER_COMPLETE)
+      }
+      Constants.DATA_UP_TO_DATE -> {
+        p2PReceiverViewModel.handleDataTransferCompleteManifest(P2PState.DATA_UP_TO_DATE)
+      }
+      else -> {
+        p2PReceiverViewModel.processChunkData()
+      }
     }
   }
 
@@ -52,9 +60,15 @@ constructor(
     var lastUpdatedAt =
       P2PLibrary.getInstance().getReceiverTransferDao().receiveJson(currentManifest.dataType, data)
 
-    totalSentRecordCount += data!!.length()
+    totalReceivedRecordCount += data!!.length()
+    Timber.e(
+      "Progress update: Updating received data ${currentManifest.dataType.name} x ${currentManifest.recordsSize} | UPTO $lastUpdatedAt"
+    )
+    Timber.e(
+      "Progress update: Record count vs JSONArray size | ${currentManifest.recordsSize} - ${data.length()}"
+    )
     p2PReceiverViewModel.updateTransferProgress(
-      totalReceivedRecords = totalSentRecordCount,
+      totalReceivedRecords = totalReceivedRecordCount,
       totalRecords = totalRecordCount
     )
 

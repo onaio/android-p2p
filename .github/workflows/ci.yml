@@ -55,3 +55,12 @@ jobs:
           script: ./gradlew p2p-lib:clean p2p-lib:jacocoTestReport p2p-lib:coveralls --stacktrace
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
+      - name: Upload Jacoco artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-artifacts
+          path: |
+            p2p-lib/build/reports/
+            p2p-lib/build/outputs/unit_test_code_coverage/
+            p2p-lib/build/outputs/code_coverage/
+            p2p-lib/build/outputs/androidTest-results/

@@ -81,4 +81,18 @@
     <string name="preparing_to_send_data_to">Preparing to send data to %1$s</string>
     <string name="waiting_for_sender_to_initiate_sync">Waiting for sender to initiate data sync</string>
     <string name="turn_on_wifi">Please turn on Wifi connection for P2P to work</string>
+    <string name="searching_failed_dialog_title">Searching failed</string>
+    <string name="searching_failed_dialog_msg">Sorry could not find devices to pair with</string>
+    <string name="pairing_failed">Pairing failed</string>
+    <string name="pairing_failed_msg">Sorry could not pair with device</string>
+    <string name="receive_device_details_failed">Receiving device details failed</string>
+    <string name="receive_device_details_failed_msg">Sorry could not receive device details</string>
+    <string name="receiver_data_upto_date">Your data is up-to date</string>
+    <string name="receiver_data_upto_date_msg">No new records to sync with your device</string>
+    <string name="sender_data_upto_date">Receiver up-to date</string>
+    <string name="sender_data_upto_date_msg">No new records to transfer, receiver data up-to date</string>
+    <string name="device_disconnected">Device disconnected</string>
+    <string name="device_disconnected_msg">Devices disconnected without completing the data transfer</string>
+    <string name="an_error_occurred_restarting_the_p2p_screen">An error occurred! Restarting P2P screen</string>
+    <string name="connection_was_disconnected">Connection was disconnected</string>
 </resources>

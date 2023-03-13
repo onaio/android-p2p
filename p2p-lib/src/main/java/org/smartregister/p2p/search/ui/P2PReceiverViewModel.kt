@@ -19,16 +19,19 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
+import java.net.SocketException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.smartregister.p2p.P2PLibrary
+import org.smartregister.p2p.R
 import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.data_sharing.DataSharingStrategy
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
 import org.smartregister.p2p.data_sharing.SyncReceiverHandler
 import org.smartregister.p2p.model.P2PReceivedHistory
+import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.model.TransferProgress
 import org.smartregister.p2p.payload.BytePayload
 import org.smartregister.p2p.payload.PayloadContract
@@ -41,10 +44,9 @@ import org.smartregister.p2p.utils.divideToPercent
 import timber.log.Timber
 
 class P2PReceiverViewModel(
-  private val view: P2PDeviceSearchActivity,
   private val dataSharingStrategy: DataSharingStrategy,
   private val dispatcherProvider: DispatcherProvider
-) : ViewModel(), P2pModeSelectContract.ReceiverViewModel {
+) : BaseViewModel(dataSharingStrategy), P2pModeSelectContract.ReceiverViewModel {
 
   private lateinit var syncReceiverHandler: SyncReceiverHandler
   private var sendingDeviceAppLifetimeKey: String = ""
@@ -52,41 +54,46 @@ class P2PReceiverViewModel(
   fun processSenderDeviceDetails() {
 
     dataSharingStrategy.receive(
-      dataSharingStrategy.getCurrentDevice(),
-      object : DataSharingStrategy.PayloadReceiptListener {
-        override fun onPayloadReceived(payload: PayloadContract<out Any>?) {
+      device = dataSharingStrategy.getCurrentDevice(),
+      payloadReceiptListener =
+        object : DataSharingStrategy.PayloadReceiptListener {
+          override fun onPayloadReceived(payload: PayloadContract<out Any>?) {
 
-          var map: MutableMap<String, String?> = HashMap()
-          val deviceDetails = Gson().fromJson((payload as StringPayload).string, map.javaClass)
+            var map: MutableMap<String, String?> = HashMap()
+            val deviceDetails = Gson().fromJson((payload as StringPayload).string, map.javaClass)
 
-          if (deviceDetails != null &&
-              deviceDetails.containsKey(Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY)
-          ) {
-            checkIfDeviceKeyHasChanged(
-              deviceDetails[Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY]!!
-            )
-
-            viewModelScope.launch {
-              withContext(dispatcherProvider.main()) {
-                // TODO update to use compose
-                // view.showTransferProgressDialog()
-              }
+            if (deviceDetails != null &&
+                deviceDetails.containsKey(Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY)
+            ) {
+              checkIfDeviceKeyHasChanged(
+                deviceDetails[Constants.BasicDeviceDetails.KEY_APP_LIFETIME_KEY]!!
+              )
+            } else {
+              // Show error msg
+              updateP2PState(P2PState.RECEIVE_BASIC_DEVICE_DETAILS_FAILED)
+              Timber.e(Exception("An error occurred and the APP-LIFETIME-KEY was not sent"))
             }
-          } else {
-            Timber.e("An error occurred and the APP-LIFETIME-KEY was not sent")
+          }
+        },
+      operationListener =
+        object : DataSharingStrategy.OperationListener {
+          override fun onSuccess(device: DeviceInfo?) {}
+
+          override fun onFailure(device: DeviceInfo?, ex: Exception) {
+            Timber.e(ex, "An exception occured when trying to create the socket")
+
+            if (ex is SocketException) {
+              handleSocketException()
+            } else {
+              disconnect()
+            }
           }
         }
-      },
-      object : DataSharingStrategy.OperationListener {
-        override fun onSuccess(device: DeviceInfo?) {}
-
-        override fun onFailure(device: DeviceInfo?, ex: Exception) {}
-      }
     )
   }
 
   fun checkIfDeviceKeyHasChanged(appLifetimeKey: String) {
-    Timber.e("In check if device key has changed with app lifetime key $appLifetimeKey")
+    Timber.d("In check if device key has changed with app lifetime key $appLifetimeKey")
     viewModelScope.launch(dispatcherProvider.io()) {
       val receivedHistory = getReceivedHistory(appLifetimeKey = appLifetimeKey)
 
@@ -136,6 +143,12 @@ class P2PReceiverViewModel(
 
                 override fun onFailure(device: DeviceInfo?, ex: Exception) {
                   Timber.e(ex, "Failed to receive manifest")
+
+                  if (ex is SocketException) {
+                    handleSocketException()
+                  } else {
+                    disconnect()
+                  }
                 }
               }
             )
@@ -144,13 +157,19 @@ class P2PReceiverViewModel(
           if (receivedManifest != null) {
             Timber.i("Manifest with data successfully received")
             // notify UI data transfer is starting
-            view.notifyDataTransferStarting(DeviceRole.RECEIVER)
+            postUIAction(UIAction.NOTIFY_DATA_TRANSFER_STARTING, DeviceRole.RECEIVER)
             syncReceiverHandler.processManifest(receivedManifest)
           }
         }
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
           Timber.e(ex, "Failed to send the last received records")
+
+          if (ex is SocketException) {
+            handleSocketException()
+          } else {
+            disconnect()
+          }
         }
       }
     )
@@ -179,6 +198,13 @@ class P2PReceiverViewModel(
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
           Timber.e(ex, "Failed to receive chunk data")
+
+          // Reset and restart the page
+          if (ex is SocketException) {
+            handleSocketException()
+          } else {
+            disconnect()
+          }
         }
       }
     )
@@ -188,22 +214,29 @@ class P2PReceiverViewModel(
     val incomingManifest = listenForIncomingManifest()
 
     // Handle successfully received manifest
-    if (incomingManifest != null && incomingManifest.dataType.name == Constants.SYNC_COMPLETE) {
-      handleDataTransferCompleteManifest()
+    if (incomingManifest != null) {
+      if (incomingManifest.dataType.name == Constants.SYNC_COMPLETE) {
+        handleDataTransferCompleteManifest(P2PState.TRANSFER_COMPLETE)
+      } else {
+        syncReceiverHandler.processManifest(incomingManifest!!)
+      }
     } else {
-      syncReceiverHandler.processManifest(incomingManifest!!)
+      showToast(R.string.an_error_occurred_restarting_the_p2p_screen)
+      restartActivity()
     }
   }
 
-  fun handleDataTransferCompleteManifest() {
+  fun handleDataTransferCompleteManifest(p2PState: P2PState) {
     Timber.e("Data transfer complete")
     viewModelScope.launch {
-      withContext(dispatcherProvider.main()) { view.showTransferCompleteDialog() }
+      withContext(dispatcherProvider.main()) {
+        postUIAction(UIAction.SHOW_TRANSFER_COMPLETE_DIALOG, p2PState)
+      }
       dataSharingStrategy.disconnect(
         dataSharingStrategy.getCurrentDevice()!!,
         object : DataSharingStrategy.OperationListener {
           override fun onSuccess(device: DeviceInfo?) {
-            Timber.i("Diconnection successful")
+            Timber.i("Disconnection successful")
           }
 
           override fun onFailure(device: DeviceInfo?, ex: Exception) {
@@ -226,6 +259,12 @@ class P2PReceiverViewModel(
 
           override fun onFailure(device: DeviceInfo?, ex: Exception) {
             Timber.e(ex, "Failed to receive manifest")
+
+            if (ex is SocketException) {
+              handleSocketException()
+            } else {
+              disconnect()
+            }
           }
         }
       )
@@ -240,7 +279,8 @@ class P2PReceiverViewModel(
     var percentageReceived = totalReceivedRecords.divideToPercent(totalRecords)
     viewModelScope.launch {
       withContext(dispatcherProvider.main()) {
-        view.updateTransferProgress(
+        postUIAction(
+          UIAction.UPDATE_TRANSFER_PROGRESS,
           TransferProgress(
             totalRecordCount = totalRecords,
             transferredRecordCount = totalReceivedRecords,
@@ -251,13 +291,18 @@ class P2PReceiverViewModel(
     }
   }
 
+  fun showCancelTransferDialog() {
+    viewModelScope.launch(dispatcherProvider.main()) {
+      postUIAction(UIAction.SHOW_CANCEL_TRANSFER_DIALOG)
+    }
+  }
+
   class Factory(
-    private val context: P2PDeviceSearchActivity,
     private val dataSharingStrategy: DataSharingStrategy,
     private val dispatcherProvider: DispatcherProvider
   ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-      return P2PReceiverViewModel(context, dataSharingStrategy, dispatcherProvider).apply {
+      return P2PReceiverViewModel(dataSharingStrategy, dispatcherProvider).apply {
         dataSharingStrategy.setCoroutineScope(viewModelScope)
       } as
         T

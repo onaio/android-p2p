@@ -21,6 +21,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import java.net.SocketException
 import java.util.TreeSet
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -43,10 +44,9 @@ import org.smartregister.p2p.utils.divideToPercent
 import timber.log.Timber
 
 class P2PSenderViewModel(
-  private val view: P2pModeSelectContract.View,
   private val dataSharingStrategy: DataSharingStrategy,
   private val dispatcherProvider: DispatcherProvider
-) : ViewModel(), P2pModeSelectContract.SenderViewModel {
+) : BaseViewModel(dataSharingStrategy), P2pModeSelectContract.SenderViewModel {
 
   private var connectionLevel: Constants.ConnectionLevel? = null
 
@@ -79,7 +79,6 @@ class P2PSenderViewModel(
 
               override fun onPayloadReceived(payload: PayloadContract<out Any>?) {
                 // WE are receiving the history
-
                 Timber.i("I have received last history : ${(payload as StringPayload).string}")
 
                 processReceivedHistory(payload)
@@ -88,12 +87,27 @@ class P2PSenderViewModel(
             object : DataSharingStrategy.OperationListener {
               override fun onSuccess(device: DeviceInfo?) {}
 
-              override fun onFailure(device: DeviceInfo?, ex: Exception) {}
+              override fun onFailure(device: DeviceInfo?, ex: Exception) {
+                Timber.e("An error occured trying to receive last history", ex)
+                if (ex is SocketException) {
+                  handleSocketException()
+                } else {
+                  disconnect()
+                }
+              }
             }
           )
         }
 
-        override fun onFailure(device: DeviceInfo?, ex: Exception) {}
+        override fun onFailure(device: DeviceInfo?, ex: Exception) {
+          Timber.e(ex, "An error occurred trying to setup the socket")
+
+          if (ex is SocketException) {
+            handleSocketException()
+          } else {
+            disconnect()
+          }
+        }
       }
     )
   }
@@ -118,6 +132,12 @@ class P2PSenderViewModel(
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
           Timber.e(ex)
+
+          if (ex is SocketException) {
+            handleSocketException()
+          } else {
+            disconnect()
+          }
         }
       }
     )
@@ -126,7 +146,9 @@ class P2PSenderViewModel(
   override fun sendSyncComplete() {
     Timber.i("P2P sync complete")
     viewModelScope.launch {
-      withContext(dispatcherProvider.main()) { view.showTransferCompleteDialog() }
+      withContext(dispatcherProvider.main()) {
+        postUIAction(UIAction.SHOW_TRANSFER_COMPLETE_DIALOG)
+      }
       dataSharingStrategy.disconnect(
         getCurrentConnectedDevice()!!,
         object : DataSharingStrategy.OperationListener {
@@ -150,13 +172,19 @@ class P2PSenderViewModel(
       syncPayload = awaitingPayload,
       object : DataSharingStrategy.OperationListener {
         override fun onSuccess(device: DeviceInfo?) {
-          Timber.i("Chunk data sent successfully")
+          Timber.i("Progress update: Chunk data sent successfully")
           syncSenderHandler.updateTotalSentRecordCount()
           viewModelScope.launch(dispatcherProvider.io()) { syncSenderHandler.sendNextManifest() }
         }
 
         override fun onFailure(device: DeviceInfo?, ex: Exception) {
-          Timber.i("Failed to send chunk data")
+          Timber.e("Failed to send chunk data", ex)
+
+          if (ex is SocketException) {
+            handleSocketException()
+          } else {
+            disconnect()
+          }
         }
       }
     )
@@ -178,6 +206,12 @@ class P2PSenderViewModel(
 
           override fun onFailure(device: DeviceInfo?, ex: Exception) {
             Timber.e(ex, "manifest failed to send")
+
+            if (ex is SocketException) {
+              handleSocketException()
+            } else {
+              disconnect()
+            }
           }
         }
       )
@@ -185,7 +219,7 @@ class P2PSenderViewModel(
   }
 
   override fun getCurrentConnectedDevice(): DeviceInfo? {
-    return view.getCurrentConnectedDevice()
+    return dataSharingStrategy.getCurrentDevice()
   }
 
   override fun processReceivedHistory(syncPayload: StringPayload) {
@@ -196,7 +230,7 @@ class P2PSenderViewModel(
     val receivedHistory: List<P2PReceivedHistory> =
       Gson().fromJson(syncPayload.string, receivedHistoryListType)
 
-    var dataTypes = P2PLibrary.getInstance().getSenderTransferDao().getP2PDataTypes()
+    val dataTypes = P2PLibrary.getInstance().getSenderTransferDao().getP2PDataTypes()
     syncSenderHandler = createSyncSenderHandler(dataTypes, receivedHistory)
 
     if (!dataTypes.isEmpty()) {
@@ -204,7 +238,7 @@ class P2PSenderViewModel(
       viewModelScope.launch(dispatcherProvider.io()) { syncSenderHandler.startSyncProcess() }
     } else {
       Timber.i("Process received history json data null")
-      sendSyncComplete()
+      disconnect()
     }
   }
 
@@ -222,15 +256,18 @@ class P2PSenderViewModel(
 
   fun updateSenderSyncComplete(senderSyncComplete: Boolean) {
     viewModelScope.launch {
-      withContext(dispatcherProvider.main()) { view.senderSyncComplete(senderSyncComplete) }
+      withContext(dispatcherProvider.main()) {
+        postUIAction(UIAction.SENDER_SYNC_COMPLETE, senderSyncComplete)
+      }
     }
   }
 
   override fun updateTransferProgress(totalSentRecords: Long, totalRecords: Long) {
-    var percentageSent = totalSentRecords.divideToPercent(totalRecords)
+    val percentageSent = totalSentRecords.divideToPercent(totalRecords)
     viewModelScope.launch {
       withContext(dispatcherProvider.main()) {
-        view.updateTransferProgress(
+        postUIAction(
+          UIAction.UPDATE_TRANSFER_PROGRESS,
           TransferProgress(
             totalRecordCount = totalRecords,
             transferredRecordCount = totalSentRecords,
@@ -242,16 +279,15 @@ class P2PSenderViewModel(
   }
 
   fun notifyDataTransferStarting() {
-    view.notifyDataTransferStarting(DeviceRole.SENDER)
+    postUIAction(UIAction.NOTIFY_DATA_TRANSFER_STARTING, DeviceRole.SENDER)
   }
 
   class Factory(
-    private val context: P2pModeSelectContract.View,
     private val dataSharingStrategy: DataSharingStrategy,
     private val dispatcherProvider: DispatcherProvider
   ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-      return P2PSenderViewModel(context, dataSharingStrategy, dispatcherProvider).apply {
+      return P2PSenderViewModel(dataSharingStrategy, dispatcherProvider).apply {
         dataSharingStrategy.setCoroutineScope(viewModelScope)
       } as
         T

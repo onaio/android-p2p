@@ -65,6 +65,8 @@ interface DataSharingStrategy {
 
   fun onPairingFailed(ex: Exception)
 
+  fun onPairingSucceeded()
+
   fun onSendingFailed(ex: Exception)
 
   fun onSearchingFailed(ex: Exception)
@@ -96,5 +98,13 @@ interface DataSharingStrategy {
 
   fun onPause()
 
-  fun initChannel(onDeviceFound: OnDeviceFound, onConnected: DataSharingStrategy.PairingListener)
+  fun initChannel(onDeviceFound: OnDeviceFound, onConnected: PairingListener)
+
+  fun onStop()
+
+  fun cleanup() {}
+
+  fun connectionTimeout(): Int = 30
+
+  fun isPairingInitiated(): Boolean
 }

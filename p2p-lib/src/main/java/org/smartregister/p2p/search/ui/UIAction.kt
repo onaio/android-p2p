@@ -13,16 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartregister.p2p.search.ui.p2p
+package org.smartregister.p2p.search.ui
 
-import org.smartregister.p2p.data_sharing.DeviceInfo
-
-sealed class P2PEvent {
-  object StartScanning : P2PEvent()
-  object CancelDataTransfer : P2PEvent()
-  object ConnectionBreakConfirmed : P2PEvent()
-  object DataTransferCompleteConfirmed : P2PEvent()
-  object BottomSheetClosed : P2PEvent()
-  object DismissConnectionBreakDialog : P2PEvent()
-  data class PairWithDevice(val device: DeviceInfo) : P2PEvent()
+/** Created by Ephraim Kigamba - nek.eam@gmail.com on 02-02-2023. */
+enum class UIAction {
+  SHOW_TRANSFER_COMPLETE_DIALOG,
+  NOTIFY_DATA_TRANSFER_STARTING,
+  SHOW_CANCEL_TRANSFER_DIALOG,
+  SENDER_SYNC_COMPLETE,
+  UPDATE_TRANSFER_PROGRESS,
+  REQUEST_LOCATION_PERMISSIONS_ENABLE_LOCATION,
+  FINISH,
+  KEEP_SCREEN_ON,
+  PROCESS_SENDER_DEVICE_DETAILS,
+  SEND_DEVICE_DETAILS
 }

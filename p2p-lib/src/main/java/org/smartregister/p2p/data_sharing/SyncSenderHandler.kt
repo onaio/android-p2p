@@ -42,17 +42,18 @@ constructor(
 
   private lateinit var awaitingPayload: PayloadContract<out Any>
   private var sendingSyncCompleteManifest = false
+  private var recordsBatchOffset = 0
 
   suspend fun startSyncProcess() {
     Timber.i("Start sync process")
-    generateRecordsToSend()
+    generateLastRecordIds()
     populateTotalRecordCount()
     // notify Ui data transfer is to begin
     p2PSenderViewModel.notifyDataTransferStarting()
-    sendNextManifest()
+    sendNextManifest(isInitialManifest = true)
   }
 
-  fun generateRecordsToSend() {
+  fun generateLastRecordIds() {
     for (dataType in dataSyncOrder) {
       remainingLastRecordIds[dataType.name] = 0L
     }
@@ -72,14 +73,15 @@ constructor(
       P2PLibrary.getInstance().getSenderTransferDao().getTotalRecordCount(remainingLastRecordIds)
   }
 
-  suspend fun sendNextManifest() {
+  suspend fun sendNextManifest(isInitialManifest: Boolean = false) {
     Timber.i("in send next manifest")
     if (!dataSyncOrder.isEmpty()) {
       sendJsonDataManifest(dataSyncOrder.first())
     } else {
+      val name = if (isInitialManifest) Constants.DATA_UP_TO_DATE else Constants.SYNC_COMPLETE
       val manifest =
         Manifest(
-          dataType = DataType(Constants.SYNC_COMPLETE, DataType.Filetype.JSON, 0),
+          dataType = DataType(name, DataType.Filetype.JSON, 0),
           recordsSize = 0,
           payloadSize = 0
         )
@@ -99,19 +101,22 @@ constructor(
       val jsonData =
         P2PLibrary.getInstance()
           .getSenderTransferDao()
-          .getJsonData(dataType, lastRecordId, batchSize)!!
+          .getJsonData(dataType, lastRecordId, batchSize, recordsBatchOffset)
 
       // send actual manifest
-
       if (jsonData != null && (jsonData.getJsonArray()?.length()!! > 0)) {
         Timber.i("Json data is has content")
         val recordsArray = jsonData.getJsonArray()
 
-        remainingLastRecordIds[dataType.name] = jsonData.getHighestRecordId()
+        recordsBatchOffset += batchSize
+        Timber.i("Batch offset $recordsBatchOffset")
         Timber.i("remaining records last updated is ${remainingLastRecordIds[dataType.name]}")
 
         val recordsJsonString = recordsArray.toString()
         awaitingDataTypeRecordsBatchSize = recordsArray!!.length()
+        Timber.i(
+          "Progress update: Sending | ${dataType.name} x $awaitingDataTypeRecordsBatchSize | UPTO ${jsonData.getHighestRecordId()}"
+        )
         awaitingPayload =
           BytePayload(
             recordsArray.toString().toByteArray(),
@@ -130,7 +135,8 @@ constructor(
           p2PSenderViewModel.sendManifest(manifest = manifest)
         }
       } else {
-        // signifies all data has been sent
+        // signifies all data has been sent for a particular datatype
+        recordsBatchOffset = 0
         Timber.i("Json data is null")
         dataSyncOrder.remove(dataType)
         sendNextManifest()
@@ -148,6 +154,7 @@ constructor(
 
   open fun updateTotalSentRecordCount() {
     this.totalSentRecordCount = totalSentRecordCount + awaitingDataTypeRecordsBatchSize
+    Timber.i("Progress update: Updating progress to $totalSentRecordCount out of $totalRecordCount")
     p2PSenderViewModel.updateTransferProgress(
       totalSentRecords = totalSentRecordCount,
       totalRecords = totalRecordCount

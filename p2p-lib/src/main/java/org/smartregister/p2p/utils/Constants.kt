@@ -31,6 +31,7 @@ interface Constants {
     const val DEFAULT_MIN_DEVICE_CONNECTION_RETRY_DURATION = 2 * 60 * 60
     const val SEND_SYNC_PARAMS = "SEND-SYNC-PARAMS"
     const val SYNC_COMPLETE = "SYNC-COMPLETE"
+    const val DATA_UP_TO_DATE = "DATA-UP-TO-DATE"
   }
 
   interface BasicDeviceDetails {

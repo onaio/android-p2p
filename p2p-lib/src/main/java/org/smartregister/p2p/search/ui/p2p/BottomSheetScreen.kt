@@ -16,6 +16,7 @@
 package org.smartregister.p2p.search.ui.p2p
 
 import android.annotation.SuppressLint
+import android.net.wifi.p2p.WifiP2pDevice
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -57,6 +58,7 @@ import kotlinx.coroutines.launch
 import org.smartregister.p2p.R
 import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.data_sharing.DeviceInfo
+import org.smartregister.p2p.data_sharing.WifiDirectDataSharingStrategy
 import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.model.ProgressIndicator
 import org.smartregister.p2p.model.ProgressIndicatorState
@@ -64,9 +66,11 @@ import org.smartregister.p2p.search.ui.p2p.components.PairDeviceRow
 import org.smartregister.p2p.search.ui.p2p.components.ProgressStatusIndicator
 import org.smartregister.p2p.search.ui.p2p.components.ProgressStatusText
 import org.smartregister.p2p.search.ui.p2p.components.SelectPairDeviceRow
+import org.smartregister.p2p.search.ui.theme.DangerColor
 import org.smartregister.p2p.search.ui.theme.DefaultColor
 import org.smartregister.p2p.search.ui.theme.WhiteColor
 import org.smartregister.p2p.utils.annotation.ExcludeFromJacocoGeneratedReport
+import timber.log.Timber
 
 const val P2P_BOTTOM_SHEET_LIST = "p2PBottomSheetList"
 const val BOTTOM_SHEET_CANCEL_ICON_TEST_TAG = "bottomSheetCancelIconTestTag"
@@ -124,21 +128,65 @@ fun BottomSheet(
     when (deviceRole) {
       DeviceRole.SENDER -> {
         bottomSheetTitle = stringResource(id = R.string.searching_for_nearby_recipient)
-        progressStatusMsg = stringResource(id = R.string.searching_nearby_device_as)
+
+        when (p2PState) {
+          P2PState.PAIR_DEVICES_SEARCH_FAILED -> {
+            progressStatusTitle = stringResource(id = R.string.searching_failed_dialog_title)
+            progressStatusMsg = stringResource(id = R.string.searching_failed_dialog_msg)
+          }
+          P2PState.CONNECT_TO_DEVICE_FAILED -> {
+            progressStatusTitle = stringResource(id = R.string.pairing_failed)
+            progressStatusMsg = stringResource(id = R.string.pairing_failed_msg)
+          }
+          P2PState.DATA_UP_TO_DATE -> {
+            bottomSheetTitle = stringResource(id = R.string.send_data)
+            progressStatusTitle = stringResource(id = R.string.sender_data_upto_date)
+            progressStatusMsg = stringResource(id = R.string.sender_data_upto_date_msg)
+          }
+          P2PState.DEVICE_DISCONNECTED -> {
+            bottomSheetTitle = stringResource(id = R.string.send_data)
+            progressStatusTitle = stringResource(id = R.string.device_disconnected)
+            progressStatusMsg = stringResource(id = R.string.device_disconnected_msg)
+          }
+          else -> {
+            progressStatusMsg = stringResource(id = R.string.searching_nearby_device_as)
+          }
+        }
+
         transferCompleteMsg =
           stringResource(
             id = R.string.x_records_sent,
-            p2PUiState.transferProgress.totalRecordCount,
+            p2PUiState.transferProgress.transferredRecordCount,
             deviceName
           )
       }
       DeviceRole.RECEIVER -> {
-        bottomSheetTitle = stringResource(id = R.string.waiting_to_pair)
-        progressStatusMsg = stringResource(id = R.string.waiting_to_pair_with_sender)
+        when (p2PState) {
+          P2PState.RECEIVE_BASIC_DEVICE_DETAILS_FAILED -> {
+            bottomSheetTitle = stringResource(id = R.string.receiving)
+            progressStatusTitle = stringResource(id = R.string.receive_device_details_failed)
+            progressStatusMsg = stringResource(id = R.string.receive_device_details_failed_msg)
+          }
+          P2PState.DATA_UP_TO_DATE -> {
+            bottomSheetTitle = stringResource(id = R.string.receive_data)
+            progressStatusTitle = stringResource(id = R.string.receiver_data_upto_date)
+            progressStatusMsg = stringResource(id = R.string.receiver_data_upto_date_msg)
+          }
+          P2PState.DEVICE_DISCONNECTED -> {
+            bottomSheetTitle = stringResource(id = R.string.receive_data)
+            progressStatusTitle = stringResource(id = R.string.device_disconnected)
+            progressStatusMsg = stringResource(id = R.string.device_disconnected_msg)
+          }
+          else -> {
+            bottomSheetTitle = stringResource(id = R.string.waiting_to_pair)
+            progressStatusMsg = stringResource(id = R.string.waiting_to_pair_with_sender)
+          }
+        }
+
         transferCompleteMsg =
           stringResource(
             id = R.string.x_records_received,
-            p2PUiState.transferProgress.totalRecordCount,
+            p2PUiState.transferProgress.transferredRecordCount,
             deviceName
           )
       }
@@ -146,7 +194,15 @@ fun BottomSheet(
 
     when (p2PState) {
       P2PState.TRANSFER_COMPLETE -> {
-        bottomSheetTitle = stringResource(id = R.string.send_data)
+        bottomSheetTitle =
+          when (deviceRole) {
+            DeviceRole.SENDER -> {
+              stringResource(id = R.string.send_data)
+            }
+            DeviceRole.RECEIVER -> {
+              stringResource(id = R.string.receive_data)
+            }
+          }
         progressStatusTitle = stringResource(id = R.string.device_data_successfully_sent)
         progressStatusMsg = transferCompleteMsg
         showCircularProgressIndicator = false
@@ -185,6 +241,7 @@ fun BottomSheet(
                 coroutineScope.launch {
                   if (modalBottomSheetState.isVisible) modalBottomSheetState.hide()
                 }
+                onEvent(P2PEvent.BottomSheetClosed)
               }
               .testTag(BOTTOM_SHEET_CANCEL_ICON_TEST_TAG)
         )
@@ -192,16 +249,75 @@ fun BottomSheet(
 
       if (p2PState != P2PState.PAIR_DEVICES_FOUND) {
         Spacer(modifier = Modifier.size(5.dp))
-        ProgressStatusIndicator(
-          showCircularProgressIndicator = showCircularProgressIndicator,
-          p2PUiState = p2PUiState
-        )
+
+        when (p2PState) {
+          P2PState.PAIR_DEVICES_SEARCH_FAILED -> {
+            ProgressStatusIndicator(
+              p2PUiState =
+                p2PUiState.copy(
+                  progressIndicator =
+                    ProgressIndicator(
+                      backgroundColor = DangerColor.copy(alpha = 0.2f),
+                      icon = Icons.Filled.Clear
+                    )
+                )
+            )
+          }
+          P2PState.CONNECT_TO_DEVICE_FAILED -> {
+            ProgressStatusIndicator(
+              p2PUiState =
+                p2PUiState.copy(
+                  progressIndicator =
+                    ProgressIndicator(
+                      backgroundColor = DangerColor.copy(alpha = 0.2f),
+                      icon = Icons.Filled.Clear
+                    )
+                )
+            )
+          }
+          P2PState.RECEIVE_BASIC_DEVICE_DETAILS_FAILED -> {
+            ProgressStatusIndicator(
+              p2PUiState =
+                p2PUiState.copy(
+                  progressIndicator =
+                    ProgressIndicator(
+                      backgroundColor = DangerColor.copy(alpha = 0.2f),
+                      icon = Icons.Filled.Clear
+                    )
+                )
+            )
+          }
+          P2PState.DEVICE_DISCONNECTED -> {
+            ProgressStatusIndicator(
+              showCircularProgressIndicator = false,
+              p2PUiState =
+                p2PUiState.copy(
+                  progressIndicator =
+                    ProgressIndicator(
+                      backgroundColor = DangerColor.copy(alpha = 0.2f),
+                      icon = Icons.Filled.Clear
+                    )
+                )
+            )
+          }
+          P2PState.DATA_UP_TO_DATE -> {}
+          else -> {
+            ProgressStatusIndicator(
+              showCircularProgressIndicator = showCircularProgressIndicator,
+              p2PUiState = p2PUiState
+            )
+          }
+        }
 
         Spacer(modifier = Modifier.size(5.dp))
         ProgressStatusText(title = progressStatusTitle, message = progressStatusMsg)
       }
 
       Spacer(modifier = Modifier.size(5.dp))
+      Timber.d("BottomSheetScreen: Device Role: $deviceRole")
+      Timber.d("BottomSheetScreen: P2P State: $p2PState")
+      Timber.d("BottomSheetScreen: Devices list ${deviceList.size}")
+
       if (deviceRole == DeviceRole.SENDER) {
         if (p2PState == P2PState.PAIR_DEVICES_FOUND) {
           SelectPairDeviceRow(
@@ -215,26 +331,55 @@ fun BottomSheet(
               )
           )
         }
-        LazyColumn(
-          modifier = Modifier.fillMaxWidth().testTag(P2P_BOTTOM_SHEET_LIST).background(WhiteColor)
-        ) {
-          itemsIndexed(deviceList) { index, item ->
-            PairDeviceRow(device = item, onEvent = onEvent)
+        when (p2PState) {
+          P2PState.WIFI_AND_LOCATION_ENABLE,
+          P2PState.SEARCHING_FOR_RECIPIENT,
+          P2PState.PAIR_DEVICES_FOUND -> DisplayDeviceList(deviceList, onEvent = onEvent, p2PState)
+          else -> {
+            Timber.d("Device list Else p2p state. State is ${p2PState.name}")
           }
         }
       }
 
       Spacer(modifier = Modifier.size(5.dp))
 
-      if (p2PState == P2PState.TRANSFER_COMPLETE) {
-        Button(
-          onClick = { onEvent(P2PEvent.DataTransferCompleteConfirmed) },
-          modifier
-            .padding(start = 10.dp, end = 10.dp)
-            .fillMaxWidth()
-            .testTag(BOTTOM_SHEET_BUTTON_TEST_TAG)
-        ) { Text(text = stringResource(id = R.string.okay)) }
+      when (p2PState) {
+        P2PState.TRANSFER_COMPLETE,
+        P2PState.PAIR_DEVICES_SEARCH_FAILED,
+        P2PState.CONNECT_TO_DEVICE_FAILED,
+        P2PState.RECEIVE_BASIC_DEVICE_DETAILS_FAILED,
+        P2PState.DATA_UP_TO_DATE,
+        P2PState.DEVICE_DISCONNECTED -> DisplayButton(onEvent = onEvent)
+        else -> {
+          Timber.i("p2p state $p2PState is not handled")
+        }
       }
+    }
+  }
+}
+
+@Composable
+fun DisplayButton(modifier: Modifier = Modifier, onEvent: (P2PEvent) -> Unit) {
+  Button(
+    onClick = { onEvent(P2PEvent.DataTransferCompleteConfirmed) },
+    modifier
+      .padding(start = 10.dp, end = 10.dp)
+      .fillMaxWidth()
+      .testTag(BOTTOM_SHEET_BUTTON_TEST_TAG)
+  ) { Text(text = stringResource(id = R.string.okay)) }
+}
+
+@Composable
+fun DisplayDeviceList(
+  deviceList: List<DeviceInfo>,
+  onEvent: (P2PEvent) -> Unit,
+  p2PState: P2PState
+) {
+  LazyColumn(
+    modifier = Modifier.fillMaxWidth().testTag(P2P_BOTTOM_SHEET_LIST).background(WhiteColor)
+  ) {
+    itemsIndexed(deviceList) { index, item ->
+      PairDeviceRow(device = item, onEvent = onEvent, p2PState = p2PState)
     }
   }
 }
@@ -245,12 +390,21 @@ fun BottomSheet(
 @ExcludeFromJacocoGeneratedReport
 fun PreviewBottomSheetScreen() {
   BottomSheet(
-    deviceList = emptyList(),
+    deviceList = listOf(populateDeviceInfo()),
     onEvent = {},
     modalBottomSheetState = ModalBottomSheetState(ModalBottomSheetValue.HalfExpanded),
     p2PUiState = P2PUiState(),
     deviceName = "John",
     deviceRole = DeviceRole.SENDER,
-    p2PState = P2PState.RECEIVING_DATA
+    p2PState = P2PState.SEARCHING_FOR_RECIPIENT
   )
+}
+
+private fun populateDeviceInfo(): DeviceInfo {
+  val wifiP2pDevice =
+    WifiP2pDevice().apply {
+      deviceName = "Google Pixel 7 android 12"
+      deviceAddress = "00:00:5e:00:53:af"
+    }
+  return WifiDirectDataSharingStrategy.WifiDirectDevice(wifiP2pDevice)
 }

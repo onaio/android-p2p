@@ -20,6 +20,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import org.junit.Rule
 import org.junit.Test
+import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.model.ProgressIndicator
 import org.smartregister.p2p.model.ProgressIndicatorState
 import org.smartregister.p2p.search.ui.p2p.P2PUiState
@@ -45,7 +46,9 @@ class DeviceListTest {
 
   @Test
   fun testPairDeviceRowIsRendered() {
-    composeTestRule.setContent { PairDeviceRow(device = null, onEvent = {}) }
+    composeTestRule.setContent {
+      PairDeviceRow(device = null, onEvent = {}, p2PState = P2PState.PAIR_DEVICES_FOUND)
+    }
     composeTestRule.onNodeWithTag(PAIR_DEVICE_ROW_ICON_TAG).assertExists().assertIsDisplayed()
     composeTestRule.onNodeWithTag(PAIR_DEVICE_ROW_NAME_TEXT_TAG).assertExists().assertIsDisplayed()
     composeTestRule.onNodeWithTag(PAIR_DEVICE_ROW_BUTTON_TAG).assertExists().assertIsDisplayed()

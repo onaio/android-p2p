@@ -70,6 +70,7 @@ import org.smartregister.p2p.search.ui.p2p.components.ProgressStatusIndicator
 import org.smartregister.p2p.search.ui.p2p.components.ProgressStatusText
 import org.smartregister.p2p.search.ui.theme.DefaultColor
 import org.smartregister.p2p.utils.annotation.ExcludeFromJacocoGeneratedReport
+import timber.log.Timber
 
 const val P2P_SCREEN_TOP_BAR_TEST_TAG = "p2pScreenTopBarTestTag"
 const val P2P_SCREEN_TOP_BAR_ICON_TEST_TAG = "p2pScreenTopBarIconTestTag"
@@ -127,6 +128,15 @@ fun P2PScreen(
     ) {
       when (p2PState) {
         P2PState.WIFI_AND_LOCATION_ENABLE -> {
+          DefaultScreen(
+            onEvent = onEvent,
+            modalBottomSheetState = modalBottomSheetState,
+            updateDeviceRole = {
+              deviceRole = it
+              p2PViewModel.deviceRole = it
+            },
+            p2PUiState = p2PUiState
+          )
           coroutineScope.launch {
             modalBottomSheetState.animateTo(ModalBottomSheetValue.HalfExpanded)
           }
@@ -191,6 +201,9 @@ fun P2PScreen(
               )
           )
         }
+        P2PState.RECEIVE_BASIC_DEVICE_DETAILS_FAILED -> {
+          coroutineScope.launch { modalBottomSheetState.show() }
+        }
         P2PState.RECEIVING_DATA -> {
           coroutineScope.launch { modalBottomSheetState.hide() }
           TransferProgressScreen(
@@ -236,7 +249,12 @@ fun P2PScreen(
           }
           p2PViewModel.updateP2PState(P2PState.INITIATE_DATA_TRANSFER)
         }
-        else -> {}
+        P2PState.DEVICE_DISCONNECTED, P2PState.CONNECT_TO_DEVICE_FAILED -> {
+          coroutineScope.launch { modalBottomSheetState.show() }
+        }
+        else -> {
+          Timber.e("Unhandled p2p state ${p2PState.name} inside P2PScreen")
+        }
       }
     }
   }
@@ -294,10 +312,6 @@ fun DefaultScreen(
         }
       )
       Spacer(modifier = modifier.height(20.dp))
-
-      if (p2PUiState.showP2PDialog) {
-        P2PDialog(onEvent = onEvent)
-      }
     }
   }
 }
@@ -326,6 +340,9 @@ fun TransferProgressScreen(
         onClick = { onEvent(P2PEvent.CancelDataTransfer) },
         modifier = modifier.testTag(CANCEL_BUTTON_TEST_TAG)
       ) { Text(text = stringResource(id = R.string.cancel)) }
+    }
+    if (p2PUiState.showP2PDialog) {
+      P2PDialog(onEvent = onEvent)
     }
   }
 }

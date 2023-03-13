@@ -19,6 +19,7 @@ import org.smartregister.p2p.authentication.model.DeviceRole
 import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
 import org.smartregister.p2p.model.P2PReceivedHistory
+import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.model.TransferProgress
 import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.payload.StringPayload
@@ -28,9 +29,7 @@ interface P2pModeSelectContract {
 
   interface View {
 
-    // fun showP2PSelectPage(deviceRole: DeviceRole, deviceName: String)
-
-    fun showTransferCompleteDialog()
+    fun showTransferCompleteDialog(p2PState: P2PState)
 
     fun getCurrentConnectedDevice(): DeviceInfo?
 
@@ -39,6 +38,24 @@ interface P2pModeSelectContract {
     fun updateTransferProgress(transferProgress: TransferProgress)
 
     fun notifyDataTransferStarting(deviceRole: DeviceRole)
+
+    fun restartActivity()
+
+    fun showCancelTransferDialog()
+
+    fun updateP2PState(p2PState: P2PState)
+
+    fun showToast(msg: String)
+
+    fun keepScreenOn(enable: Boolean)
+
+    fun requestLocationPermissionsAndEnableLocation()
+
+    fun processSenderDeviceDetails()
+
+    fun sendDeviceDetails()
+
+    fun finish()
   }
 
   interface SenderViewModel {

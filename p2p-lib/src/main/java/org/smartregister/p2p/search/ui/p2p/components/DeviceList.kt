@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
@@ -32,10 +33,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.smartregister.p2p.R
 import org.smartregister.p2p.data_sharing.DeviceInfo
+import org.smartregister.p2p.model.P2PState
 import org.smartregister.p2p.model.ProgressIndicator
 import org.smartregister.p2p.model.ProgressIndicatorState
 import org.smartregister.p2p.search.ui.p2p.P2PEvent
@@ -47,6 +50,7 @@ const val SELECT_PAIR_DEVICE_TEXT_TAG = "selectPairDeviceTextTestTag"
 const val PAIR_DEVICE_ROW_ICON_TAG = "pairDeviceRowIconTestTag"
 const val PAIR_DEVICE_ROW_NAME_TEXT_TAG = "pairDeviceRowNameTextTestTag"
 const val PAIR_DEVICE_ROW_BUTTON_TAG = "pairDeviceRowButtonTestTag"
+var pairingInitiated: Boolean = false
 
 @Composable
 fun SelectPairDeviceRow(modifier: Modifier = Modifier, p2PUiState: P2PUiState) {
@@ -69,7 +73,12 @@ fun SelectPairDeviceRow(modifier: Modifier = Modifier, p2PUiState: P2PUiState) {
 }
 
 @Composable
-fun PairDeviceRow(modifier: Modifier = Modifier, device: DeviceInfo?, onEvent: (P2PEvent) -> Unit) {
+fun PairDeviceRow(
+  modifier: Modifier = Modifier,
+  device: DeviceInfo?,
+  onEvent: (P2PEvent) -> Unit,
+  p2PState: P2PState
+) {
   Row(
     horizontalArrangement = Arrangement.SpaceBetween,
     verticalAlignment = Alignment.CenterVertically,
@@ -84,16 +93,34 @@ fun PairDeviceRow(modifier: Modifier = Modifier, device: DeviceInfo?, onEvent: (
     Column(modifier = modifier.wrapContentWidth(Alignment.Start)) {
       Text(
         text = "${device?.name()} ".plus(stringResource(id = R.string.phone)),
-        modifier = modifier.testTag(PAIR_DEVICE_ROW_NAME_TEXT_TAG)
+        modifier = modifier.testTag(PAIR_DEVICE_ROW_NAME_TEXT_TAG).width(120.dp),
+        overflow = TextOverflow.Ellipsis,
+        maxLines = 1
       )
+
+      var pairText: String = stringResource(id = R.string.pair)
+      when (p2PState) {
+        P2PState.WIFI_AND_LOCATION_ENABLE -> {
+          pairText = stringResource(id = R.string.pair)
+        }
+        else -> {
+          if (pairingInitiated) {
+            pairText = stringResource(id = R.string.pairing)
+          }
+        }
+      }
+
       Text(
-        text = stringResource(id = R.string.pairing),
+        text = pairText,
         color = DefaultColor,
         modifier = modifier.wrapContentWidth(Alignment.Start)
       )
     }
     Button(
-      onClick = { device?.let { P2PEvent.PairWithDevice(it) }?.let { onEvent(it) } },
+      onClick = {
+        device?.let { P2PEvent.PairWithDevice(it) }?.let { onEvent(it) }
+        pairingInitiated = true
+      },
       modifier = modifier.testTag(PAIR_DEVICE_ROW_BUTTON_TAG)
     ) { Text(text = stringResource(id = R.string.pair)) }
   }
@@ -119,5 +146,5 @@ fun PreviewSelectPairDeviceRow() {
 @Composable
 @ExcludeFromJacocoGeneratedReport
 fun PreviewPairDeviceRow() {
-  PairDeviceRow(onEvent = {}, device = null)
+  PairDeviceRow(onEvent = {}, device = null, p2PState = P2PState.PAIR_DEVICES_FOUND)
 }

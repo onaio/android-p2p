@@ -64,27 +64,20 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
   private val accessFineLocationPermissionRequestInt: Int = 12345
   private val p2PReceiverViewModel by viewModels<P2PReceiverViewModel> {
     P2PReceiverViewModel.Factory(
-      context = this,
       dataSharingStrategy = dataSharingStrategy,
       DefaultDispatcherProvider()
     )
   }
   private val p2PSenderViewModel by viewModels<P2PSenderViewModel> {
     P2PSenderViewModel.Factory(
-      context = this,
       dataSharingStrategy = dataSharingStrategy,
       DefaultDispatcherProvider()
     )
   }
   private val p2PViewModel by viewModels<P2PViewModel> {
-    P2PViewModel.Factory(
-      context = this,
-      dataSharingStrategy = dataSharingStrategy,
-      DefaultDispatcherProvider()
-    )
+    P2PViewModel.Factory(dataSharingStrategy = dataSharingStrategy, DefaultDispatcherProvider())
   }
   private var scanning = false
-  private var isSenderSyncComplete = false
 
   private lateinit var dataSharingStrategy: DataSharingStrategy
 
@@ -95,9 +88,14 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    if (Timber.treeCount == 0 && isAppDebuggable(this)) {
+      Timber.plant(Timber.DebugTree())
+    }
+
+    supportActionBar?.setHomeAsUpIndicator(android.R.drawable.ic_menu_close_clear_cancel)
 
     // Remaining setup for the DataSharingStrategy class
-    dataSharingStrategy = P2PLibrary.getInstance().dataSharingStrategy
+    dataSharingStrategy = P2PLibrary.getInstance().dataSharingStrategy!!
     dataSharingStrategy.setActivity(this)
 
     // use compose
@@ -118,19 +116,88 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     title = getString(R.string.device_to_device_sync)
 
     androidWifiManager = getAndroidWifiManager()
+
+    registerUIViewModelEvents()
+    registerSenderViewModelEvents()
+    registerReceiverViewModelEvents()
   }
 
-  internal fun showToast(text: String) {
-    Toast.makeText(this@P2PDeviceSearchActivity, text, Toast.LENGTH_LONG).show()
+  fun registerUIViewModelEvents() {
+    registerViewModelEvents(p2PViewModel)
   }
 
-  fun requestLocationPermissionsAndEnableLocation() {
+  fun registerViewModelEvents(baseViewModel: BaseViewModel) {
+    baseViewModel.displayMessages.observe(this) { stringResId -> showToast(getString(stringResId)) }
+    baseViewModel.restartActivity.observe(this) {
+      if (it) {
+        restartActivity()
+      }
+    }
+
+    baseViewModel.p2pState.observe(this) { p2pState -> updateP2PState(p2pState) }
+    baseViewModel.p2pUiAction.observe(this) { pair ->
+      val uiAction = pair.first
+      val data = pair.second
+
+      when (uiAction) {
+        UIAction.SHOW_TRANSFER_COMPLETE_DIALOG -> {
+          showTransferCompleteDialog(data as P2PState)
+        }
+        UIAction.NOTIFY_DATA_TRANSFER_STARTING -> {
+          notifyDataTransferStarting(data as DeviceRole)
+        }
+        UIAction.SHOW_CANCEL_TRANSFER_DIALOG -> {
+          showCancelTransferDialog()
+        }
+        UIAction.SENDER_SYNC_COMPLETE -> {
+          senderSyncComplete(data as Boolean)
+        }
+        UIAction.UPDATE_TRANSFER_PROGRESS -> {
+          updateTransferProgress(data as TransferProgress)
+        }
+        UIAction.REQUEST_LOCATION_PERMISSIONS_ENABLE_LOCATION -> {
+          requestLocationPermissionsAndEnableLocation()
+        }
+        UIAction.FINISH -> {
+          finish()
+        }
+        UIAction.KEEP_SCREEN_ON -> {
+          keepScreenOn(data as Boolean)
+        }
+        UIAction.PROCESS_SENDER_DEVICE_DETAILS -> {
+          processSenderDeviceDetails()
+        }
+        UIAction.SEND_DEVICE_DETAILS -> {
+          sendDeviceDetails()
+        }
+      }
+    }
+  }
+
+  fun registerSenderViewModelEvents() {
+    registerViewModelEvents(p2PSenderViewModel)
+  }
+
+  fun registerReceiverViewModelEvents() {
+    registerViewModelEvents(p2PReceiverViewModel)
+  }
+
+  override fun showToast(msg: String) {
+    runOnUiThread { Toast.makeText(this@P2PDeviceSearchActivity, msg, Toast.LENGTH_LONG).show() }
+  }
+
+  override fun requestLocationPermissionsAndEnableLocation() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       requestAccessFineLocationIfNotGranted()
     }
 
-    checkLocationEnabled()
+    if (hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
+      checkLocationEnabled()
+    }
   }
+
+  fun hasPermission(permission: String): Boolean =
+    checkCallingOrSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
 
   fun checkEnableWifi() {
 
@@ -142,10 +209,10 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
 
     showToast(getString(R.string.turn_on_wifi))
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-      var intent = Intent(Settings.ACTION_WIRELESS_SETTINGS)
+      val intent = Intent(Settings.ACTION_WIRELESS_SETTINGS)
       startForResult.launch(intent)
     } else {
-      var intent = Intent(Settings.Panel.ACTION_WIFI)
+      val intent = Intent(Settings.Panel.ACTION_WIFI)
       startForResult.launch(intent)
     }
   }
@@ -263,13 +330,13 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
 
   override fun onResume() {
     super.onResume()
+
     p2PViewModel.initChannel()
     dataSharingStrategy.onResume(isScanning = scanning)
   }
 
   override fun onPause() {
     super.onPause()
-
     dataSharingStrategy.onPause()
   }
 
@@ -287,25 +354,24 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     }
   }
 
-  fun sendDeviceDetails() {
+  override fun sendDeviceDetails() {
     p2PSenderViewModel.sendDeviceDetails(getCurrentConnectedDevice())
   }
 
-  fun processSenderDeviceDetails() {
+  override fun processSenderDeviceDetails() {
     p2PReceiverViewModel.processSenderDeviceDetails()
   }
 
-  override fun showTransferCompleteDialog() {
-    p2PViewModel.showTransferCompleteDialog()
+  override fun showTransferCompleteDialog(p2PState: P2PState) {
+    p2PViewModel.showTransferCompleteDialog(p2PState)
+  }
+
+  override fun showCancelTransferDialog() {
+    p2PViewModel.showCancelTransferDialog()
   }
 
   private fun logDebug(message: String) {
-    // Snackbar.make(rootView, message, Snackbar.LENGTH_SHORT).show()
     Timber.d(message)
-  }
-
-  fun sendSyncParams() {
-    // Respond with the acceptable data types each with its lastUpdated timestamp and batch size
   }
 
   override fun getCurrentConnectedDevice(): DeviceInfo? {
@@ -313,8 +379,8 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
   }
 
   override fun senderSyncComplete(complete: Boolean) {
-    isSenderSyncComplete = complete
-    Timber.e("sender sync complete $isSenderSyncComplete")
+    p2PViewModel.updateSenderSyncComplete(complete)
+    Timber.d("sender sync complete $complete")
   }
 
   override fun updateTransferProgress(transferProgress: TransferProgress) {
@@ -328,13 +394,22 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     }
   }
 
+  override fun restartActivity() {
+    startActivity(Intent(this, P2PDeviceSearchActivity::class.java))
+    finish()
+  }
+
+  override fun updateP2PState(p2PState: P2PState) {
+    p2PViewModel.updateP2PState(p2PState)
+  }
+
   /**
    * Enables or disables the keep screen on flag to avoid the device going to sleep while there is a
    * sync happening
    *
    * @param enable `TRUE` to enable or `FALSE` disable
    */
-  internal fun keepScreenOn(enable: Boolean) {
+  override fun keepScreenOn(enable: Boolean) {
     if (enable) {
       keepScreenOnCounter++
       if (keepScreenOnCounter == 1) {
@@ -346,5 +421,31 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
       }
     }
+  }
+
+  override fun onRequestPermissionsResult(
+    requestCode: Int,
+    permissions: Array<out String>,
+    grantResults: IntArray
+  ) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+    if (accessFineLocationPermissionRequestInt == requestCode &&
+        hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+    ) {
+      checkLocationEnabled()
+    }
+  }
+
+  override fun onStop() {
+    dataSharingStrategy.onStop()
+    super.onStop()
+  }
+
+  override fun onDestroy() {
+    viewModelStore.clear()
+    P2PLibrary.getInstance().clean()
+
+    super.onDestroy()
   }
 }

@@ -50,7 +50,6 @@ import org.smartregister.p2p.model.TransferProgress
 import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.payload.StringPayload
 import org.smartregister.p2p.robolectric.RobolectricTest
-import org.smartregister.p2p.search.contract.P2pModeSelectContract
 import org.smartregister.p2p.shadows.ShadowAppDatabase
 import org.smartregister.p2p.sync.DataType
 import org.smartregister.p2p.utils.Constants
@@ -62,7 +61,6 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
   @get:Rule var coroutinesTestRule = CoroutineTestRule()
 
   lateinit var p2PSenderViewModel: P2PSenderViewModel
-  lateinit var view: P2pModeSelectContract.View
   lateinit var p2pSenderTransferDao: SenderTransferDao
   lateinit var p2pReceiverTransferDao: ReceiverTransferDao
   lateinit var syncSenderHandler: SyncSenderHandler
@@ -71,11 +69,10 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
 
   @Before
   internal fun setUp() {
-    view = mockk()
     dataSharingStrategy = mockk()
     syncSenderHandler = mockk()
     p2PSenderViewModel =
-      spyk(P2PSenderViewModel(view, dataSharingStrategy, coroutinesTestRule.testDispatcherProvider))
+      spyk(P2PSenderViewModel(dataSharingStrategy, coroutinesTestRule.testDispatcherProvider))
     ReflectionHelpers.setField(p2PSenderViewModel, "syncSenderHandler", syncSenderHandler)
 
     p2pReceiverTransferDao = mockk()
@@ -97,7 +94,6 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
         deviceAddress = "00:00:5e:00:53:af"
       }
     deviceInfo = WifiDirectDataSharingStrategy.WifiDirectDevice(wifiP2pDevice)
-    every { view.getCurrentConnectedDevice() } returns deviceInfo
     every { dataSharingStrategy.getCurrentDevice() } returns deviceInfo
   }
 
@@ -172,14 +168,12 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
   @Test
   fun `sendSyncComplete() should call dataSharingStrategy#disconnect() and view#showTransferCompleteDialog()`() {
     every { dataSharingStrategy.disconnect(any(), any()) } just runs
-    every { view.showTransferCompleteDialog() } just runs
 
     p2PSenderViewModel.sendSyncComplete()
 
     Shadows.shadowOf(Looper.getMainLooper()).idle()
 
     verify(exactly = 1) { dataSharingStrategy.disconnect(deviceInfo, any()) }
-    verify(exactly = 1) { view.showTransferCompleteDialog() }
   }
 
   @Test
@@ -223,10 +217,9 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun `getCurrentConnectedDevice() should call view#getCurrentConnectedDevice()`() {
+  fun `getCurrentConnectedDevice() should call dataSharingStrategy#getCurrentConnectedDevice()`() {
     p2PSenderViewModel.getCurrentConnectedDevice()
-
-    verify { view.getCurrentConnectedDevice() }
+    verify { dataSharingStrategy.getCurrentDevice() }
   }
 
   @Test
@@ -246,15 +239,16 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
   }
 
   @Test
-  fun `processReceivedHistory() should call #sendSyncComplete() when sync payload inside JsonData is null`() {
+  fun `processReceivedHistory() should call disconnect() when sync payload inside JsonData is null`() {
     val syncPayload = StringPayload("[]")
 
     every { p2pSenderTransferDao.getP2PDataTypes() } returns TreeSet<DataType>()
     every { p2pSenderTransferDao.getTotalRecordCount(any()) } returns 0
+    every { p2PSenderViewModel.disconnect() } just runs
 
     p2PSenderViewModel.processReceivedHistory(syncPayload)
 
-    verify { p2PSenderViewModel.sendSyncComplete() }
+    verify { p2PSenderViewModel.disconnect() }
   }
 
   @Test
@@ -264,8 +258,6 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
     p2PSenderViewModel.updateSenderSyncComplete(syncComplete)
 
     Shadows.shadowOf(Looper.getMainLooper()).idle()
-
-    verify { view.senderSyncComplete(syncComplete) }
   }
 
   @Test
@@ -275,7 +267,6 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
 
     Assert.assertNotNull(
       P2PSenderViewModel.Factory(
-          mockk(),
           wifiDirectDataSharingStrategy,
           coroutinesTestRule.testDispatcherProvider
         )
@@ -283,7 +274,6 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
     )
     Assert.assertTrue(
       P2PSenderViewModel.Factory(
-          mockk(),
           wifiDirectDataSharingStrategy,
           coroutinesTestRule.testDispatcherProvider
         )
@@ -303,7 +293,7 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
     p2PSenderViewModel.updateTransferProgress(totalSentRecords = 10, totalRecords = 40)
 
     val transferProgressSlot = slot<TransferProgress>()
-    coVerify { view.updateTransferProgress(capture(transferProgressSlot)) }
+    verify { p2PSenderViewModel.postUIAction(any(), capture(transferProgressSlot)) }
 
     Assert.assertEquals(
       expectedTransferProgress.transferredRecordCount,

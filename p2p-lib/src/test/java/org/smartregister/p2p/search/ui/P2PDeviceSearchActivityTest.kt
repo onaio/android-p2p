@@ -128,6 +128,7 @@ class P2PDeviceSearchActivityTest : ActivityRobolectricTest() {
   fun `requestLocationPermissionsAndEnableLocation() should call requestAccessFineLocationIfNotGranted() and checkLocationEnabled()`() {
     every { p2PDeviceSearchActivity.checkLocationEnabled() } just runs
     every { p2PDeviceSearchActivity.requestAccessFineLocationIfNotGranted() } just runs
+    every { p2PDeviceSearchActivity.hasPermission(any()) } returns true
 
     p2PDeviceSearchActivity.requestLocationPermissionsAndEnableLocation()
 
@@ -213,22 +214,17 @@ class P2PDeviceSearchActivityTest : ActivityRobolectricTest() {
   }
 
   @Test
-  fun `senderSyncComplete() should change isSenderSyncComplete flag to false when false is passed`() {
-    ReflectionHelpers.setField(p2PDeviceSearchActivity, "isSenderSyncComplete", true)
-    Assert.assertTrue(ReflectionHelpers.getField(p2PDeviceSearchActivity, "isSenderSyncComplete"))
-
+  fun `senderSyncComplete() should call p2PViewModel#updateSenderSyncComplete when false is passed`() {
     p2PDeviceSearchActivity.senderSyncComplete(false)
 
-    Assert.assertFalse(ReflectionHelpers.getField(p2PDeviceSearchActivity, "isSenderSyncComplete"))
+    verify { p2PViewModel.updateSenderSyncComplete(false) }
   }
 
   @Test
-  fun `senderSyncComplete() should change isSenderSyncComplete flag to true when true is passed`() {
-    Assert.assertFalse(ReflectionHelpers.getField(p2PDeviceSearchActivity, "isSenderSyncComplete"))
-
+  fun `senderSyncComplete() should call p2PViewModel#updateSenderSyncComplete when true is passed`() {
     p2PDeviceSearchActivity.senderSyncComplete(true)
 
-    Assert.assertTrue(ReflectionHelpers.getField(p2PDeviceSearchActivity, "isSenderSyncComplete"))
+    verify { p2PViewModel.updateSenderSyncComplete(true) }
   }
 
   @Test
@@ -381,8 +377,14 @@ class P2PDeviceSearchActivityTest : ActivityRobolectricTest() {
 
   @Test
   fun `showTransferCompleteDialog() calls p2PViewModel#showTransferCompleteDialog()`() {
-    p2PDeviceSearchActivity.showTransferCompleteDialog()
-    verify { p2PViewModel.showTransferCompleteDialog() }
+    p2PDeviceSearchActivity.showTransferCompleteDialog(P2PState.TRANSFER_COMPLETE)
+    verify { p2PViewModel.showTransferCompleteDialog(P2PState.TRANSFER_COMPLETE) }
+  }
+
+  @Test
+  fun `updateP2PState() should call p2PViewModel#updateP2PState() with correct value`() {
+    p2PDeviceSearchActivity.updateP2PState(P2PState.RECEIVING_DATA)
+    verify { p2PViewModel.updateP2PState(P2PState.RECEIVING_DATA) }
   }
 
   fun Dialog.isCancellable(): Boolean {

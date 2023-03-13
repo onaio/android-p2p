@@ -34,7 +34,7 @@ class P2PLibrary private constructor() {
   private lateinit var options: Options
   private var hashKey: String? = null
   private var deviceUniqueIdentifier: String? = null
-  var dataSharingStrategy: DataSharingStrategy = WifiDirectDataSharingStrategy()
+  var dataSharingStrategy: DataSharingStrategy? = null
 
   companion object {
     private var instance: P2PLibrary? = null
@@ -44,6 +44,9 @@ class P2PLibrary private constructor() {
         ("Instance does not exist!!! Call P2PLibrary.init(P2PLibrary.Options) method " +
           "in the onCreate method of " +
           "your Application class ")
+      }
+      if (instance!!.dataSharingStrategy == null) {
+        instance!!.dataSharingStrategy = WifiDirectDataSharingStrategy()
       }
       return instance!!
     }
@@ -70,6 +73,10 @@ class P2PLibrary private constructor() {
 
   fun getDb(): AppDatabase {
     return AppDatabase.getInstance(getContext(), options.dbPassphrase)
+  }
+
+  fun clean() {
+    dataSharingStrategy = null
   }
 
   fun getHashKey(): String? {
