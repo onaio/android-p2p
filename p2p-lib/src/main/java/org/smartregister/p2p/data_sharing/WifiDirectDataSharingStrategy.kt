@@ -399,11 +399,19 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     operationListener: DataSharingStrategy.OperationListener
   ) {
     requestedDisconnection = true
+
+    if (wifiP2pChannel == null) {
+      Timber.i("wifiP2pChannel is null when trying to disconnect")
+      requestedDisconnection = false
+      operationListener.onSuccess(device)
+      return
+    }
+
     wifiP2pManager.removeGroup(
       wifiP2pChannel,
       object : WifiP2pManager.ActionListener {
         override fun onSuccess() {
-          logDebug("disconnect succesfull")
+          logDebug("disconnect successfull")
           paired = false
           onDisconnectSucceeded(device)
           operationListener.onSuccess(device)
