@@ -477,6 +477,8 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
 
     verify(exactly = 0) { wifiP2pManager.removeGroup(wifiP2pChannel, any()) }
     verify { operationListener.onSuccess(device) }
+
+    ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "wifiP2pChannel", wifiP2pChannel)
   }
 
   @Test
