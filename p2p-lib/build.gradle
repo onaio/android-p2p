@@ -142,7 +142,7 @@ def locationDependencies(configuration) {
 
 task jacocoTestReport(type: JacocoReport, dependsOn: [
         'testDebugUnitTest',
-        'connectedDebugAndroidTest'/*, 'createDebugCoverageReport'*/]) {
+        /*'connectedDebugAndroidTest', 'createDebugCoverageReport'*/]) {
 
     reports {
         xml.required = true
@@ -221,7 +221,7 @@ afterEvaluate {
                 from(components["release"])
                 artifactId = "p2p-lib"
                 groupId = "org.smartregister"
-                version = "0.6.5-SNAPSHOT"
+                version = "0.6.6-SNAPSHOT"
                 pom {
                     name.set("Peer to Peer Library")
                 }

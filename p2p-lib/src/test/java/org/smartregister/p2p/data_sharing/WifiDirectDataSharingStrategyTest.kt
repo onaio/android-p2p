@@ -465,6 +465,23 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
   }
 
   @Test
+  fun `disconnect() does not call wifiP2pManager#removeGroup()`() {
+    every { wifiP2pManager.removeGroup(any(), any()) } just runs
+    every { operationListener.onSuccess(any()) } just runs
+    every { operationListener.onFailure(any(), any()) } just runs
+    every { wifiDirectDataSharingStrategy invokeNoArgs "closeSocketAndStreams" } returns null
+
+    ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "wifiP2pChannel", null)
+
+    wifiDirectDataSharingStrategy.disconnect(device = device, operationListener = operationListener)
+
+    verify(exactly = 0) { wifiP2pManager.removeGroup(wifiP2pChannel, any()) }
+    verify { operationListener.onSuccess(device) }
+
+    ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "wifiP2pChannel", wifiP2pChannel)
+  }
+
+  @Test
   fun `send() calls operationListener#onFailure() when wifiP2pInfo() is null`() {
     ReflectionHelpers.setField(wifiDirectDataSharingStrategy, "wifiP2pInfo", null)
     every { operationListener.onFailure(any(), any()) } just runs
