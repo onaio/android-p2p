@@ -29,6 +29,8 @@ import io.mockk.runs
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
+import java.lang.IllegalArgumentException
+import java.net.SocketException
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Before
@@ -251,6 +253,48 @@ class P2PReceiverViewModelTest : RobolectricTest() {
   }
 
   @Test
+  fun `processSenderDeviceDetails() calls disconnect() on failure`() {
+    every { dataSharingStrategy.receive(any(), any(), any()) } just runs
+
+    val operationListenerSlot = slot<DataSharingStrategy.OperationListener>()
+    val payloadReceiptListener = slot<DataSharingStrategy.PayloadReceiptListener>()
+
+    p2PReceiverViewModel.processSenderDeviceDetails()
+
+    verify {
+      dataSharingStrategy.receive(
+        expectedDeviceInfo,
+        capture(payloadReceiptListener),
+        capture(operationListenerSlot)
+      )
+    }
+
+    operationListenerSlot.captured.onFailure(expectedDeviceInfo, IllegalArgumentException())
+    verify { p2PReceiverViewModel.disconnect() }
+  }
+
+  @Test
+  fun `processSenderDeviceDetails() calls handleSocketException() on failure with a SocketException`() {
+    every { dataSharingStrategy.receive(any(), any(), any()) } just runs
+
+    val operationListenerSlot = slot<DataSharingStrategy.OperationListener>()
+    val payloadReceiptListener = slot<DataSharingStrategy.PayloadReceiptListener>()
+
+    p2PReceiverViewModel.processSenderDeviceDetails()
+
+    verify {
+      dataSharingStrategy.receive(
+        expectedDeviceInfo,
+        capture(payloadReceiptListener),
+        capture(operationListenerSlot)
+      )
+    }
+
+    operationListenerSlot.captured.onFailure(expectedDeviceInfo, SocketException())
+    verify { p2PReceiverViewModel.handleSocketException() }
+  }
+
+  @Test
   fun `checkIfDeviceKeyHasChanged() calls p2pReceiverViewModel#sendLastReceivedRecords() with empty list when received history is null`() {
     every { p2PReceiverViewModel.getReceivedHistory(appLifetimeKey) } returns null
     every { p2PReceiverViewModel.sendLastReceivedRecords(any()) } just runs
@@ -304,6 +348,48 @@ class P2PReceiverViewModelTest : RobolectricTest() {
     Assert.assertEquals(entity, actualReceivedHistory[0].entityType)
     Assert.assertEquals(lastUpdatedAt, actualReceivedHistory[0].lastUpdatedAt)
     Assert.assertEquals(appLifetimeKey, actualReceivedHistory[0].appLifetimeKey)
+  }
+
+  @Test
+  fun `sendLastReceivedRecords() calls disconnect() on failure`() {
+    every { dataSharingStrategy.send(any(), any(), any()) } just runs
+
+    val operationListenerSlot = slot<DataSharingStrategy.OperationListener>()
+    val payloadSlot = slot<PayloadContract<out Any>>()
+
+    p2PReceiverViewModel.sendLastReceivedRecords(receivedHistory)
+
+    verify {
+      dataSharingStrategy.send(
+        expectedDeviceInfo,
+        capture(payloadSlot),
+        capture(operationListenerSlot)
+      )
+    }
+
+    operationListenerSlot.captured.onFailure(expectedDeviceInfo, IllegalArgumentException())
+    verify { p2PReceiverViewModel.disconnect() }
+  }
+
+  @Test
+  fun `sendLastReceivedRecords() calls handleSocketException() on failure with a SocketException`() {
+    every { dataSharingStrategy.send(any(), any(), any()) } just runs
+
+    val operationListenerSlot = slot<DataSharingStrategy.OperationListener>()
+    val payloadSlot = slot<PayloadContract<out Any>>()
+
+    p2PReceiverViewModel.sendLastReceivedRecords(receivedHistory)
+
+    verify {
+      dataSharingStrategy.send(
+        expectedDeviceInfo,
+        capture(payloadSlot),
+        capture(operationListenerSlot)
+      )
+    }
+
+    operationListenerSlot.captured.onFailure(expectedDeviceInfo, SocketException())
+    verify { p2PReceiverViewModel.handleSocketException() }
   }
 
   @Test
