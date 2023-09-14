@@ -137,9 +137,7 @@ fun P2PScreen(
             },
             p2PUiState = p2PUiState
           )
-          coroutineScope.launch {
-            modalBottomSheetState.animateTo(ModalBottomSheetValue.HalfExpanded)
-          }
+          coroutineScope.launch { modalBottomSheetState.show() }
         }
         P2PState.TRANSFERRING_DATA -> {
           coroutineScope.launch { modalBottomSheetState.hide() }
