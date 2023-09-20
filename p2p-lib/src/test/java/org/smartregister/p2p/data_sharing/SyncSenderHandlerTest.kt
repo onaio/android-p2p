@@ -269,8 +269,7 @@ class SyncSenderHandlerTest : RobolectricTest() {
 
   @Test
   fun `populateTotalRecordCount() returns correct data`() {
-    every { senderTransferDao.getTotalRecordCount(any()) } returns RecordCount(23L,
-      hashMapOf())
+    every { senderTransferDao.getTotalRecordCount(any()) } returns RecordCount(23L, hashMapOf())
     Assert.assertEquals(0, ReflectionHelpers.getField<Long>(syncSenderHandler, "totalRecordCount"))
     syncSenderHandler.populateTotalRecordCount()
     Assert.assertEquals(23, ReflectionHelpers.getField<Long>(syncSenderHandler, "totalRecordCount"))

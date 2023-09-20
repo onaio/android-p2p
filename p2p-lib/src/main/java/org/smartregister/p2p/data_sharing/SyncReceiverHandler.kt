@@ -60,14 +60,15 @@ constructor(
 
     var lastUpdatedAt =
       P2PLibrary.getInstance().getReceiverTransferDao().receiveJson(currentManifest.dataType, data)
-    val currentDataTypeTotalRecordCount = currentManifest.recordCount.dataTypeTotalCountMap[currentManifest.dataType.name]
+    val currentDataTypeTotalRecordCount =
+      currentManifest.recordCount.dataTypeTotalCountMap[currentManifest.dataType.name]
 
     totalReceivedRecordCount += data!!.length()
 
-    Timber.e( "data type name is ${currentManifest.dataType.name} initial record count is ${receivedResourceCountMap[currentManifest.dataType.name]}")
-    receivedResourceCountMap[currentManifest.dataType.name]  = if (receivedResourceCountMap[currentManifest.dataType.name] !=null) receivedResourceCountMap[currentManifest.dataType.name]?.plus(
-      data!!.length()
-    )!! else data!!.length().toLong()
+    receivedResourceCountMap[currentManifest.dataType.name] =
+      if (receivedResourceCountMap[currentManifest.dataType.name] != null)
+        receivedResourceCountMap[currentManifest.dataType.name]?.plus(data!!.length())!!
+      else data!!.length().toLong()
 
     Timber.e(
       "Progress update: Updating received data ${currentManifest.dataType.name} x ${currentManifest.recordsSize} | UPTO $lastUpdatedAt"
@@ -81,12 +82,16 @@ constructor(
     )
 
     // when all records have been received increment lastUpdatedAt  by 1
-    Timber.e("totalReceivedRecordCount is ${receivedResourceCountMap[currentManifest.dataType.name]} and totalRecordCount is  $currentDataTypeTotalRecordCount")
-    if (receivedResourceCountMap[currentManifest.dataType.name] == currentDataTypeTotalRecordCount) {
+    Timber.i(
+      "totalReceivedRecordCount is ${receivedResourceCountMap[currentManifest.dataType.name]} and totalRecordCount is  $currentDataTypeTotalRecordCount"
+    )
+    if (receivedResourceCountMap[currentManifest.dataType.name] == currentDataTypeTotalRecordCount
+    ) {
       lastUpdatedAt++
-      Timber.e("Last updatedAt incremented by 1 to $lastUpdatedAt for ${currentManifest.dataType.name}")
-    }
-    else lastUpdatedAt
+      Timber.i(
+        "Last updatedAt incremented by 1 to $lastUpdatedAt for ${currentManifest.dataType.name}"
+      )
+    } else lastUpdatedAt
     addOrUpdateLastRecord(currentManifest.dataType.name, lastUpdatedAt = lastUpdatedAt)
 
     p2PReceiverViewModel.processIncomingManifest()

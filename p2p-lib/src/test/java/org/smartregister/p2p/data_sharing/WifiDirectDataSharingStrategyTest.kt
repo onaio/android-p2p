@@ -1042,8 +1042,11 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
 
   private fun populateManifest(): Manifest {
     val dataType = DataType(name = "Patient", type = DataType.Filetype.JSON, position = 1)
-    return Manifest(dataType = dataType, recordsSize = 25, payloadSize = 50, recordCount = RecordCount(50L,
-      hashMapOf())
+    return Manifest(
+      dataType = dataType,
+      recordsSize = 25,
+      payloadSize = 50,
+      recordCount = RecordCount(50L, hashMapOf())
     )
   }
 }

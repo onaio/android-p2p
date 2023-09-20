@@ -210,9 +210,13 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
   fun `sendManifest() should call dataSharingStrategy#sendManifest()`() {
     every { dataSharingStrategy.sendManifest(any(), any(), any()) } just runs
 
-    val manifest = Manifest(DataType("Patient", DataType.Filetype.JSON, 0), 250, 50, recordCount = RecordCount(250L,
-      hashMapOf())
-    )
+    val manifest =
+      Manifest(
+        DataType("Patient", DataType.Filetype.JSON, 0),
+        250,
+        50,
+        recordCount = RecordCount(250L, hashMapOf())
+      )
 
     p2PSenderViewModel.sendManifest(manifest)
 
@@ -231,8 +235,7 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
     val dataTypes = TreeSet<DataType>()
     dataTypes.add(DataType("Patient", DataType.Filetype.JSON, 0))
     every { p2pSenderTransferDao.getP2PDataTypes() } returns dataTypes
-    every { p2pSenderTransferDao.getTotalRecordCount(any()) } returns  RecordCount(0L,
-      hashMapOf())
+    every { p2pSenderTransferDao.getTotalRecordCount(any()) } returns RecordCount(0L, hashMapOf())
     coEvery { syncSenderHandler.startSyncProcess() } just runs
     every { p2PSenderViewModel.createSyncSenderHandler(any(), any()) } returns syncSenderHandler
 
@@ -247,8 +250,7 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
     val syncPayload = StringPayload("[]")
 
     every { p2pSenderTransferDao.getP2PDataTypes() } returns TreeSet<DataType>()
-    every { p2pSenderTransferDao.getTotalRecordCount(any()) } returns RecordCount(0L,
-      hashMapOf())
+    every { p2pSenderTransferDao.getTotalRecordCount(any()) } returns RecordCount(0L, hashMapOf())
     every { p2PSenderViewModel.disconnect() } just runs
 
     p2PSenderViewModel.processReceivedHistory(syncPayload)

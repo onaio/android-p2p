@@ -70,7 +70,7 @@ constructor(
   }
 
   fun populateTotalRecordCount() {
-     recordCount =
+    recordCount =
       P2PLibrary.getInstance().getSenderTransferDao().getTotalRecordCount(remainingLastRecordIds)
   }
 
@@ -157,7 +157,9 @@ constructor(
 
   open fun updateTotalSentRecordCount() {
     this.totalSentRecordCount = totalSentRecordCount + awaitingDataTypeRecordsBatchSize
-    Timber.i("Progress update: Updating progress to $totalSentRecordCount out of ${recordCount.totalRecordCount}")
+    Timber.i(
+      "Progress update: Updating progress to $totalSentRecordCount out of ${recordCount.totalRecordCount}"
+    )
     p2PSenderViewModel.updateTransferProgress(
       totalSentRecords = totalSentRecordCount,
       totalRecords = recordCount.totalRecordCount
