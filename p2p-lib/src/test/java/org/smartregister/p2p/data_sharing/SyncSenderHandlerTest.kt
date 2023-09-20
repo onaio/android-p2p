@@ -39,6 +39,7 @@ import org.smartregister.p2p.CoroutineTestRule
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.dao.SenderTransferDao
 import org.smartregister.p2p.model.P2PReceivedHistory
+import org.smartregister.p2p.model.RecordCount
 import org.smartregister.p2p.payload.BytePayload
 import org.smartregister.p2p.robolectric.RobolectricTest
 import org.smartregister.p2p.search.data.JsonData
@@ -268,7 +269,8 @@ class SyncSenderHandlerTest : RobolectricTest() {
 
   @Test
   fun `populateTotalRecordCount() returns correct data`() {
-    every { senderTransferDao.getTotalRecordCount(any()) } returns 23
+    every { senderTransferDao.getTotalRecordCount(any()) } returns RecordCount(23L,
+      hashMapOf())
     Assert.assertEquals(0, ReflectionHelpers.getField<Long>(syncSenderHandler, "totalRecordCount"))
     syncSenderHandler.populateTotalRecordCount()
     Assert.assertEquals(23, ReflectionHelpers.getField<Long>(syncSenderHandler, "totalRecordCount"))

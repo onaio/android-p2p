@@ -40,6 +40,7 @@ import org.smartregister.p2p.dao.P2pReceivedHistoryDao
 import org.smartregister.p2p.dao.ReceiverTransferDao
 import org.smartregister.p2p.model.P2PReceivedHistory
 import org.smartregister.p2p.model.P2PState
+import org.smartregister.p2p.model.RecordCount
 import org.smartregister.p2p.robolectric.RobolectricTest
 import org.smartregister.p2p.search.ui.P2PReceiverViewModel
 import org.smartregister.p2p.shadows.ShadowAppDatabase
@@ -84,7 +85,9 @@ class SyncReceiverHandlerTest : RobolectricTest() {
     )
 
     dataType = DataType(name = "Group", type = DataType.Filetype.JSON, position = 0)
-    manifest = Manifest(dataType = dataType, recordsSize = 25, payloadSize = 50)
+    manifest = Manifest(dataType = dataType, recordsSize = 25, payloadSize = 50, recordCount = RecordCount(50L,
+      hashMapOf())
+    )
 
     syncReceiverHandler =
       spyk(
@@ -99,7 +102,8 @@ class SyncReceiverHandlerTest : RobolectricTest() {
   @Test
   fun `processManifest() calls p2PReceiverViewModel#handleDataTransferCompleteManifest() when data type name is sync complete`() {
     dataType = DataType(name = Constants.SYNC_COMPLETE, type = DataType.Filetype.JSON, position = 0)
-    val manifest = Manifest(dataType = dataType, recordsSize = 25, payloadSize = 50)
+    val manifest = Manifest(dataType = dataType, recordsSize = 25, payloadSize = 50, recordCount = RecordCount(50L,
+      hashMapOf()))
     every { p2PReceiverViewModel.updateTransferProgress(any(), any()) } just runs
     every {
       p2PReceiverViewModel.handleDataTransferCompleteManifest(P2PState.TRANSFER_COMPLETE)
@@ -116,7 +120,8 @@ class SyncReceiverHandlerTest : RobolectricTest() {
   fun `processManifest() calls p2PReceiverViewModel#handleDataTransferCompleteManifest() when data type name is data up to date`() {
     dataType =
       DataType(name = Constants.DATA_UP_TO_DATE, type = DataType.Filetype.JSON, position = 0)
-    val manifest = Manifest(dataType = dataType, recordsSize = 0, payloadSize = 0)
+    val manifest = Manifest(dataType = dataType, recordsSize = 0, payloadSize = 0, recordCount = RecordCount(0L,
+      hashMapOf()))
     every { p2PReceiverViewModel.updateTransferProgress(any(), any()) } just runs
     every { p2PReceiverViewModel.handleDataTransferCompleteManifest(P2PState.DATA_UP_TO_DATE) } just
       runs
