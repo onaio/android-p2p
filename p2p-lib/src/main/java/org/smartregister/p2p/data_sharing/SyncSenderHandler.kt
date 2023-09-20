@@ -43,7 +43,7 @@ constructor(
   private lateinit var awaitingPayload: PayloadContract<out Any>
   private var sendingSyncCompleteManifest = false
   private var recordsBatchOffset = 0
-  private lateinit var recordCount: RecordCount
+  private var recordCount: RecordCount = RecordCount(0L, hashMapOf())
 
   suspend fun startSyncProcess() {
     Timber.i("Start sync process")

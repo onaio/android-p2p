@@ -260,7 +260,7 @@ class SyncSenderHandlerTest : RobolectricTest() {
   fun `updateTotalSentRecordCount() calls p2PSenderViewModel#updateTransferProgress`() {
     ReflectionHelpers.setField(syncSenderHandler, "awaitingDataTypeRecordsBatchSize", 25)
     ReflectionHelpers.setField(syncSenderHandler, "totalSentRecordCount", 10)
-    ReflectionHelpers.setField(syncSenderHandler, "totalRecordCount", 40)
+    ReflectionHelpers.setField(syncSenderHandler, "recordCount", RecordCount(40L, hashMapOf()))
     every { p2PSenderViewModel.updateTransferProgress(any(), any()) } just runs
     syncSenderHandler.updateTotalSentRecordCount()
 
@@ -270,9 +270,13 @@ class SyncSenderHandlerTest : RobolectricTest() {
   @Test
   fun `populateTotalRecordCount() returns correct data`() {
     every { senderTransferDao.getTotalRecordCount(any()) } returns RecordCount(23L, hashMapOf())
-    Assert.assertEquals(0, ReflectionHelpers.getField<Long>(syncSenderHandler, "totalRecordCount"))
+    val initialRecordCount =
+      ReflectionHelpers.getField<RecordCount>(syncSenderHandler, "recordCount")
+    Assert.assertEquals(0, initialRecordCount.totalRecordCount)
     syncSenderHandler.populateTotalRecordCount()
-    Assert.assertEquals(23, ReflectionHelpers.getField<Long>(syncSenderHandler, "totalRecordCount"))
+    val updatedRecordCount =
+      ReflectionHelpers.getField<RecordCount>(syncSenderHandler, "recordCount")
+    Assert.assertEquals(23, updatedRecordCount.totalRecordCount)
   }
 
   fun getDataTypes(): TreeSet<DataType> =
