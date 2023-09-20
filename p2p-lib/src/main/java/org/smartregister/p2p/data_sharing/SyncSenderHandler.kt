@@ -38,7 +38,6 @@ constructor(
   private val remainingLastRecordIds = HashMap<String, Long>()
   private val batchSize = 25
   private var awaitingDataTypeRecordsBatchSize = 0
-  private var totalRecordCount: Long = 0
   private var totalSentRecordCount: Long = 0
 
   private lateinit var awaitingPayload: PayloadContract<out Any>
@@ -73,7 +72,6 @@ constructor(
   fun populateTotalRecordCount() {
      recordCount =
       P2PLibrary.getInstance().getSenderTransferDao().getTotalRecordCount(remainingLastRecordIds)
-    totalRecordCount = recordCount.totalRecordCount
   }
 
   suspend fun sendNextManifest(isInitialManifest: Boolean = false) {
@@ -133,7 +131,7 @@ constructor(
               dataType = dataType,
               recordsSize = awaitingDataTypeRecordsBatchSize,
               payloadSize = recordsJsonString.length,
-              totalRecordCount = totalRecordCount,
+              totalRecordCount = recordCount.totalRecordCount,
               recordCount = recordCount
             )
 
