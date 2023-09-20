@@ -19,6 +19,7 @@ import java.util.TreeSet
 import kotlinx.coroutines.withContext
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.model.P2PReceivedHistory
+import org.smartregister.p2p.model.RecordCount
 import org.smartregister.p2p.payload.BytePayload
 import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.search.ui.P2PSenderViewModel
@@ -43,6 +44,7 @@ constructor(
   private lateinit var awaitingPayload: PayloadContract<out Any>
   private var sendingSyncCompleteManifest = false
   private var recordsBatchOffset = 0
+  private lateinit var recordCount: RecordCount
 
   suspend fun startSyncProcess() {
     Timber.i("Start sync process")
@@ -69,8 +71,9 @@ constructor(
   }
 
   fun populateTotalRecordCount() {
-    totalRecordCount =
+     recordCount =
       P2PLibrary.getInstance().getSenderTransferDao().getTotalRecordCount(remainingLastRecordIds)
+    totalRecordCount = recordCount.totalRecordCount
   }
 
   suspend fun sendNextManifest(isInitialManifest: Boolean = false) {
@@ -83,7 +86,8 @@ constructor(
         Manifest(
           dataType = DataType(name, DataType.Filetype.JSON, 0),
           recordsSize = 0,
-          payloadSize = 0
+          payloadSize = 0,
+          recordCount = recordCount
         )
 
       sendingSyncCompleteManifest = true
@@ -129,7 +133,8 @@ constructor(
               dataType = dataType,
               recordsSize = awaitingDataTypeRecordsBatchSize,
               payloadSize = recordsJsonString.length,
-              totalRecordCount = totalRecordCount
+              totalRecordCount = totalRecordCount,
+              recordCount = recordCount
             )
 
           p2PSenderViewModel.sendManifest(manifest = manifest)
