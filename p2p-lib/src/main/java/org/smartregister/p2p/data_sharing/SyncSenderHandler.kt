@@ -157,10 +157,10 @@ constructor(
 
   open fun updateTotalSentRecordCount() {
     this.totalSentRecordCount = totalSentRecordCount + awaitingDataTypeRecordsBatchSize
-    Timber.i("Progress update: Updating progress to $totalSentRecordCount out of $totalRecordCount")
+    Timber.i("Progress update: Updating progress to $totalSentRecordCount out of ${recordCount.totalRecordCount}")
     p2PSenderViewModel.updateTransferProgress(
       totalSentRecords = totalSentRecordCount,
-      totalRecords = totalRecordCount
+      totalRecords = recordCount.totalRecordCount
     )
   }
 }
