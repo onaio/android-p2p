@@ -80,7 +80,7 @@ constructor(
      * https://github.com/opensrp/fhircore/issues/2390#issuecomment-1726305575
      */
     if (transferCompletedForCurrentDataType(data)) {
-      lastUpdatedAt++
+      lastUpdatedAt += 1
       Timber.i(
         "Last updatedAt incremented by 1 to $lastUpdatedAt for ${currentManifest.dataType.name}"
       )
