@@ -19,6 +19,7 @@ import java.util.TreeSet
 import kotlinx.coroutines.withContext
 import org.smartregister.p2p.P2PLibrary
 import org.smartregister.p2p.model.P2PReceivedHistory
+import org.smartregister.p2p.model.RecordCount
 import org.smartregister.p2p.payload.BytePayload
 import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.search.ui.P2PSenderViewModel
@@ -37,12 +38,12 @@ constructor(
   private val remainingLastRecordIds = HashMap<String, Long>()
   private val batchSize = 25
   private var awaitingDataTypeRecordsBatchSize = 0
-  private var totalRecordCount: Long = 0
   private var totalSentRecordCount: Long = 0
 
   private lateinit var awaitingPayload: PayloadContract<out Any>
   private var sendingSyncCompleteManifest = false
   private var recordsBatchOffset = 0
+  private var recordCount: RecordCount = RecordCount(0L, hashMapOf())
 
   suspend fun startSyncProcess() {
     Timber.i("Start sync process")
@@ -69,7 +70,7 @@ constructor(
   }
 
   fun populateTotalRecordCount() {
-    totalRecordCount =
+    recordCount =
       P2PLibrary.getInstance().getSenderTransferDao().getTotalRecordCount(remainingLastRecordIds)
   }
 
@@ -83,7 +84,8 @@ constructor(
         Manifest(
           dataType = DataType(name, DataType.Filetype.JSON, 0),
           recordsSize = 0,
-          payloadSize = 0
+          payloadSize = 0,
+          recordCount = recordCount
         )
 
       sendingSyncCompleteManifest = true
@@ -129,7 +131,8 @@ constructor(
               dataType = dataType,
               recordsSize = awaitingDataTypeRecordsBatchSize,
               payloadSize = recordsJsonString.length,
-              totalRecordCount = totalRecordCount
+              totalRecordCount = recordCount.totalRecordCount,
+              recordCount = recordCount
             )
 
           p2PSenderViewModel.sendManifest(manifest = manifest)
@@ -154,10 +157,12 @@ constructor(
 
   open fun updateTotalSentRecordCount() {
     this.totalSentRecordCount = totalSentRecordCount + awaitingDataTypeRecordsBatchSize
-    Timber.i("Progress update: Updating progress to $totalSentRecordCount out of $totalRecordCount")
+    Timber.i(
+      "Progress update: Updating progress to $totalSentRecordCount out of ${recordCount.totalRecordCount}"
+    )
     p2PSenderViewModel.updateTransferProgress(
       totalSentRecords = totalSentRecordCount,
-      totalRecords = totalRecordCount
+      totalRecords = recordCount.totalRecordCount
     )
   }
 }

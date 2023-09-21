@@ -46,6 +46,7 @@ import org.smartregister.p2p.data_sharing.DeviceInfo
 import org.smartregister.p2p.data_sharing.Manifest
 import org.smartregister.p2p.data_sharing.SyncSenderHandler
 import org.smartregister.p2p.data_sharing.WifiDirectDataSharingStrategy
+import org.smartregister.p2p.model.RecordCount
 import org.smartregister.p2p.model.TransferProgress
 import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.payload.StringPayload
@@ -209,7 +210,13 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
   fun `sendManifest() should call dataSharingStrategy#sendManifest()`() {
     every { dataSharingStrategy.sendManifest(any(), any(), any()) } just runs
 
-    val manifest = Manifest(DataType("Patient", DataType.Filetype.JSON, 0), 250, 50)
+    val manifest =
+      Manifest(
+        DataType("Patient", DataType.Filetype.JSON, 0),
+        250,
+        50,
+        recordCount = RecordCount(250L, hashMapOf())
+      )
 
     p2PSenderViewModel.sendManifest(manifest)
 
@@ -228,7 +235,7 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
     val dataTypes = TreeSet<DataType>()
     dataTypes.add(DataType("Patient", DataType.Filetype.JSON, 0))
     every { p2pSenderTransferDao.getP2PDataTypes() } returns dataTypes
-    every { p2pSenderTransferDao.getTotalRecordCount(any()) } returns 0
+    every { p2pSenderTransferDao.getTotalRecordCount(any()) } returns RecordCount(0L, hashMapOf())
     coEvery { syncSenderHandler.startSyncProcess() } just runs
     every { p2PSenderViewModel.createSyncSenderHandler(any(), any()) } returns syncSenderHandler
 
@@ -243,7 +250,7 @@ internal class P2PSenderViewModelTest : RobolectricTest() {
     val syncPayload = StringPayload("[]")
 
     every { p2pSenderTransferDao.getP2PDataTypes() } returns TreeSet<DataType>()
-    every { p2pSenderTransferDao.getTotalRecordCount(any()) } returns 0
+    every { p2pSenderTransferDao.getTotalRecordCount(any()) } returns RecordCount(0L, hashMapOf())
     every { p2PSenderViewModel.disconnect() } just runs
 
     p2PSenderViewModel.processReceivedHistory(syncPayload)

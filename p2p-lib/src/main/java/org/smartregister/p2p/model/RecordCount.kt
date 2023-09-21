@@ -13,22 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.smartregister.p2p.dao
+package org.smartregister.p2p.model
 
-import java.util.TreeSet
-import org.smartregister.p2p.model.RecordCount
-import org.smartregister.p2p.search.data.JsonData
-import org.smartregister.p2p.sync.DataType
-
-interface SenderTransferDao {
-  fun getP2PDataTypes(): TreeSet<DataType>
-
-  fun getTotalRecordCount(highestRecordIdMap: HashMap<String, Long>): RecordCount
-
-  fun getJsonData(
-    dataType: DataType,
-    lastRecordId: Long,
-    batchSize: Int,
-    offset: Int = 0
-  ): JsonData?
-}
+data class RecordCount(
+  val totalRecordCount: Long = 0,
+  val dataTypeTotalCountMap: HashMap<String, Long> = hashMapOf()
+)

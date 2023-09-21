@@ -47,6 +47,7 @@ import org.smartregister.p2p.data_sharing.SyncReceiverHandler
 import org.smartregister.p2p.data_sharing.WifiDirectDataSharingStrategy
 import org.smartregister.p2p.model.P2PReceivedHistory
 import org.smartregister.p2p.model.P2PState
+import org.smartregister.p2p.model.RecordCount
 import org.smartregister.p2p.model.TransferProgress
 import org.smartregister.p2p.payload.BytePayload
 import org.smartregister.p2p.payload.PayloadContract
@@ -104,7 +105,13 @@ class P2PReceiverViewModelTest : RobolectricTest() {
   @Test
   fun `processIncomingManifest() with manifest  calls syncReceiver#processManifest()`() {
     val dataType = DataType(name = "Patient", type = DataType.Filetype.JSON, position = 1)
-    expectedManifest = Manifest(dataType = dataType, recordsSize = 25, payloadSize = 50)
+    expectedManifest =
+      Manifest(
+        dataType = dataType,
+        recordsSize = 25,
+        payloadSize = 50,
+        recordCount = RecordCount(50L, hashMapOf())
+      )
     every { syncReceiverHandler.processManifest(manifest = expectedManifest) } just runs
     every { p2PReceiverViewModel.listenForIncomingManifest() } answers { expectedManifest }
     p2PReceiverViewModel.processIncomingManifest()
@@ -115,7 +122,13 @@ class P2PReceiverViewModelTest : RobolectricTest() {
   fun `processIncomingManifest() with sync complete manifest value  calls p2PReceiverViewModel#handleDataTransferCompleteManifest()`() {
     val dataType =
       DataType(name = Constants.SYNC_COMPLETE, type = DataType.Filetype.JSON, position = 1)
-    expectedManifest = Manifest(dataType = dataType, recordsSize = 25, payloadSize = 50)
+    expectedManifest =
+      Manifest(
+        dataType = dataType,
+        recordsSize = 25,
+        payloadSize = 50,
+        recordCount = RecordCount(50L, hashMapOf())
+      )
     every { p2PReceiverViewModel.listenForIncomingManifest() } answers { expectedManifest }
     p2PReceiverViewModel.processIncomingManifest()
     verify(exactly = 1) {
@@ -126,7 +139,13 @@ class P2PReceiverViewModelTest : RobolectricTest() {
   @Test
   fun `listenForIncomingManifest() returns correct manifest`() {
     val dataType = DataType(name = "Group", type = DataType.Filetype.JSON, position = 0)
-    expectedManifest = Manifest(dataType = dataType, recordsSize = 25, payloadSize = 50)
+    expectedManifest =
+      Manifest(
+        dataType = dataType,
+        recordsSize = 25,
+        payloadSize = 50,
+        recordCount = RecordCount(50L, hashMapOf())
+      )
     every { dataSharingStrategy.receiveManifest(device = any(), operationListener = any()) } answers
       {
         expectedManifest

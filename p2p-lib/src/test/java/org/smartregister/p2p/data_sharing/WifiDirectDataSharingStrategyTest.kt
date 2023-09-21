@@ -55,6 +55,7 @@ import org.junit.Test
 import org.robolectric.util.ReflectionHelpers
 import org.smartregister.p2p.CoroutineTestRule
 import org.smartregister.p2p.WifiP2pBroadcastReceiver
+import org.smartregister.p2p.model.RecordCount
 import org.smartregister.p2p.payload.BytePayload
 import org.smartregister.p2p.payload.PayloadContract
 import org.smartregister.p2p.payload.StringPayload
@@ -1041,6 +1042,11 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
 
   private fun populateManifest(): Manifest {
     val dataType = DataType(name = "Patient", type = DataType.Filetype.JSON, position = 1)
-    return Manifest(dataType = dataType, recordsSize = 25, payloadSize = 50)
+    return Manifest(
+      dataType = dataType,
+      recordsSize = 25,
+      payloadSize = 50,
+      recordCount = RecordCount(50L, hashMapOf())
+    )
   }
 }
