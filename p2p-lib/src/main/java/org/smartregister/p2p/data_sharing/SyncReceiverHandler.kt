@@ -60,16 +60,8 @@ constructor(
 
     var lastUpdatedAt =
       P2PLibrary.getInstance().getReceiverTransferDao().receiveJson(currentManifest.dataType, data)
-    val currentDataTypeTotalRecordCount =
-      currentManifest.recordCount.dataTypeTotalCountMap[currentManifest.dataType.name]
 
     totalReceivedRecordCount += data!!.length()
-
-    receivedResourceCountMap[currentManifest.dataType.name] =
-      if (receivedResourceCountMap[currentManifest.dataType.name] != null)
-        receivedResourceCountMap[currentManifest.dataType.name]?.plus(data!!.length())!!
-      else data!!.length().toLong()
-
     Timber.e(
       "Progress update: Updating received data ${currentManifest.dataType.name} x ${currentManifest.recordsSize} | UPTO $lastUpdatedAt"
     )
@@ -81,12 +73,13 @@ constructor(
       totalRecords = totalRecordCount
     )
 
-    // when all records have been received increment lastUpdatedAt  by 1
-    Timber.i(
-      "totalReceivedRecordCount is ${receivedResourceCountMap[currentManifest.dataType.name]} and totalRecordCount is  $currentDataTypeTotalRecordCount"
-    )
-    if (receivedResourceCountMap[currentManifest.dataType.name] == currentDataTypeTotalRecordCount
-    ) {
+    /**
+     * When all records have been received increment lastUpdatedAt by 1 This ensures that when a new
+     * transfer is initiated the already transferred items with the highest lastUpdated value are
+     * not sent again Fixes issue documented here
+     * https://github.com/opensrp/fhircore/issues/2390#issuecomment-1726305575
+     */
+    if (transferCompletedForCurrentDataType(data)) {
       lastUpdatedAt++
       Timber.i(
         "Last updatedAt incremented by 1 to $lastUpdatedAt for ${currentManifest.dataType.name}"
@@ -124,5 +117,28 @@ constructor(
 
   private fun getP2pReceivedHistoryDao(): P2pReceivedHistoryDao {
     return P2PLibrary.getInstance().getDb().p2pReceivedHistoryDao()
+  }
+
+  /**
+   * This method determines whether all records of the current data type being processed have been
+   * transferred
+   * @param data [JSONArray] contains the batch of records being transferred
+   * @return Boolean indicating whether all records for a particular data type have been transferred
+   */
+  private fun transferCompletedForCurrentDataType(data: JSONArray): Boolean {
+    val currentDataTypeTotalRecordCount =
+      currentManifest.recordCount.dataTypeTotalCountMap[currentManifest.dataType.name]
+
+    receivedResourceCountMap[currentManifest.dataType.name] =
+      if (receivedResourceCountMap[currentManifest.dataType.name] != null)
+        receivedResourceCountMap[currentManifest.dataType.name]?.plus(data!!.length())!!
+      else data!!.length().toLong()
+
+    Timber.i(
+      "totalReceivedRecordCount is ${receivedResourceCountMap[currentManifest.dataType.name]} and totalRecordCount is  $currentDataTypeTotalRecordCount"
+    )
+
+    return receivedResourceCountMap[currentManifest.dataType.name] ==
+      currentDataTypeTotalRecordCount
   }
 }
