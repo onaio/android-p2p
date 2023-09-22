@@ -14,7 +14,7 @@ jacoco {
 }
 
 android {
-    compileSdk 34
+    compileSdk 32
 
     defaultConfig {
         minSdk 21
@@ -71,12 +71,6 @@ android {
 }
 
 dependencies { configuration ->
-
-    constraints {
-        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.20") {
-            because("kotlin-stdlib-jdk8 is now a part of kotlin-stdlib")
-        }
-    }
 
     implementation 'androidx.core:core-ktx:1.6.0'
     implementation 'androidx.work:work-runtime-ktx:2.6.0'
@@ -227,7 +221,7 @@ afterEvaluate {
                 from(components["release"])
                 artifactId = "p2p-lib"
                 groupId = "org.smartregister"
-                version = "0.6.8-SNAPSHOT"
+                version = "0.6.8-SNAPSHOT-composition-1.2.1-SNAPSHOT"
                 pom {
                     name.set("Peer to Peer Library")
                 }
