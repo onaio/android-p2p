@@ -1,6 +1,7 @@
 package org.smartregister.p2p.sample.dao
 
 import org.smartregister.p2p.dao.SenderTransferDao
+import org.smartregister.p2p.model.RecordCount
 import org.smartregister.p2p.search.data.JsonData
 import org.smartregister.p2p.sync.DataType
 import java.util.TreeSet
@@ -10,8 +11,8 @@ class P2PSenderTransferDao() :SenderTransferDao {
         return TreeSet<DataType>()
     }
 
-    override fun getTotalRecordCount(highestRecordIdMap: HashMap<String, Long>): Long {
-        return 0
+    override fun getTotalRecordCount(highestRecordIdMap: HashMap<String, Long>): RecordCount {
+        return RecordCount()
     }
 
     override fun getJsonData(
