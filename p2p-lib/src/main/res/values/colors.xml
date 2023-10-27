@@ -14,6 +14,7 @@
     <color name="medium_grey">#e6e6e6</color>
     <color name="close_btn_grey">#919191</color>
     <color name="text_black">#313131</color>
-    <color name="top_appbar_bg">#155084</color>
     <color name="icon_blue_color">#006EB8</color>
+    <color name="colorPrimaryDark">#006BBA</color>
+    <color name="colorPrimaryLight">#0077CC</color>
 </resources>

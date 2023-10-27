@@ -111,7 +111,7 @@ fun P2PScreen(
         TopAppBar(
           modifier = modifier.testTag(P2P_SCREEN_TOP_BAR_TEST_TAG),
           title = { Text(stringResource(id = R.string.transfer_data)) },
-          backgroundColor = colorResource(id = R.color.top_appbar_bg),
+          backgroundColor = colorResource(id = R.color.colorPrimaryLight),
           contentColor = colorResource(id = R.color.white),
           navigationIcon = {
             IconButton(onClick = { p2PViewModel.closeP2PScreen() }) {
