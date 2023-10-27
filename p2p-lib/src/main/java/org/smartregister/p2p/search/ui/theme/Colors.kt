@@ -25,8 +25,8 @@ val DefaultColor = Color(0xFF6F7274)
 val WhiteColor = Color(0xFFF2F4F7)
 val SuccessColor = Color(0xFF1DB11B)
 
-private val PrimaryColor = Color(0xFF005084)
-private val PrimaryVariantColor = Color(0xFF003D66)
+private val PrimaryColor = Color(0xFF0077CC)
+private val PrimaryVariantColor = Color(0xFF006BBA)
 private val ErrorColor = Color(0xFFDD0000)
 
 val LightColors =
