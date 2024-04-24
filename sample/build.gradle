@@ -5,6 +5,7 @@ plugins {
 
 android {
     compileSdk 34
+    namespace = "org.smartregister.p2p.sample"
 
     defaultConfig {
         applicationId "org.smartregister.p2p.sample"
