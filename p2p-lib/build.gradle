@@ -88,15 +88,15 @@ dependencies { configuration ->
     //Configure Jetpack Compose and navigation
     api("androidx.compose.ui:ui:$composeVersion")
     api("androidx.compose.ui:ui-tooling:$composeVersion")
-    api("androidx.compose.foundation:foundation:$composeVersion")
-    api("androidx.compose.material:material:$composeVersion")
-    api("androidx.compose.material:material-icons-core:$composeVersion")
-    api("androidx.compose.material:material-icons-extended:$composeVersion")
+    api("androidx.compose.foundation:foundation:$foundation")
+    api("androidx.compose.material:material:$material_icons_core")
+    api("androidx.compose.material:material-icons-core:$material_icons_core")
+    api("androidx.compose.material:material-icons-extended:$material_icons_extended")
     api("androidx.compose.runtime:runtime-livedata:$composeVersion")
     api("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1")
     api("androidx.paging:paging-compose:1.0.0-alpha15")
     api("androidx.activity:activity-compose:1.5.1")
-    api ("com.google.accompanist:accompanist-flowlayout:0.23.1")
+    api ("com.google.accompanist:accompanist-flowlayout:$accompanist_flowlayout")
     api("androidx.work:work-runtime-ktx:2.7.1")
 
     roomDependencies(configuration)
@@ -137,7 +137,7 @@ def roomDependencies(configuration) {
 }
 
 def locationDependencies(configuration) {
-    configuration.implementation 'com.google.android.gms:play-services-location:16.0.0'
+    configuration.implementation 'com.google.android.gms:play-services-location:21.0.1'
 }
 
 task jacocoTestReport(type: JacocoReport, dependsOn: [
