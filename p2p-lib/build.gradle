@@ -145,7 +145,7 @@ def roomDependencies(configuration) {
 }
 
 def locationDependencies(configuration) {
-    configuration.implementation 'com.google.android.gms:play-services-location:16.0.0'
+    configuration.implementation 'com.google.android.gms:play-services-location:21.2.0'
 }
 
 task jacocoTestReport(type: JacocoReport, dependsOn: [
