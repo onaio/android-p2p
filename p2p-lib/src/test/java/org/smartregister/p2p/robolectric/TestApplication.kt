@@ -74,6 +74,6 @@ import org.smartregister.p2p.R
 class TestApplication : Application() {
   override fun onCreate() {
     super.onCreate()
-    setTheme(R.style.Theme_MaterialComponents_DayNight_DarkActionBar)
+    setTheme(com.google.android.material.R.style.Theme_MaterialComponents_DayNight_DarkActionBar)
   }
 }
