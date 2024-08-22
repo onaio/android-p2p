@@ -259,6 +259,9 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     every {
       context.checkPermission(android.Manifest.permission.ACCESS_FINE_LOCATION, any(), any())
     } returns PackageManager.PERMISSION_GRANTED
+    every {
+      context.checkPermission(android.Manifest.permission.NEARBY_WIFI_DEVICES, any(), any())
+    } returns PackageManager.PERMISSION_GRANTED
     every { wifiP2pManager.discoverPeers(any(), any()) } just runs
     ReflectionHelpers.callInstanceMethod<WifiDirectDataSharingStrategy>(
       wifiDirectDataSharingStrategy,
