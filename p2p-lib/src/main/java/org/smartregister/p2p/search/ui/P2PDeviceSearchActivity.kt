@@ -110,6 +110,7 @@ import timber.log.Timber
 class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View {
 
   private val accessFineLocationPermissionRequestInt: Int = 12345
+  private val nearbyWifiDevicesPermissionRequestInt: Int = 67890
   private val p2PReceiverViewModel by viewModels<P2PReceiverViewModel> {
     P2PReceiverViewModel.Factory(
       dataSharingStrategy = dataSharingStrategy,
@@ -290,7 +291,11 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
       OnSuccessListener<LocationSettingsResponse?> {
         // All location settings are satisfied. The client can initialize
         // location requests here.
-        checkEnableWifi()
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+          checkEnableWifi()
+        } else {
+          checkNearbyWifiDevicesPermissionEnabled()
+        }
       }
     )
     result.addOnFailureListener(
@@ -316,6 +321,22 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     )
   }
 
+  @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+  fun checkNearbyWifiDevicesPermissionEnabled() {
+    when (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.NEARBY_WIFI_DEVICES)
+    ) {
+      PackageManager.PERMISSION_GRANTED -> {
+        logDebug("P2PDeviceSearchActivity Wifi P2P: Nearby wifi devices granted")
+        checkEnableWifi()
+      }
+      else -> {
+        logDebug(
+          "P2PDeviceSearchActivity Wifi P2P: Requesting Nearby wifi devices granted permission"
+        )
+        requestNearbyWifiDevicesNotGranted()
+      }
+    }
+  }
   fun createLocationRequest(): LocationRequest {
     return LocationRequest.create().apply {
       interval = 3600000
@@ -402,6 +423,20 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
     }
   }
 
+  @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+  private fun requestNearbyWifiDevicesNotGranted() {
+    when (ActivityCompat.checkSelfPermission(this, Manifest.permission.NEARBY_WIFI_DEVICES)) {
+      PackageManager.PERMISSION_GRANTED -> logDebug("Wifi P2P: Nearby wifi devices granted")
+      else -> {
+        logDebug("Wifi P2P: Requesting access Nearby wifi devices permission")
+        return requestPermissions(
+          arrayOf(Manifest.permission.NEARBY_WIFI_DEVICES),
+          nearbyWifiDevicesPermissionRequestInt
+        )
+      }
+    }
+  }
+
   override fun sendDeviceDetails() {
     p2PSenderViewModel.sendDeviceDetails(getCurrentConnectedDevice())
   }
@@ -482,6 +517,14 @@ class P2PDeviceSearchActivity : AppCompatActivity(), P2pModeSelectContract.View 
         hasPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     ) {
       checkLocationEnabled()
+    }
+
+    if ((nearbyWifiDevicesPermissionRequestInt == requestCode &&
+        hasPermission(Manifest.permission.NEARBY_WIFI_DEVICES)) &&
+        (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+    ) {
+      logDebug("onRequestPermissionsResult has nearby wifi devices permission")
+      checkNearbyWifiDevicesPermissionEnabled()
     }
   }
 
