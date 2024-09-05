@@ -142,18 +142,24 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   private fun initiatePeerDiscoveryOnceAccessFineLocationGranted() {
     if ((ActivityCompat.checkSelfPermission(
         context,
-        android.Manifest.permission.ACCESS_FINE_LOCATION)
-      ) != PackageManager.PERMISSION_GRANTED ||
-      (ActivityCompat.checkSelfPermission(
-        context,
-        android.Manifest.permission.NEARBY_WIFI_DEVICES)
-              ) != PackageManager.PERMISSION_GRANTED
+        android.Manifest.permission.ACCESS_FINE_LOCATION
+      )) != PackageManager.PERMISSION_GRANTED ||
+        (ActivityCompat.checkSelfPermission(
+          context,
+          android.Manifest.permission.NEARBY_WIFI_DEVICES
+        )) != PackageManager.PERMISSION_GRANTED
     ) {
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        logDebug("initiatePeerDiscoveryOnceAccessFineLocationGranted(): requesting  ACCESS_FINE_LOCATION")
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+          Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+      ) {
+        logDebug(
+          "initiatePeerDiscoveryOnceAccessFineLocationGranted(): requesting  ACCESS_FINE_LOCATION"
+        )
         requestAccessFineLocationIfNotGranted()
       } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        logDebug("initiatePeerDiscoveryOnceAccessFineLocationGranted(): requesting  NEARBY_WIFI_DEVICES")
+        logDebug(
+          "initiatePeerDiscoveryOnceAccessFineLocationGranted(): requesting  NEARBY_WIFI_DEVICES"
+        )
         requestNearbyWifiDevicesNotGranted()
       } else {
         handleMinimumSDKVersionNotMet(Build.VERSION_CODES.M)
@@ -184,9 +190,9 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
   @RequiresApi(Build.VERSION_CODES.TIRAMISU)
   private fun requestNearbyWifiDevicesNotGranted() {
     when (ActivityCompat.checkSelfPermission(
-      context,
-      android.Manifest.permission.NEARBY_WIFI_DEVICES
-    )
+        context,
+        android.Manifest.permission.NEARBY_WIFI_DEVICES
+      )
     ) {
       PackageManager.PERMISSION_GRANTED -> logDebug("Wifi P2P: Nearby wifi devices granted")
       else -> {
@@ -209,7 +215,6 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     }
 
     isSearchingDevices = true
-    logDebug("Initiating peer discovery")
     wifiP2pManager.discoverPeers(
       wifiP2pChannel,
       object : WifiP2pManager.ActionListener {
@@ -219,7 +224,6 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
 
         override fun onFailure(reason: Int) {
           val exception = Exception("$reason: ${getWifiP2pReason(reason)}")
-          logDebug("Discovering peers failed with $reason: ${getWifiP2pReason(reason)}")
           onDeviceFound?.failed(exception)
           onSearchingFailed(exception)
         }
@@ -232,6 +236,9 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     onDeviceFound: OnDeviceFound,
     onConnected: DataSharingStrategy.PairingListener
   ) {
+    if (wifiP2pChannel == null) {
+      initChannel(onDeviceFound = onDeviceFound, onConnected = onConnected)
+    }
     wifiP2pChannel?.also { wifiP2pChannel ->
       if (ActivityCompat.checkSelfPermission(
           context,
