@@ -801,7 +801,11 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
 
     coVerify { dataInputStream.readLong() }
     coVerify { dataInputStream.read(any(), 0, bytePayload.size) }
-    coVerify { wifiDirectDataSharingStrategy invoke "logDebug" withArguments listOf("file size 0") }
+    val messageSlot = slot<String>()
+    coVerify {
+      wifiDirectDataSharingStrategy invoke "logDebug" withArguments listOf(capture(messageSlot))
+    }
+    Assert.assertEquals("file size 0", messageSlot.captured)
 
     val bytePayloadSlot = slot<BytePayload>()
     coVerify { payloadReceiptListener.onPayloadReceived(capture(bytePayloadSlot)) }
