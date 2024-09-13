@@ -197,7 +197,9 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
           android.Manifest.permission.NEARBY_WIFI_DEVICES
         )) != PackageManager.PERMISSION_GRANTED
     ) {
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+          Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+      ) {
         logDebug(
           "initiatePeerDiscoveryOnceAccessFineLocationGranted(): requesting  ACCESS_FINE_LOCATION"
         )
@@ -282,6 +284,9 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     onDeviceFound: OnDeviceFound,
     onConnected: DataSharingStrategy.PairingListener
   ) {
+    if (wifiP2pChannel == null) {
+      initChannel(onDeviceFound = onDeviceFound, onConnected = onConnected)
+    }
     wifiP2pChannel?.also { wifiP2pChannel ->
       if (ActivityCompat.checkSelfPermission(
           context,
@@ -991,7 +996,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     }
   }
 
-  private fun logDebug(message: String) {
+  fun logDebug(message: String) {
     Timber.d(message)
   }
 
