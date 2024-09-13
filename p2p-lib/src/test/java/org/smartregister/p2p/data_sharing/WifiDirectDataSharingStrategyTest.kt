@@ -793,13 +793,11 @@ class WifiDirectDataSharingStrategyTest : RobolectricTest() {
     every { wifiDirectDataSharingStrategy invokeNoArgs "getGroupOwnerAddress" } returns
       groupOwnerAddress
 
-    runBlocking {
-      wifiDirectDataSharingStrategy.receive(
-        device = device,
-        payloadReceiptListener = payloadReceiptListener,
-        operationListener = operationListener
-      )
-    }
+    wifiDirectDataSharingStrategy.receive(
+      device = device,
+      payloadReceiptListener = payloadReceiptListener,
+      operationListener = operationListener
+    )
 
     coVerify { dataInputStream.readLong() }
     coVerify { dataInputStream.read(any(), 0, bytePayload.size) }
