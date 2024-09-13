@@ -996,7 +996,7 @@ class WifiDirectDataSharingStrategy : DataSharingStrategy, P2PManagerListener {
     }
   }
 
-  private fun logDebug(message: String) {
+  fun logDebug(message: String) {
     Timber.d(message)
   }
 
