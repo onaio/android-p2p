@@ -73,9 +73,9 @@ import org.smartregister.p2p.model.P2PReceivedHistory
 @Dao
 interface P2pReceivedHistoryDao {
 
-  @Insert fun addReceivedHistory(receivedP2PReceivedHistory: P2PReceivedHistory?)
+  @Insert fun addReceivedHistory(receivedP2PReceivedHistory: P2PReceivedHistory)
 
-  @Update fun updateReceivedHistory(receivedP2PReceivedHistory: P2PReceivedHistory?)
+  @Update fun updateReceivedHistory(receivedP2PReceivedHistory: P2PReceivedHistory)
 
   @Query("DELETE FROM p2p_received_history WHERE app_lifetime_key = :appLifetimeKey")
   fun clearDeviceRecords(appLifetimeKey: String?): Int
