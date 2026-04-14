@@ -88,8 +88,8 @@ Add the following secrets to the repository (**Settings → Secrets and variable
 
 | Secret | Description |
 |--------|-------------|
-| `SONATYPE_USERNAME` | Sonatype OSSRH username |
-| `SONATYPE_PASSWORD` | Sonatype OSSRH password |
+| `MAVEN_CENTRAL_USERNAME` | Maven Central portal token username (generate at central.sonatype.com) |
+| `MAVEN_CENTRAL_PASSWORD` | Maven Central portal token password |
 | `GPG_PRIVATE_KEY` | Armored GPG private key (`gpg --armor --export-secret-keys <KEY_ID>`) — release builds only |
 | `GPG_PASSPHRASE` | Passphrase for the GPG key, or omit if the key has no passphrase — release builds only |
 
@@ -102,7 +102,7 @@ git tag v0.6.11-SNAPSHOT
 git push origin v0.6.11-SNAPSHOT
 ```
 
-The artifact is published directly to the Sonatype snapshot repository and is immediately available. Snapshot artifacts are not GPG-signed.
+The artifact is published directly to `https://central.sonatype.com/repository/maven-snapshots/` and is immediately available. Snapshot artifacts are not GPG-signed.
 
 > **Note:** Maven Central automatically deletes SNAPSHOT artifacts after 90 days. Re-publish the same tag if you need to extend availability. See the [Maven Central snapshot documentation](https://central.sonatype.org/publish/publish-portal-snapshots/) for details.
 
@@ -115,7 +115,7 @@ git tag v0.6.11
 git push origin v0.6.11
 ```
 
-The workflow signs the artifacts with GPG, uploads them to a Sonatype staging repository, then automatically closes and releases the staging repository so the artifact propagates to Maven Central. Allow up to 30 minutes for it to appear in Maven Central search.
+The workflow signs the artifacts with GPG, stages them locally, then uploads the bundle to the Maven Central Portal API (`https://central.sonatype.com/api/v1/publisher/upload`) with `publishingType=AUTOMATIC` so the release is validated and published without manual intervention. Allow up to 30 minutes for it to appear in Maven Central search.
 
 ### How versioning works
 
