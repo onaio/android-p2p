@@ -40,16 +40,24 @@ jobs:
       # enforced for release artifacts that go through the staging repository.
       - name: Publish SNAPSHOT to Maven Central
         if: steps.version.outputs.IS_SNAPSHOT == 'true'
-        run: ./gradlew publishToSonatype "-PversionName=${{ steps.version.outputs.VERSION }}"
+        run: ./gradlew publish "-PversionName=${{ steps.version.outputs.VERSION }}"
         env:
-          ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.SONATYPE_USERNAME }}
-          ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.SONATYPE_PASSWORD }}
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
 
-      - name: Publish Release to Maven Central
+      - name: Stage Release artifacts locally
         if: steps.version.outputs.IS_SNAPSHOT == 'false'
-        run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository "-PversionName=${{ steps.version.outputs.VERSION }}"
+        run: ./gradlew publish "-PversionName=${{ steps.version.outputs.VERSION }}"
         env:
-          ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.SONATYPE_USERNAME }}
-          ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.SONATYPE_PASSWORD }}
           ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_PRIVATE_KEY }}
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Upload Release bundle to Maven Central Portal
+        if: steps.version.outputs.IS_SNAPSHOT == 'false'
+        run: |
+          cd p2p-lib/build/staging-deploy
+          zip -r ../bundle.zip .
+          curl --fail --request POST \
+            --header "Authorization: Bearer $(printf '%s' '${{ secrets.MAVEN_CENTRAL_USERNAME }}:${{ secrets.MAVEN_CENTRAL_PASSWORD }}' | base64 -w0)" \
+            --form bundle=@../bundle.zip \
+            "https://central.sonatype.com/api/v1/publisher/upload?publishingType=AUTOMATIC"

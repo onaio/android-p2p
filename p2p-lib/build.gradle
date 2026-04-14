@@ -8,8 +8,8 @@ plugins {
     id 'maven-publish'
 }
 apply plugin: 'kotlin-kapt'
-apply plugin: 'signing'
 apply plugin: 'org.jetbrains.dokka'
+apply plugin: 'signing'
 
 jacoco {
     toolVersion = '0.8.7'
@@ -248,27 +248,48 @@ afterEvaluate {
                 groupId = "org.smartregister"
                 version = versionName
                 pom {
-                    name.set("Peer to Peer Library")
-                    description.set("Android peer-to-peer data transfer library for SmartRegister applications")
-                    url.set("https://github.com/onaio/android-p2p")
+                    name = "Peer to Peer Library"
+                    description = "Android peer-to-peer data transfer library for SmartRegister applications"
+                    url = "https://github.com/onaio/android-p2p"
                     licenses {
                         license {
-                            name.set("Business Source License 1.1")
-                            url.set("https://github.com/onaio/android-p2p/blob/main/LICENSE")
+                            name = "Business Source License 1.1"
+                            url = "https://github.com/onaio/android-p2p/blob/main/LICENSE"
                         }
                     }
                     developers {
                         developer {
-                            id.set("opensrp")
-                            name.set("Ona Systems, Inc.")
-                            email.set("info@opensrp.io")
+                            id = "opensrp"
+                            name = "Ona Systems, Inc."
+                            email = "info@opensrp.io"
                         }
                     }
                     scm {
-                        connection.set("scm:git:git://github.com/onaio/android-p2p.git")
-                        developerConnection.set("scm:git:ssh://github.com/onaio/android-p2p.git")
-                        url.set("https://github.com/onaio/android-p2p")
+                        connection = "scm:git:git://github.com/onaio/android-p2p.git"
+                        developerConnection = "scm:git:ssh://github.com/onaio/android-p2p.git"
+                        url = "https://github.com/onaio/android-p2p"
                     }
+                }
+            }
+        }
+        repositories {
+            if (versionName.endsWith('-SNAPSHOT')) {
+                // Snapshots are deployed directly via standard Maven publish.
+                maven {
+                    name = 'centralPortalSnapshots'
+                    url = uri("https://central.sonatype.com/repository/maven-snapshots/")
+                    credentials {
+                        username = findProperty('mavenCentralUsername') ?: ""
+                        password = findProperty('mavenCentralPassword') ?: ""
+                    }
+                }
+            } else {
+                // Releases are staged locally, then the workflow zips and uploads
+                // the bundle to the Central Portal API (direct Maven deploy is no
+                // longer supported for releases since OSSRH was discontinued).
+                maven {
+                    name = 'localStaging'
+                    url = uri("${buildDir}/staging-deploy")
                 }
             }
         }
