@@ -8,6 +8,7 @@ plugins {
     id 'maven-publish'
 }
 apply plugin: 'kotlin-kapt'
+apply plugin: 'signing'
 
 jacoco {
     toolVersion = '0.8.7'
@@ -222,39 +223,29 @@ spotless {
     }
 }
 
+def versionName = project.findProperty('versionName') ?: "0.6.11-SNAPSHOT"
+
 afterEvaluate {
     publishing {
         publications {
-            snapshot(MavenPublication) {
+            release(MavenPublication) {
                 from(components["release"])
                 artifactId = "p2p-lib"
                 groupId = "org.smartregister"
-                version = "0.6.11-SNAPSHOT"
+                version = versionName
                 pom {
                     name.set("Peer to Peer Library")
                 }
             }
         }
-        repositories {
-            maven {
-                name = 'sonatype'
-                url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
-                credentials {
-                    username = getRepositoryUsername()
-                    password = getRepositoryPassword()
-                }
-            }
+    }
 
+    signing {
+        def signingKey = findProperty("signingKey")
+        def signingPassword = findProperty("signingPassword")
+        if (signingKey) {
+            useInMemoryPgpKeys(signingKey as String, signingPassword as String)
+            sign publishing.publications.release
         }
     }
-}
-
-
-
-def getRepositoryPassword() {
-    return hasProperty('sonatypePassword') ? sonatypePassword : ""
-}
-
-def getRepositoryUsername() {
-    return hasProperty('sonatypeUsername') ? sonatypeUsername : ""
 }
