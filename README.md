@@ -80,7 +80,7 @@ class MainActivity : AppCompatActivity() {
 
 ## Publishing
 
-The library is published to Maven Central via a GitHub Actions workflow that triggers on version tags.
+The library is published to Maven Central via a GitHub Actions workflow that triggers on version tags matching `v<major>.<minor>.<patch>` (release) or `v<major>.<minor>.<patch>-SNAPSHOT` (snapshot).
 
 ### Prerequisites
 
@@ -103,6 +103,8 @@ git push origin v0.6.11-SNAPSHOT
 ```
 
 The artifact is published directly to the Sonatype snapshot repository and is immediately available. Snapshot artifacts are not GPG-signed.
+
+> **Note:** Maven Central automatically deletes SNAPSHOT artifacts after 90 days. Re-publish the same tag if you need to extend availability. See the [Maven Central snapshot documentation](https://central.sonatype.org/publish/publish-portal-snapshots/) for details.
 
 ### Publishing a release
 
