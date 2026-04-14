@@ -12,6 +12,8 @@ apply plugin: 'org.jetbrains.dokka'
 apply plugin: 'signing'
 
 kapt {
+    // Required so KAPT can tolerate generated/error types during Room stub generation;
+    // removing this can surface misleading annotation-processing failures in this module.
     correctErrorTypes = true
 }
 
