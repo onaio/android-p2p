@@ -3,7 +3,7 @@ name: Publish to Maven Central
 on:
   push:
     tags:
-      - '*'
+      - 'v[0-9]*.[0-9]*.[0-9]*'
 
 jobs:
   publish:
@@ -34,16 +34,19 @@ jobs:
             echo "IS_SNAPSHOT=false" >> $GITHUB_OUTPUT
           fi
 
+      # Sonatype OSSRH does not require GPG signing for snapshot repositories,
+      # so signing secrets are intentionally omitted here. Signing is only
+      # enforced for release artifacts that go through the staging repository.
       - name: Publish SNAPSHOT to Maven Central
         if: steps.version.outputs.IS_SNAPSHOT == 'true'
-        run: ./gradlew publishToSonatype -PversionName=${{ steps.version.outputs.VERSION }}
+        run: ./gradlew publishToSonatype "-PversionName=${{ steps.version.outputs.VERSION }}"
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.SONATYPE_PASSWORD }}
 
       - name: Publish Release to Maven Central
         if: steps.version.outputs.IS_SNAPSHOT == 'false'
-        run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository -PversionName=${{ steps.version.outputs.VERSION }}
+        run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository "-PversionName=${{ steps.version.outputs.VERSION }}"
         env:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.SONATYPE_PASSWORD }}
