@@ -78,6 +78,51 @@ class MainActivity : AppCompatActivity() {
 }
 ```
 
+## Publishing
+
+The library is published to Maven Central via a GitHub Actions workflow that triggers on version tags matching `v<major>.<minor>.<patch>` (release) or `v<major>.<minor>.<patch>-SNAPSHOT` (snapshot).
+
+### Prerequisites
+
+Add the following secrets to the repository (**Settings → Secrets and variables → Actions**):
+
+| Secret | Description |
+|--------|-------------|
+| `SONATYPE_USERNAME` | Sonatype OSSRH username |
+| `SONATYPE_PASSWORD` | Sonatype OSSRH password |
+| `GPG_PRIVATE_KEY` | Armored GPG private key (`gpg --armor --export-secret-keys <KEY_ID>`) — release builds only |
+| `GPG_PASSPHRASE` | Passphrase for the GPG key, or omit if the key has no passphrase — release builds only |
+
+### Publishing a SNAPSHOT
+
+Push a tag whose version component ends with `-SNAPSHOT`:
+
+```bash
+git tag v0.6.11-SNAPSHOT
+git push origin v0.6.11-SNAPSHOT
+```
+
+The artifact is published directly to the Sonatype snapshot repository and is immediately available. Snapshot artifacts are not GPG-signed.
+
+> **Note:** Maven Central automatically deletes SNAPSHOT artifacts after 90 days. Re-publish the same tag if you need to extend availability. See the [Maven Central snapshot documentation](https://central.sonatype.org/publish/publish-portal-snapshots/) for details.
+
+### Publishing a release
+
+Push a tag whose version component does **not** end with `-SNAPSHOT`:
+
+```bash
+git tag v0.6.11
+git push origin v0.6.11
+```
+
+The workflow signs the artifacts with GPG, uploads them to a Sonatype staging repository, then automatically closes and releases the staging repository so the artifact propagates to Maven Central. Allow up to 30 minutes for it to appear in Maven Central search.
+
+### How versioning works
+
+The workflow strips the leading `v` from the tag and passes the remainder to Gradle as the `versionName` property. For example, tag `v0.6.11-SNAPSHOT` produces version `0.6.11-SNAPSHOT` in the published POM.
+
+---
+
 ## Gotchas
 
 There are a few challenges that were experienced during the development of this prototype.

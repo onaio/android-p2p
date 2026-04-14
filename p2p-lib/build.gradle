@@ -8,6 +8,8 @@ plugins {
     id 'maven-publish'
 }
 apply plugin: 'kotlin-kapt'
+apply plugin: 'signing'
+apply plugin: 'org.jetbrains.dokka'
 
 jacoco {
     toolVersion = '0.8.7'
@@ -222,39 +224,63 @@ spotless {
     }
 }
 
+def versionName = project.findProperty('versionName') ?: "0.6.11-SNAPSHOT"
+
+tasks.register('androidSourcesJar', Jar) {
+    archiveClassifier.set('sources')
+    from android.sourceSets.main.java.srcDirs
+}
+
+tasks.register('dokkaJavadocJar', Jar) {
+    dependsOn(dokkaJavadoc)
+    archiveClassifier.set('javadoc')
+    from(dokkaJavadoc.outputDirectory)
+}
+
 afterEvaluate {
     publishing {
         publications {
-            snapshot(MavenPublication) {
+            release(MavenPublication) {
                 from(components["release"])
+                artifact(androidSourcesJar)
+                artifact(dokkaJavadocJar)
                 artifactId = "p2p-lib"
                 groupId = "org.smartregister"
-                version = "0.6.11-SNAPSHOT"
+                version = versionName
                 pom {
                     name.set("Peer to Peer Library")
+                    description.set("Android peer-to-peer data transfer library for SmartRegister applications")
+                    url.set("https://github.com/onaio/android-p2p")
+                    licenses {
+                        license {
+                            name.set("Business Source License 1.1")
+                            url.set("https://github.com/onaio/android-p2p/blob/main/LICENSE")
+                        }
+                    }
+                    developers {
+                        developer {
+                            id.set("opensrp")
+                            name.set("Ona Systems, Inc.")
+                            email.set("info@opensrp.io")
+                        }
+                    }
+                    scm {
+                        connection.set("scm:git:git://github.com/onaio/android-p2p.git")
+                        developerConnection.set("scm:git:ssh://github.com/onaio/android-p2p.git")
+                        url.set("https://github.com/onaio/android-p2p")
+                    }
                 }
             }
-        }
-        repositories {
-            maven {
-                name = 'sonatype'
-                url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
-                credentials {
-                    username = getRepositoryUsername()
-                    password = getRepositoryPassword()
-                }
-            }
-
         }
     }
-}
 
-
-
-def getRepositoryPassword() {
-    return hasProperty('sonatypePassword') ? sonatypePassword : ""
-}
-
-def getRepositoryUsername() {
-    return hasProperty('sonatypeUsername') ? sonatypeUsername : ""
+    signing {
+        def signingKey = findProperty("signingKey")
+        if (signingKey) {
+            // Default to empty string so unencrypted keys (no passphrase) work without error.
+            def signingPassword = (findProperty("signingPassword") ?: "") as String
+            useInMemoryPgpKeys(signingKey as String, signingPassword)
+            sign publishing.publications.release
+        }
+    }
 }
