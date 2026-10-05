@@ -139,7 +139,7 @@ def roomDependencies(configuration) {
     configuration.kapt(deps.room.compiler)
 
     // sql cipher deps
-    configuration.implementation "net.zetetic:android-database-sqlcipher:4.5.0"
+    configuration.implementation "net.zetetic:sqlcipher-android:4.12.0"
     configuration.implementation "androidx.sqlite:sqlite:2.0.1"
 
     // Room Test helpers
